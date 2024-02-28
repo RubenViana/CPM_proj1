@@ -3,7 +3,7 @@
 ### System Applications
 
 - [The remote service](/Server/)
-- [The Customer App](/TICKETO/)
+- [The customer app](/TICKETO/)
 - [The ticket validation terminal](/TicketValidatorTerminal/)
 - [The cafeteria order terminal](/CafeteriaOrderTerminal/)
 
