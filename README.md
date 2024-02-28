@@ -9,10 +9,10 @@
 
 ### System Operations
 
-- [ ] Registration
-- [ ] Consult the next performances and buy tickets
-- [ ] Present tickets
-- [ ] Validate tickets
-- [ ] Make a cafeteria order
-- [ ] Validate vouchers and pay an order
-- [ ] Consult transactions
+- Registration
+- Consult the next performances and buy tickets
+- Present tickets
+- Validate tickets
+- Make a cafeteria order
+- Validate vouchers a d pay an order
+- Consult transactions
