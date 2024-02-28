@@ -2,10 +2,10 @@
 
 ### System Applications
 
-- **The remote service**
-- **The Customer App**
-- **The ticket validation terminal**
-- **The cafeteria order terminal**
+- [The remote service](/Server/)
+- [The Customer App](/TICKETO/)
+- [The ticket validation terminal](/TicketValidatorTerminal/)
+- [The cafeteria order terminal](/CafeteriaOrderTerminal/)
 
 ### System Operations
 
