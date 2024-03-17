@@ -44,6 +44,36 @@ def get_db():
 # Register User route
 @app.route('/register_user', methods=['POST'])
 def register_user():
+    """
+    Register a new user.
+
+    Request Body Parameters:
+    JSON Object with the following fields:
+        - name (str): Name of the user.
+        - username (str): Username of the user.
+        - password (str): Password of the user.
+        - tax_number (str): Tax number of the user.
+        - public_key (str): Public key of the user.
+        - credit_card_number (str): Credit card number of the user.
+        - credit_card_validity (str): Validity of the credit card.
+        - credit_card_type (str): Type of the credit card.
+
+    Example:
+        {
+            "name": "John Doe",
+            "username": "johndoe",
+            "password": "password123",
+            "tax_number": "123456789",
+            "public_key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl+qMjDMeiXf09EDJq4zH\n8j7d0jQHx",
+            "credit_card_number": "1234567890123456",
+            "credit_card_validity": "MM/YY",
+            "credit_card_type": "Visa"
+        }
+
+    Returns:
+    - JSON: A message confirming successful registration along with customer_id.
+    """
+
     try:
         # Get data from request
         data = request.json
@@ -93,6 +123,24 @@ def register_user():
 # Login Route
 @app.route('/login', methods=['POST'])
 def login():
+    """
+    Login route for registered users.
+
+    Request Body Parameters:
+    JSON Object with the following fields:
+        - username (str): Username of the user.
+        - password (str): Password of the user.
+
+    Example:
+        {
+            "username": "johndoe",
+            "password": "password123"
+        }
+
+    Returns:
+    - JSON: A message confirming successful login.
+    """
+
     try:
         # Get data from request
         data = request.json
@@ -122,6 +170,19 @@ def login():
 # Next events Route
 @app.route('/next_events', methods=['GET'])
 def next_events():
+    """
+    Get the next events.
+
+    Request Arguments:
+        - nr_of_events (int): Number of events to retrieve.
+
+    Example:
+        - /next_events?nr_of_events=5
+
+
+    Returns:
+    - JSON: List of next events with details.
+    """
     try:
         args = request.args
 
@@ -151,6 +212,18 @@ def next_events():
 # Get event Route
 @app.route('/event', methods=['GET'])
 def get_event():
+    """
+    Get details of a specific event.
+
+    Request Arguments:
+        - event_id (str): Identifier of the event.
+
+    Example:
+        - /next_events?event_id=abcdefg
+
+    Returns:
+    - JSON: Details of the event.
+    """
     try:
         args = request.args
 
@@ -180,6 +253,27 @@ def get_event():
 # Buy Ticket Route
 @app.route('/buy_ticket', methods=['POST'])
 def buy_ticket():
+    """
+    Purchase tickets for an event.
+
+    Request Parameters:
+    JSON Object with the following fields:
+    - customer_id (str): Identifier of the customer.
+    - event_id (str): Identifier of the event.
+    - nr_of_tickets (int): Number of tickets to purchase.
+    - signature (str): Signature of the request.
+
+    Example:
+        {
+            "customer_id": "customer_id_here",
+            "event_id": "event_id_here",
+            "nr_of_tickets": 2,
+            "signature": "signature_here"
+        }
+
+    Returns:
+    - JSON: A message confirming successful ticket purchase along with details.
+    """
     try:
         # Get data from request
         data = request.json
@@ -338,8 +432,31 @@ def buy_ticket():
         if conn:
             conn.close()
 
+
 @app.route('/validate_tickets', methods=['POST'])
 def validate_tickets():
+    """
+    Validate tickets for entry to an event.
+
+    Request Parameters:
+    JSON Object with the following fields:
+    - customer_id (str): Identifier of the customer.
+    - tickets (list): List of tickets to validate, each ticket containing ticket_id.
+    - signature (str): Signature of the request.
+
+    Example:
+        {
+            "customer_id": "customer_id_here",
+            "tickets": [
+                {"ticket_id": "ticket_id_1"},
+                {"ticket_id": "ticket_id_2"}
+            ],
+            "signature": "signature_here"
+        }
+
+    Returns:
+    - JSON: A message confirming successful ticket validation.
+    """
     try:
         # Get data from request
         data = request.json
@@ -350,7 +467,7 @@ def validate_tickets():
         # Check if all required fields are present
         if not customer_id or not tickets or not signature:
             return jsonify({'error': 'Missing required fields'}), 400
-        
+
         # Get public key of customer
         conn, cursor = get_db()
         cursor.execute('SELECT PUBLIC_KEY FROM customer WHERE CUSTOMER_ID = ?', (customer_id,))
@@ -359,10 +476,10 @@ def validate_tickets():
         # if customer not found
         if not customer:
             return jsonify({'error': 'Customer not found'}), 404
-        
+
         # Create public key from string
         public_key = RSA.importKey(customer['PUBLIC_KEY'])
-        
+
         # Create a json object with data
         data = {
             'customer_id': customer_id,
@@ -400,7 +517,8 @@ def validate_tickets():
     finally:
         if conn:
             conn.close()
-    
+
+
 # Initialize database
 init_db()
 
