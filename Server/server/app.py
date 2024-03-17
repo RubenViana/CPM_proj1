@@ -338,7 +338,69 @@ def buy_ticket():
         if conn:
             conn.close()
 
+@app.route('/validate_tickets', methods=['POST'])
+def validate_tickets():
+    try:
+        # Get data from request
+        data = request.json
+        customer_id = data.get('customer_id')
+        tickets = data.get('tickets')
+        signature = data.get('signature')
 
+        # Check if all required fields are present
+        if not customer_id or not tickets or not signature:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Get public key of customer
+        conn, cursor = get_db()
+        cursor.execute('SELECT PUBLIC_KEY FROM customer WHERE CUSTOMER_ID = ?', (customer_id,))
+        customer = cursor.fetchone()
+
+        # if customer not found
+        if not customer:
+            return jsonify({'error': 'Customer not found'}), 404
+        
+        # Create public key from string
+        public_key = RSA.importKey(customer['PUBLIC_KEY'])
+        
+        # Create a json object with data
+        data = {
+            'customer_id': customer_id,
+            'tickets': tickets,
+        }
+
+        message = json.dumps(data, sort_keys=True)
+        hash_object = SHA256.new(message.encode())
+        verifier = PKCS1_v1_5.new(public_key)
+        if not verifier.verify(hash_object, base64.b64decode(signature)):
+            return jsonify({'error': 'Invalid signature'}), 401
+
+        # Validate tickets
+        for t in tickets:
+            cursor.execute('SELECT * FROM TICKET WHERE TICKET_ID = ?', (t['ticket_id'],))
+            ticket = cursor.fetchone()
+            # Check if ticket exists
+            if not ticket:
+                return jsonify({'error': 'Ticket not found'}), 404
+            # Check if ticket is used
+            if ticket['USED']:
+                return jsonify({'error': 'Ticket already used'}), 409
+            # Check if ticket purchase belongs to customer
+            cursor.execute('SELECT CUSTOMER_ID FROM PURCHASE WHERE PURCHASE_ID = ?', (ticket['PURCHASE_ID']))
+            c_id = cursor.fetchone().get('CUSTOMER_ID')
+            if c_id != customer_id:
+                return jsonify({'error': f'Ticket {t['ticket_id']} doesn\'t belong to the customer'}), 409
+            cursor.execute('UPDATE TICKET SET USED = 1 WHERE TICKET_ID = ?', (t['ticket_id'],))
+
+        conn.commit()
+
+        return jsonify({'message': 'Tickets validated successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': 'Error validating tickets: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+    
 # Initialize database
 init_db()
 
