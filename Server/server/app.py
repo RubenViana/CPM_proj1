@@ -305,10 +305,7 @@ def buy_ticket():
             'nr_of_tickets': nr_of_tickets
         }
 
-        message = json.dumps(data, sort_keys=True)
-        hash_object = SHA256.new(message.encode())
-        verifier = PKCS1_v1_5.new(public_key)
-        if not verifier.verify(hash_object, base64.b64decode(signature)):
+        if not validate_message(data, public_key, signature):
             return jsonify({'error': 'Invalid signature'}), 401
 
         # Get ticket details
@@ -446,7 +443,7 @@ def validate_tickets():
 
     Example:
         {
-            "customer_id": "customer_id_here",
+            "customer_id": "customer_id",
             "tickets": [
                 {"ticket_id": "ticket_id_1"},
                 {"ticket_id": "ticket_id_2"}
@@ -455,7 +452,9 @@ def validate_tickets():
         }
 
     Returns:
-    - JSON: A message confirming successful ticket validation.
+    - JSON: 
+        - A message confirming successful ticket validation.
+        - If validation was successful, tickets with a validation flag and error description if not valid
     """
     try:
         # Get data from request
@@ -486,10 +485,7 @@ def validate_tickets():
             'tickets': tickets,
         }
 
-        message = json.dumps(data, sort_keys=True)
-        hash_object = SHA256.new(message.encode())
-        verifier = PKCS1_v1_5.new(public_key)
-        if not verifier.verify(hash_object, base64.b64decode(signature)):
+        if not validate_message(data, public_key, signature):
             return jsonify({'error': 'Invalid signature'}), 401
 
         # Validate tickets
@@ -498,25 +494,42 @@ def validate_tickets():
             ticket = cursor.fetchone()
             # Check if ticket exists
             if not ticket:
-                return jsonify({'error': 'Ticket not found'}), 404
+                t['valid'] = False
+                t['error'] = 'Ticket not found'
+                continue
             # Check if ticket is used
             if ticket['USED']:
-                return jsonify({'error': 'Ticket already used'}), 409
+                t['valid'] = False
+                t['error'] = 'Ticket already used'
+                continue
             # Check if ticket purchase belongs to customer
             cursor.execute('SELECT CUSTOMER_ID FROM PURCHASE WHERE PURCHASE_ID = ?', (ticket['PURCHASE_ID']))
             c_id = cursor.fetchone().get('CUSTOMER_ID')
             if c_id != customer_id:
-                return jsonify({'error': f'Ticket {t['ticket_id']} doesn\'t belong to the customer'}), 409
+                t['valid'] = False
+                t['error'] = 'Ticket does not belong to customer'
+                continue
+            t['valid'] = True
             cursor.execute('UPDATE TICKET SET USED = 1 WHERE TICKET_ID = ?', (t['ticket_id'],))
 
         conn.commit()
 
-        return jsonify({'message': 'Tickets validated successfully'}), 200
+        return jsonify({
+            'message': 'Tickets validated successfully',
+            'tickets' : tickets
+        }), 200
     except Exception as e:
         return jsonify({'error': 'Error validating tickets: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
+
+
+def validate_message(data, public_key, signature):
+    message = json.dumps(data, sort_keys=True)
+    hash_object = SHA256.new(message.encode())
+    verifier = PKCS1_v1_5.new(public_key)
+    return verifier.verify(hash_object, base64.b64decode(signature))
 
 
 # Initialize database
