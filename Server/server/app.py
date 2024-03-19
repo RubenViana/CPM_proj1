@@ -4,9 +4,9 @@ import random
 from flask import Flask, jsonify, request
 import uuid
 import sqlite3
-from crypto.PublicKey import RSA
-from crypto.Signature import PKCS1_v1_5
-from crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
 import base64
 
 # Initialize Flask app
@@ -358,7 +358,7 @@ def buy_ticket():
                 'place': place
             })
 
-            # Insert ticket into database
+            # Insert ticket into the database
             cursor.execute('INSERT INTO TICKET (TICKET_ID, PURCHASE_ID, EVENT_ID, PURCHASE_DATE, USED, PLACE) '
                            'VALUES (?, ?, ?, ?, ?, ?)',
                            (created_tickets[-1]['ticket_id'], purchase_id, event_id, date, 0, place))
@@ -366,7 +366,7 @@ def buy_ticket():
             ### Insert new vouchers
 
             # Get products info
-            cursor.execute('SELECT PRODUCT_ID FROM CAFETERIA_PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
+            cursor.execute('SELECT PRODUCT_ID FROM PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
             products = cursor.fetchall()
             if not products:
                 return jsonify({'error': 'Products not found'}), 404
@@ -393,7 +393,7 @@ def buy_ticket():
                            (created_vouchers[-1]['voucher_id'], customer_id, product_id, 'Free Product',
                             created_vouchers[-1]['description'], 0))
 
-        # Calculate number of new vouchers to emit
+        # Calculate the number of new vouchers to emit
         threshold = 200
         new_vouchers = int((past_purchases + total_price) / threshold) - int(past_purchases / threshold)
 
@@ -524,6 +524,128 @@ def validate_tickets():
         if conn:
             conn.close()
 
+# Get Products Route
+@app.route('/products', methods=['GET'])
+def products():
+    try:
+        conn, cursor = get_db()
+        cursor.execute('SELECT * FROM PRODUCT')
+        products = cursor.fetchall()
+        if not products:
+            return jsonify({'message': 'No products found'}), 404
+        return jsonify([dict(product) for product in products]), 200
+    except Exception as e:
+        return jsonify({'error': 'Error getting products: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# Get vouchers Route
+@app.route('/vouchers', methods=['GET'])
+def vouchers():
+    try:
+        args = request.args
+        customer_id = args.get('customer_id')
+
+        # if no customer_id parameter is passed
+        if not customer_id:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        conn, cursor = get_db()
+        cursor.execute('SELECT * FROM VOUCHER WHERE CUSTOMER_ID = ?', (customer_id,))
+        vouchers = cursor.fetchall()
+        if not vouchers:
+            return jsonify({'message': 'No vouchers found'}), 404
+        return jsonify([dict(voucher) for voucher in vouchers]), 200
+    except Exception as e:
+        return jsonify({'error': 'Error getting vouchers: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# Get purchases Route
+@app.route('/purchases', methods=['GET'])
+def purchases():
+    try:
+        args = request.args
+        customer_id = args.get('customer_id')
+
+        # if no customer_id parameter is passed
+        if not customer_id:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Get customer purchases
+        conn, cursor = get_db()
+        cursor.execute('SELECT * FROM PURCHASE WHERE CUSTOMER_ID = ?', (customer_id,))
+        purchases = cursor.fetchall()
+
+        if not purchases:
+            return jsonify({'message': 'No purchases found'}), 404
+
+        # Convert purchases to dictionary
+        purchases = [dict(purchase) for purchase in purchases]
+
+        # Get tickets associated with the purchases
+        for p in purchases:
+            cursor.execute('SELECT * FROM TICKET WHERE PURCHASE_ID = ?', (p['PURCHASE_ID'],))
+            tickets = cursor.fetchall()
+            p['tickets'] = [dict(ticket) for ticket in tickets]
+
+        return jsonify(purchases), 200
+    except Exception as e:
+        return jsonify({'error': 'Error getting purchases: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+# Get order Route
+@app.route('/orders', methods=['GET'])
+def orders():
+    try:
+        args = request.args
+        customer_id = args.get('customer_id')
+
+        # if no customer_id parameter is passed
+        if not customer_id:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Get customer orders
+        conn, cursor = get_db()
+        cursor.execute('SELECT * FROM "ORDER" WHERE CUSTOMER_ID = ?', (customer_id,))
+        orders = cursor.fetchall()
+
+        if not orders:
+            return jsonify({'message': 'No orders found'}), 404
+
+        # Convert orders to dictionary
+        orders = [dict(order) for order in orders]
+
+        # Get products associated with the orders
+        for o in orders:
+            cursor.execute('SELECT PRODUCT_ID, QUANTITY FROM ORDER_PRODUCT WHERE ORDER_ID = ?', (o['ORDER_ID'],))
+            products = cursor.fetchall()
+
+            if not products:
+                raise Exception(f'Products for order {o['ORDER_ID']} not found')
+
+            o['products'] = [dict(product) for product in products]
+
+            # Get product details for each product in the order and append the details to the corresponding entry
+            for p in o['products']:
+                cursor.execute('SELECT NAME, DESCRIPTION, PRICE FROM PRODUCT WHERE PRODUCT_ID = ?', (p['PRODUCT_ID'],))
+                product = cursor.fetchone()
+                if not product:
+                    raise Exception(f'Product {p['PRODUCT_ID']} not found')
+                p['name'] = product['NAME']
+                p['description'] = product['DESCRIPTION']
+                p['price'] = product['PRICE']
+
+        return jsonify(orders), 200
+    except Exception as e:
+        return jsonify({'error': 'Error getting orders: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 def validate_message(data, public_key, signature):
     message = json.dumps(data, sort_keys=True)
