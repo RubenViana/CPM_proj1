@@ -623,6 +623,51 @@ def purchases():
         if conn:
             conn.close()
 
+# Get Purchase Receipt Route
+@app.route('/purchase_receipt', methods=['GET'])
+def purchase_receipt():
+    """
+    Get the receipt of a purchase.
+
+    Request Parameters:
+        - purchase_id (str): Identifier of the purchase.
+
+    Example:
+        - /purchase_receipt?purchase_id=abcdefg
+
+    :return: JSON with the receipt of the purchase.
+    """
+    try:
+        args = request.args
+        purchase_id = args.get('purchase_id')
+
+        # if no purchase_id parameter is passed
+        if not purchase_id:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Get purchase receipt
+        conn, cursor = get_db()
+        cursor.execute('SELECT * FROM PURCHASE WHERE PURCHASE_ID = ?', (purchase_id,))
+        purchase = cursor.fetchone()
+
+        if not purchase:
+            return jsonify({'message': 'Purchase not found'}), 404
+
+        # Convert purchase to dictionary
+        purchase = dict(purchase)
+
+        # Get tickets associated with the purchase
+        cursor.execute('SELECT * FROM TICKET WHERE PURCHASE_ID = ?', (purchase_id,))
+        tickets = cursor.fetchall()
+        purchase['tickets'] = [dict(ticket) for ticket in tickets]
+
+        return jsonify(purchase), 200
+    except Exception as e:
+        return jsonify({'error': 'Error getting purchase receipt: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
 # Get order Route
 @app.route('/orders', methods=['GET'])
 def orders():
@@ -684,6 +729,73 @@ def orders():
         if conn:
             conn.close()
 
+# Get Order Receipt Route
+@app.route('/order_receipt', methods=['GET'])
+def order_receipt():
+    """
+    Get the receipt of an order.
+
+    Request Parameters:
+        - order_id (str): Identifier of the order.
+
+    Example:
+        - /order_receipt?order_id=abcdefg
+
+    :return: JSON with the receipt of the order.
+    """
+    try:
+        args = request.args
+        order_id = args.get('order_id')
+
+        # if no order_id parameter is passed
+        if not order_id:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Get order receipt
+        conn, cursor = get_db()
+        cursor.execute('SELECT * FROM "ORDER" WHERE ORDER_ID = ?', (order_id,))
+        order = cursor.fetchone()
+
+        if not order:
+            return jsonify({'message': 'Order not found'}), 404
+
+        # Convert order to dictionary
+        order = dict(order)
+
+        # Get products associated with the order
+        cursor.execute('SELECT PRODUCT_ID, QUANTITY FROM ORDER_PRODUCT WHERE ORDER_ID = ?', (order_id,))
+        products = cursor.fetchall()
+
+        if not products:
+            raise Exception(f'Products for order {order_id} not found')
+
+        order['products'] = [dict(product) for product in products]
+
+        # Get product details for each product in the order and append the details to the corresponding entry
+        for p in order['products']:
+            cursor.execute('SELECT NAME, DESCRIPTION, PRICE FROM PRODUCT WHERE PRODUCT_ID = ?', (p['PRODUCT_ID'],))
+            product = cursor.fetchone()
+            if not product:
+                p['found'] = False
+                continue
+            p['found'] = True
+            p['name'] = product['NAME']
+            p['description'] = product['DESCRIPTION']
+            p['price'] = product['PRICE']
+
+        # Get vouchers associated with the order
+        cursor.execute('SELECT VOUCHER_ID, PRODUCT_ID, TYPE, DESCRIPTION, REDEEMED FROM VOUCHER WHERE ORDER_ID = ?', (order_id,))
+        vouchers = cursor.fetchall()
+
+        order['vouchers'] = [dict(voucher) for voucher in vouchers]
+
+        return jsonify(order), 200
+    except Exception as e:
+        return jsonify({'error': 'Error getting order receipt: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
 # Validate Order Route
 @app.route('/validate_order', methods=['POST'])
 def validate_order():
@@ -715,7 +827,8 @@ def validate_order():
     Returns:
     - JSON:
         - A message confirming successful order validation.
-        - If validation was successful, products with a validation flag and error description if not valid
+        - If validation was successful, the total price of the order, the order_id, products and vouchers with a validation flag and error description if not valid
+
     """
     try:
         # Get data from request
@@ -795,7 +908,6 @@ def validate_order():
                 v['error'] = f'Voucher {v['voucher_id']} is not for product {v['product_id']}'
             v['accepted'] = True
             v['applied_to_order'] = False
-            cursor.execute('UPDATE VOUCHER SET REDEEMED = 1 WHERE VOUCHER_ID = ?', (v['voucher_id'],))
 
         conn.commit()
 
@@ -844,12 +956,28 @@ def validate_order():
                            (str(uuid.uuid4()), customer_id, None, 'Discount',
                             'Discount of 5% for the next purchase', 0))
 
+        # Insert new order into the database
+        cursor.execute('INSERT INTO "ORDER" (CUSTOMER_ID, DATE, TOTAL_PRICE) VALUES (?, datetime(), ?)',
+                       (customer_id, total_price))
+        order_id = cursor.lastrowid
+
+        # Insert products into the order
+        for p in prods:
+            cursor.execute('INSERT INTO ORDER_PRODUCT (ORDER_ID, PRODUCT_ID, QUANTITY) VALUES (?, ?, ?)',
+                           (order_id, p['product_id'], p['quantity']))
+
+        # Update vouchers to associate them with the order
+        for v in vouchers:
+            if v['applied_to_order']:
+                cursor.execute('UPDATE VOUCHER SET ORDER_ID = ? WHERE VOUCHER_ID = ?', (order_id, v['voucher_id'],))
+
         conn.commit()
 
         return jsonify({
             # Message with the number and type of voucher applied or not
             'message': 'Order validation completed',
             'total_price': total_price,
+            'order_id': order_id,
             'products': products,
             'vouchers': vouchers
         }), 200
@@ -859,10 +987,74 @@ def validate_order():
     finally:
         if conn:
             conn.close()
+# Pay Order Route
+@app.route('/pay_order', methods=['POST'])
+def pay_order():
+    """
+    Pay an order.
 
-# New order Route
-@app.route('/new_order', methods=['POST'])
+    Request Parameters:
+    JSON Object with the following fields:
+    - customer_id (str): Identifier of the customer.
+    - order_id (str): Identifier of the order.
+    - signature (str): Signature of the request.
 
+    Example:
+        {
+            "customer_id": "customer_id",
+            "order_id": "order_id",
+            "signature": "signature_here"
+        }
+
+    Returns:
+    - JSON: A message confirming successful order payment.
+    """
+    try:
+        # Get data from request
+        data = request.json
+        customer_id = data.get('customer_id')
+        order_id = data.get('order_id')
+        signature = data.get('signature')
+
+        # Check if all required fields are present
+        if not customer_id or not order_id or not signature:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Get public key of customer
+        conn, cursor = get_db()
+        cursor.execute('SELECT PUBLIC_KEY FROM customer WHERE CUSTOMER_ID = ?', (customer_id,))
+        customer = cursor.fetchone()
+
+        # if customer not found
+        if not customer:
+            return jsonify({'error': f'Customer {customer_id} not found'}), 404
+
+        # Create public key from string
+        public_key = RSA.importKey(customer['PUBLIC_KEY'])
+
+        # Create a json object with data
+        data = {
+            'customer_id': customer_id,
+            'order_id': order_id
+        }
+
+        if not validate_message(data, public_key, signature):
+            return jsonify({'error': 'Invalid signature'}), 401
+
+        # Pay order
+        cursor.execute('UPDATE "ORDER" SET PAID = 1 WHERE ORDER_ID = ?', (order_id,))
+
+        # Set vouchers as redeemed
+        cursor.execute('UPDATE VOUCHER SET REDEEMED = 1 WHERE ORDER_ID = ?', (order_id,))
+
+        conn.commit()
+
+        return jsonify({'message': 'Order paid successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': 'Error paying order: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 def validate_message(data, public_key, signature):
     message = json.dumps(data, sort_keys=True)
