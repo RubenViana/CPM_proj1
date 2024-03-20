@@ -1,175 +1,140 @@
 /*==============================================================*/
-/* DBMS name:      SQLite                                        */
-/* Created on:     17/03/2024 12:32:15                          */
+/* DBMS name:      SQLite                                       */
+/* Created on:     18/03/2024 23:37:44                          */
 /*==============================================================*/
 
-PRAGMA foreign_keys = ON;
-
--- DROP INDEX IF EXISTS CAFETERIAPRODUCT_CAFETERIAORDER_FK;
--- DROP INDEX IF EXISTS CUSTOMER_CAFETERIAORDER_FK;
--- DROP TABLE IF EXISTS CAFETERIA_ORDER;
--- DROP TABLE IF EXISTS CAFETERIA_PRODUCT;
--- DROP INDEX IF EXISTS CUSTOMER_CREDITCARD_FK;
--- DROP TABLE IF EXISTS CREDIT_CARD;
--- DROP TABLE IF EXISTS CUSTOMER;
--- DROP TABLE IF EXISTS EVENT;
--- DROP INDEX IF EXISTS CUSTOMER_PURCHASE_FK;
--- DROP TABLE IF EXISTS PURCHASE;
--- DROP INDEX IF EXISTS EVENT_TICKET_FK;
--- DROP INDEX IF EXISTS PURCHASE_TICKET_FK;
--- DROP TABLE IF EXISTS TICKET;
--- DROP INDEX IF EXISTS CAFETERIAORDER_VOUCHER_FK;
--- DROP INDEX IF EXISTS CUSTOMER_VOUCHER_FK;
--- DROP TABLE IF EXISTS VOUCHER;
+-- Dropping tables
+drop table if exists CREDIT_CARD;
+drop table if exists CUSTOMER;
+drop table if exists EVENT;
+drop table if exists "ORDER";
+drop table if exists PRODUCT;
+drop table if exists ORDER_PRODUCT;
+drop table if exists PURCHASE;
+drop table if exists TICKET;
+drop table if exists VOUCHER;
 
 /*==============================================================*/
-/* Table: CAFETERIA_ORDER                                       */
+/* Table: CUSTOMER                                              */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS CAFETERIA_ORDER
+create table CUSTOMER
 (
-    CUSTOMER_ID TEXT    NOT NULL,
-    PRODUCT_ID  INTEGER NOT NULL,
-    ORDER_ID    INTEGER NOT NULL,
-    DATE        TEXT,
-    PAID        INTEGER,
-    PICKED_UP   INTEGER,
-    TOTAL_PRICE REAL,
-    PRIMARY KEY (CUSTOMER_ID, PRODUCT_ID, ORDER_ID),
-    FOREIGN KEY (PRODUCT_ID) REFERENCES CAFETERIA_PRODUCT (PRODUCT_ID) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMER (CUSTOMER_ID) ON DELETE RESTRICT ON UPDATE RESTRICT
-);
-
-/*==============================================================*/
-/* Index: CUSTOMER_CAFETERIAORDER_FK                            */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS CUSTOMER_CAFETERIAORDER_FK ON CAFETERIA_ORDER (CUSTOMER_ID);
-
-/*==============================================================*/
-/* Index: CAFETERIAPRODUCT_CAFETERIAORDER_FK                    */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS CAFETERIAPRODUCT_CAFETERIAORDER_FK ON CAFETERIA_ORDER (PRODUCT_ID);
-
-/*==============================================================*/
-/* Table: CAFETERIA_PRODUCT                                     */
-/*==============================================================*/
-CREATE TABLE IF NOT EXISTS CAFETERIA_PRODUCT
-(
-    PRODUCT_ID  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    AVAILABLE   INTEGER,
-    NAME        TEXT,
-    DESCRIPTION TEXT,
-    PRICE       REAL
+    CUSTOMER_ID                    varchar(128)                   not null,
+    USERNAME                       varchar(512),
+    PASSWORD                       text,
+    TAX_NUMBER                     bigint,
+    PUBLIC_KEY                     text,
+    NAME                           varchar(1024),
+    primary key (CUSTOMER_ID)
 );
 
 /*==============================================================*/
 /* Table: CREDIT_CARD                                           */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS CREDIT_CARD
+create table CREDIT_CARD
 (
-    CREDIT_CARD_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    CUSTOMER_ID    TEXT    NOT NULL,
-    TYPE           TEXT,
-    NUMBER         TEXT,
-    VALIDITY       TEXT,
-    FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMER (CUSTOMER_ID) ON DELETE RESTRICT ON UPDATE RESTRICT
-);
-
-/*==============================================================*/
-/* Index: CUSTOMER_CREDITCARD_FK                                */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS CUSTOMER_CREDITCARD_FK ON CREDIT_CARD (CUSTOMER_ID);
-
-/*==============================================================*/
-/* Table: CUSTOMER                                              */
-/*==============================================================*/
-CREATE TABLE IF NOT EXISTS CUSTOMER
-(
-    CUSTOMER_ID TEXT NOT NULL PRIMARY KEY,
-    USERNAME    TEXT,
-    PASSWORD    TEXT,
-    TAX_NUMBER  INTEGER,
-    PUBLIC_KEY  TEXT,
-    NAME        TEXT
+    CREDIT_CARD_ID                 integer                        primary key autoincrement,
+    CUSTOMER_ID                    varchar(128)                   not null,
+    TYPE                           varchar(1024),
+    NUMBER                         varchar(1024),
+    VALIDITY                       date,
+    foreign key (CUSTOMER_ID) references CUSTOMER (CUSTOMER_ID) on delete cascade on update cascade
 );
 
 /*==============================================================*/
 /* Table: EVENT                                                 */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS EVENT
+create table EVENT
 (
-    EVENT_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    NAME     TEXT,
-    DATE     TEXT,
-    PICTURE  BLOB,
-    PRICE    REAL
+    EVENT_ID                       integer                        primary key autoincrement,
+    NAME                           varchar(1024),
+    DATE                           datetime,
+    PICTURE                        blob, -- Changed to BLOB data type for image storage
+    PRICE                          real
+);
+
+/*==============================================================*/
+/* Table: "ORDER"                                               */
+/*==============================================================*/
+create table "ORDER"
+(
+    ORDER_ID                       integer                        primary key autoincrement,
+    CUSTOMER_ID                    varchar(128)                   not null,
+    DATE                           datetime,
+    PAID                           bool,
+    PICKED_UP                      bool,
+    TOTAL_PRICE                    real,
+    foreign key (CUSTOMER_ID) references CUSTOMER (CUSTOMER_ID) on delete cascade on update cascade
+);
+
+/*==============================================================*/
+/* Table: PRODUCT                                               */
+/*==============================================================*/
+create table PRODUCT
+(
+    PRODUCT_ID                     integer                        primary key autoincrement,
+    AVAILABLE                      bool,
+    NAME                           varchar(1024),
+    DESCRIPTION                    varchar(1024),
+    PRICE                          real
+);
+
+/*==============================================================*/
+/* Table: ORDER_PRODUCT                                         */
+/*==============================================================*/
+create table ORDER_PRODUCT
+(
+    PRODUCT_ID                     integer                        not null,
+    ORDER_ID                       integer                        not null,
+    QUANTITY                       integer                        not null,
+    primary key (PRODUCT_ID, ORDER_ID),
+    foreign key (PRODUCT_ID) references PRODUCT (PRODUCT_ID) on delete cascade on update cascade,
+    foreign key (ORDER_ID) references "ORDER" (ORDER_ID) on delete cascade on update cascade
 );
 
 /*==============================================================*/
 /* Table: PURCHASE                                              */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS PURCHASE
+create table PURCHASE
 (
-    PURCHASE_ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    CUSTOMER_ID TEXT NOT NULL,
-    DATE        TEXT,
-    TOTAL_PRICE REAL,
-    FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMER (CUSTOMER_ID) ON DELETE RESTRICT ON UPDATE RESTRICT
+    PURCHASE_ID                    integer                        primary key autoincrement,
+    CUSTOMER_ID                    varchar(128)                   not null,
+    DATE                           datetime,
+    TOTAL_PRICE                    real,
+    foreign key (CUSTOMER_ID) references CUSTOMER (CUSTOMER_ID) on delete cascade on update cascade
 );
-
-/*==============================================================*/
-/* Index: CUSTOMER_PURCHASE_FK                                  */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS CUSTOMER_PURCHASE_FK ON PURCHASE (CUSTOMER_ID);
 
 /*==============================================================*/
 /* Table: TICKET                                                */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS TICKET
+create table TICKET
 (
-    TICKET_ID     TEXT NOT NULL PRIMARY KEY,
-    PURCHASE_ID   TEXT NOT NULL,
-    EVENT_ID      TEXT NOT NULL,
-    PURCHASE_DATE TEXT,
-    USED          INTEGER,
-    QRCODE        TEXT,
-    PLACE         TEXT,
-    FOREIGN KEY (EVENT_ID) REFERENCES EVENT (EVENT_ID) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    FOREIGN KEY (PURCHASE_ID) REFERENCES PURCHASE (PURCHASE_ID) ON DELETE RESTRICT ON UPDATE RESTRICT
+    TICKET_ID                      varchar(128)                   not null,
+    PURCHASE_ID                    integer                        not null,
+    EVENT_ID                       integer                        not null,
+    PURCHASE_DATE                  datetime,
+    USED                           bool,
+    QRCODE                         text,
+    PLACE                          varchar(1024),
+    primary key (TICKET_ID),
+    foreign key (PURCHASE_ID) references PURCHASE (PURCHASE_ID) on delete cascade on update cascade,
+    foreign key (EVENT_ID) references EVENT (EVENT_ID) on delete cascade on update cascade
 );
-
-/*==============================================================*/
-/* Index: PURCHASE_TICKET_FK                                    */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS PURCHASE_TICKET_FK ON TICKET (PURCHASE_ID);
-
-/*==============================================================*/
-/* Index: EVENT_TICKET_FK                                       */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS EVENT_TICKET_FK ON TICKET (EVENT_ID);
 
 /*==============================================================*/
 /* Table: VOUCHER                                               */
 /*==============================================================*/
-CREATE TABLE IF NOT EXISTS VOUCHER
+create table VOUCHER
 (
-    VOUCHER_ID      TEXT NOT NULL PRIMARY KEY,
-    CUSTOMER_ID     TEXT NOT NULL,
-    CAF_CUSTOMER_ID TEXT,
-    PRODUCT_ID      INTEGER,
-    ORDER_ID        INTEGER,
-    TYPE            TEXT,
-    DESCRIPTION     TEXT,
-    REDEEMED        INTEGER,
-    FOREIGN KEY (CAF_CUSTOMER_ID, PRODUCT_ID, ORDER_ID) REFERENCES CAFETERIA_ORDER (CUSTOMER_ID, PRODUCT_ID, ORDER_ID) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMER (CUSTOMER_ID) ON DELETE RESTRICT ON UPDATE RESTRICT
+    VOUCHER_ID                     varchar(128)                   not null,
+    CUSTOMER_ID                    varchar(128)                   not null,
+    PRODUCT_ID                     integer,
+    ORDER_ID                       integer,
+    TYPE                           varchar(1024),
+    DESCRIPTION                    varchar(1024),
+    REDEEMED                       bool,
+    primary key (VOUCHER_ID),
+    foreign key (CUSTOMER_ID) references CUSTOMER (CUSTOMER_ID) on delete cascade on update cascade,
+    foreign key (ORDER_ID) references "ORDER" (ORDER_ID) on delete cascade on update cascade,
+    foreign key (PRODUCT_ID) references PRODUCT (PRODUCT_ID) on delete cascade on update cascade
 );
-
-/*==============================================================*/
-/* Index: CUSTOMER_VOUCHER_FK                                   */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS CUSTOMER_VOUCHER_FK ON VOUCHER (CUSTOMER_ID);
-
-/*==============================================================*/
-/* Index: CAFETERIAORDER_VOUCHER_FK                             */
-/*==============================================================*/
-CREATE INDEX IF NOT EXISTS CAFETERIAORDER_VOUCHER_FK ON VOUCHER (CAF_CUSTOMER_ID, PRODUCT_ID, ORDER_ID);
