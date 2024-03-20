@@ -635,7 +635,8 @@ def orders():
                 cursor.execute('SELECT NAME, DESCRIPTION, PRICE FROM PRODUCT WHERE PRODUCT_ID = ?', (p['PRODUCT_ID'],))
                 product = cursor.fetchone()
                 if not product:
-                    raise Exception(f'Product {p['PRODUCT_ID']} not found')
+                    p['found'] = False
+                p['found'] = True
                 p['name'] = product['NAME']
                 p['description'] = product['DESCRIPTION']
                 p['price'] = product['PRICE']
