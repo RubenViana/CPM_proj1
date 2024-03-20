@@ -824,6 +824,28 @@ def validate_order():
         if discount_vouchers>0:
             total_price *= 0.95
 
+        # Calculate total price of past purchases for the customer
+        cursor.execute('SELECT SUM(TOTAL_PRICE) FROM PURCHASE WHERE CUSTOMER_ID = ?', (customer_id,))
+        past_purchases = cursor.fetchone()
+        if not past_purchases:
+            past_purchases = 0
+        else:
+            past_purchases = past_purchases['SUM(TOTAL_PRICE)']
+
+            # Calculate the number of new vouchers to emit
+        threshold = 200
+        new_vouchers = int((past_purchases + total_price) / threshold) - int(past_purchases / threshold)
+
+        # Emit new voucher for every new multiple of 200 surpassed by the customer
+        for i in range(new_vouchers):
+            # Insert voucher into database
+            cursor.execute('INSERT INTO VOUCHER (VOUCHER_ID, CUSTOMER_ID, PRODUCT_ID, TYPE, DESCRIPTION, REDEEMED) '
+                           'VALUES (?, ?, ?, ?, ?, ?)',
+                           (str(uuid.uuid4()), customer_id, None, 'Discount',
+                            'Discount of 5% for the next purchase', 0))
+
+        conn.commit()
+
         return jsonify({
             # Message with the number and type of voucher applied or not
             'message': 'Order validation completed',
