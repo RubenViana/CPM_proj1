@@ -769,31 +769,65 @@ def validate_order():
 
         # Validate vouchers
         for v in vouchers:
-            if discount_vouchers > 1:
-                return jsonify({'error': 'Only two discount vouchers can be used per order'}), 400
             cursor.execute('SELECT * FROM VOUCHER WHERE VOUCHER_ID = ?', (v['voucher_id'],))
             voucher = cursor.fetchone()
             # Check if voucher exists
             if not voucher:
-                return jsonify({'error': f'Voucher {v['voucher_id']} not found'}), 404
+                v['accepted'] = False
+                v['error'] = f'Voucher {v['voucher_id']} not found'
             # Check the voucher type
             if voucher['TYPE'] == 'Discount':
                 discount_vouchers += 1
+            if discount_vouchers > 1:
+                v['accepted'] = False
+                v['error'] = 'Only one discount voucher can be used per order'
             # Check if voucher belongs to customer
             if voucher['CUSTOMER_ID'] != customer_id:
-                return jsonify({'error': f'Voucher {v['voucher_id']} does not belong to customer'}), 400
+                v['accepted'] = False
+                v['error'] = f'Voucher {v['voucher_id']} does not belong to customer'
             # Check if voucher is redeemed
             if voucher['REDEEMED']:
-                return jsonify({'error': f'Voucher {v['voucher_id']} already redeemed'}), 400
+                v['accepted'] = False
+                v['error'] = f'Voucher {v['voucher_id']} already redeemed'
             # Check if the voucher is for the right product
-            if voucher['PRODUCT_ID'] != v['product_id']:
-                return jsonify({'error': f'Voucher {v['voucher_id']} is not for the right product'}), 400
+            if voucher['PRODUCT_ID'] != v['product_id'] and voucher['TYPE'] == 'Free Product':
+                v['accepted'] = False
+                v['error'] = f'Voucher {v['voucher_id']} is not for product {v['product_id']}'
+            v['accepted'] = True
+            v['applied_to_order'] = False
             cursor.execute('UPDATE VOUCHER SET REDEEMED = 1 WHERE VOUCHER_ID = ?', (v['voucher_id'],))
 
         conn.commit()
 
+        # Calculate the total price of the order
+        total_price = 0
+        # Duplicate the products list
+        prods = products.copy()
+        # Decrease the quantity of the products to a minimum of 0 by the number of products that have a accepted 'Free Product' voucher
+        for v in vouchers:
+            if v['accepted'] and v['applied_to_order'] and v['type'] == 'Free Product':
+                for p in prods:
+                    if p['product_id'] == v['product_id']:
+                        p['quantity'] -= 1
+                        v['applied_to_order'] = True
+                        if p['quantity'] < 0:
+                            p['quantity'] = 0
+                            break
+
+        # Calculate the total price of the order
+        for p in prods:
+            cursor.execute('SELECT PRICE FROM PRODUCT WHERE PRODUCT_ID = ?', (p['product_id'],))
+            price = cursor.fetchone()['PRICE']
+            total_price += price * p['quantity']
+
+        # Apply discount if there are discount vouchers
+        if discount_vouchers>0:
+            total_price *= 0.95
+
         return jsonify({
-            'message': 'Order validated successfully',
+            # Message with the number and type of voucher applied or not
+            'message': 'Order validation completed',
+            'total_price': total_price,
             'products': products,
             'vouchers': vouchers
         }), 200
@@ -803,6 +837,9 @@ def validate_order():
     finally:
         if conn:
             conn.close()
+
+# New order Route
+@app.route('/new_order', methods=['POST'])
 
 
 def validate_message(data, public_key, signature):
