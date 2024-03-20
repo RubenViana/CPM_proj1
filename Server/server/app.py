@@ -96,7 +96,7 @@ def register_user():
         customer = cursor.fetchone()
         if customer:
             # Return customer exists message
-            return jsonify({'message': 'Customer already exists'}), 409
+            return jsonify({'message': f'Customer {username} already exists'}), 409
 
         customer_id = str(uuid.uuid4())
         # Insert new customer
@@ -240,7 +240,7 @@ def get_event():
 
         # If no event is found
         if not event:
-            return jsonify({'message': 'Event not found'}), 404
+            return jsonify({'message': f'Event {event_id} not found'}), 404
 
         return jsonify(dict(event)), 200
     except Exception as e:
@@ -293,7 +293,7 @@ def buy_ticket():
 
         # if customer not found
         if not customer:
-            return jsonify({'error': 'Customer not found'}), 404
+            return jsonify({'error': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
         public_key = RSA.importKey(customer['PUBLIC_KEY'])
@@ -312,7 +312,7 @@ def buy_ticket():
         cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (event_id,))
         event = cursor.fetchone()
         if not event:
-            return jsonify({'error': 'Event not found'}), 404
+            return jsonify({'error': f'Event {event_id} not found'}), 404
 
         # Calculate total price
         total_price = event['PRICE'] * nr_of_tickets
@@ -474,7 +474,7 @@ def validate_tickets():
 
         # if customer not found
         if not customer:
-            return jsonify({'error': 'Customer not found'}), 404
+            return jsonify({'error': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
         public_key = RSA.importKey(customer['PUBLIC_KEY'])
@@ -494,21 +494,15 @@ def validate_tickets():
             ticket = cursor.fetchone()
             # Check if ticket exists
             if not ticket:
-                t['valid'] = False
-                t['error'] = 'Ticket not found'
-                continue
+                return jsonify({'error': f'Ticket {t['ticket_id']} not found'}), 404
             # Check if ticket is used
             if ticket['USED']:
-                t['valid'] = False
-                t['error'] = 'Ticket already used'
-                continue
+                return jsonify({'error': f'Ticket {t['ticket_id']} already used'}), 400
             # Check if ticket purchase belongs to customer
             cursor.execute('SELECT CUSTOMER_ID FROM PURCHASE WHERE PURCHASE_ID = ?', (ticket['PURCHASE_ID']))
             c_id = cursor.fetchone().get('CUSTOMER_ID')
             if c_id != customer_id:
-                t['valid'] = False
-                t['error'] = 'Ticket does not belong to customer'
-                continue
+                return jsonify({'error': f'Ticket {t['ticket_id']} does not belong to customer'}), 400
             t['valid'] = True
             cursor.execute('UPDATE TICKET SET USED = 1 WHERE TICKET_ID = ?', (t['ticket_id'],))
 
@@ -527,6 +521,17 @@ def validate_tickets():
 # Get Products Route
 @app.route('/products', methods=['GET'])
 def products():
+    """
+    Get all products.
+
+    Request parameters:
+        None
+
+    Example:
+        - /products
+
+    :return: JSON with all products.
+    """
     try:
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM PRODUCT')
@@ -543,6 +548,16 @@ def products():
 # Get vouchers Route
 @app.route('/vouchers', methods=['GET'])
 def vouchers():
+    """
+    Get vouchers for a customer.
+    Request Parameters:
+        - customer_id (str): Identifier of the customer.
+
+    Example:
+        - /vouchers?customer_id=abcdefg
+
+    :return: JSON with all vouchers for the customer.
+    """
     try:
         args = request.args
         customer_id = args.get('customer_id')
@@ -566,6 +581,16 @@ def vouchers():
 # Get purchases Route
 @app.route('/purchases', methods=['GET'])
 def purchases():
+    """
+    Get purchases for a customer.
+    Request Parameters:
+        - customer_id (str): Identifier of the customer.
+
+    Example:
+        - /purchases?customer_id=abcdefg
+
+    :return: JSON with all purchases for the customer.
+    """
     try:
         args = request.args
         customer_id = args.get('customer_id')
@@ -601,6 +626,16 @@ def purchases():
 # Get order Route
 @app.route('/orders', methods=['GET'])
 def orders():
+    """
+    Get orders for a customer.
+
+    Request Parameters:
+        - customer_id (str): Identifier of the customer.
+
+    Example:
+        - /orders?customer_id=abcdefg
+    :return: JSON with all orders for the customer.
+    """
     try:
         args = request.args
         customer_id = args.get('customer_id')
@@ -636,6 +671,7 @@ def orders():
                 product = cursor.fetchone()
                 if not product:
                     p['found'] = False
+                    continue
                 p['found'] = True
                 p['name'] = product['NAME']
                 p['description'] = product['DESCRIPTION']
@@ -648,9 +684,131 @@ def orders():
         if conn:
             conn.close()
 
+# Validate Order Route
+@app.route('/validate_order', methods=['POST'])
+def validate_order():
+    """
+    Validate an order.
+
+    Request Parameters:
+    JSON Object with the following fields:
+    - customer_id (str): Identifier of the customer.
+    - products (list): List of products to validate each product containing product_id and quantity.
+    - vouchers (list): List of vouchers to validate,
+    each voucher containing voucher_id and product_id associated with the voucher.
+    - signature (str): Signature of the request.
+
+    Example:
+        {
+            "customer_id": "customer_id",
+            "products": [
+                {"product_id": "product_id_1", "quantity": 2},
+                {"product_id": "product_id_2", "quantity": 1}
+            ],
+            "vouchers": [
+                {"voucher_id": "voucher_id_1", "product_id": "product_id_1"},
+                {"voucher_id": "voucher_id_2", "product_id": "product_id_2"}
+            ],
+            "signature": "signature_here"
+        }
+    
+    Returns:
+    - JSON:
+        - A message confirming successful order validation.
+        - If validation was successful, products with a validation flag and error description if not valid
+    """
+    try:
+        # Get data from request
+        data = request.json
+        customer_id = data.get('customer_id')
+        products = data.get('products')
+        vouchers = data.get('vouchers')
+        signature = data.get('signature')
+
+        # Check if all required fields are present
+        if not customer_id or not products or not vouchers or not signature:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Check if there are more than 2 vouchers
+        if len(vouchers) > 2:
+            return jsonify({'error': 'Only two vouchers can be used per order'}), 400
+        
+
+        # Get public key of customer
+        conn, cursor = get_db()
+        cursor.execute('SELECT PUBLIC_KEY FROM customer WHERE CUSTOMER_ID = ?', (customer_id,))
+        customer = cursor.fetchone()
+
+        # If customer not found
+        if not customer:
+            return jsonify({'error': f'Customer {customer_id} not found'}), 404
+
+        # Create public key from string
+        public_key = RSA.importKey(customer['PUBLIC_KEY'])
+
+        # Create a json object with data
+        data = {
+            'customer_id': customer_id,
+            'products': products,
+            'vouchers': vouchers
+        }
+
+        if not validate_message(data, public_key, signature):
+            return jsonify({'error': 'Invalid signature'}), 401
+
+        # Validate products
+        for p in products:
+            cursor.execute('SELECT * FROM PRODUCT WHERE PRODUCT_ID = ?', (p['product_id'],))
+            product = cursor.fetchone()
+            # Check if the product exists
+            if not product:
+                return jsonify({'error': f'Product {p['product_id']} not found'}), 404
+
+
+        discount_vouchers = 0
+
+        # Validate vouchers
+        for v in vouchers:
+            if discount_vouchers > 1:
+                return jsonify({'error': 'Only two discount vouchers can be used per order'}), 400
+            cursor.execute('SELECT * FROM VOUCHER WHERE VOUCHER_ID = ?', (v['voucher_id'],))
+            voucher = cursor.fetchone()
+            # Check if voucher exists
+            if not voucher:
+                return jsonify({'error': f'Voucher {v['voucher_id']} not found'}), 404
+            # Check the voucher type
+            if voucher['TYPE'] == 'Discount':
+                discount_vouchers += 1
+            # Check if voucher belongs to customer
+            if voucher['CUSTOMER_ID'] != customer_id:
+                return jsonify({'error': f'Voucher {v['voucher_id']} does not belong to customer'}), 400
+            # Check if voucher is redeemed
+            if voucher['REDEEMED']:
+                return jsonify({'error': f'Voucher {v['voucher_id']} already redeemed'}), 400
+            # Check if the voucher is for the right product
+            if voucher['PRODUCT_ID'] != v['product_id']:
+                return jsonify({'error': f'Voucher {v['voucher_id']} is not for the right product'}), 400
+            cursor.execute('UPDATE VOUCHER SET REDEEMED = 1 WHERE VOUCHER_ID = ?', (v['voucher_id'],))
+
+        conn.commit()
+
+        return jsonify({
+            'message': 'Order validated successfully',
+            'products': products,
+            'vouchers': vouchers
+        }), 200
+    
+    except Exception as e:
+        return jsonify({'error': 'Error validating order: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 def validate_message(data, public_key, signature):
     message = json.dumps(data, sort_keys=True)
     hash_object = SHA256.new(message.encode())
+        # select vouchers where voucher id in list of voucher ids
     verifier = PKCS1_v1_5.new(public_key)
     return verifier.verify(hash_object, base64.b64decode(signature))
 
