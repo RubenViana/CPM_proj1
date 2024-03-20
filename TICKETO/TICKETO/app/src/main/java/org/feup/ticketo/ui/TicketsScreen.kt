@@ -1,6 +1,7 @@
 package org.feup.ticketo.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -15,14 +16,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun TicketsScreen() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Icon(
-            imageVector = Icons.Filled.Build,
-            contentDescription = "home",
-            tint = Color.Blue,
-            modifier = Modifier
-                .size(150.dp)
-                .align(Alignment.Center)
-        )
+    Column(
+        Modifier.fillMaxSize()
+    ) {
+
     }
 }

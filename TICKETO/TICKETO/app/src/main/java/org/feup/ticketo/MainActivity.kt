@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.BottomAppBar
@@ -28,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -58,28 +60,29 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TicketoApp() {
     TICKETOTheme {
-        Surface (
-            modifier = Modifier.fillMaxSize()
-        )
-        {
-            val navController = rememberNavController()
-            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
-            Scaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                topBar = {
-                    TopNavBar(navController, scrollBehavior)
-                },
-                bottomBar = {
-                    BottomNavBar(navController)
-                }
-            ) {
-                Column(Modifier.padding(it)) {
-                    TicketoNavHost(
-                        navController = navController
-                    )
-                }
+        val navController = rememberNavController()
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+        Scaffold(
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+            topBar = {
+                TopNavBar(navController, scrollBehavior)
+            },
+            bottomBar = {
+                BottomNavBar(navController)
             }
+        ) { paddingValues ->
+            Column (
+                Modifier.padding(paddingValues).fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                TicketoNavHost(navController = navController)
+            }
+
         }
+
     }
 }

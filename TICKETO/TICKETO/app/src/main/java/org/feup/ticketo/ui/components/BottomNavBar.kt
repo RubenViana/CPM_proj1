@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -19,6 +20,7 @@ import androidx.navigation.navOptions
 import org.feup.ticketo.NavRoutes
 import org.feup.ticketo.ui.theme.md_theme_dark_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
+import java.util.Locale
 
 @Composable
 fun BottomNavBar(
@@ -44,7 +46,7 @@ fun BottomNavBar(
                         }
                     },
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
-                    label = { Text(text = item.route) }
+                    label = { Text(text = item.route.replaceFirstChar { item.route.take(1).uppercase() }) } // This is for making the 1st letter uppercase
                 )
             }
         }
