@@ -10,35 +10,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import org.feup.ticketo.TicketoDestination
-import org.feup.ticketo.bottomNavBarOpts
+import androidx.navigation.navOptions
+import org.feup.ticketo.NavRoutes
+import org.feup.ticketo.ui.theme.md_theme_dark_onPrimary
+import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 
 @Composable
 fun BottomNavBar(
     navController: NavController
 ) {
     val currentBackStack by navController.currentBackStackEntryAsState()
-    val currentDestination = currentBackStack?.destination
+    val currentRoute = currentBackStack?.destination?.route
 
-    val opts = remember { bottomNavBarOpts.map { it.route } }
+    val navOptions = listOf(NavRoutes.Home, NavRoutes.Tickets, NavRoutes.Orders)
+    val opts = remember { navOptions.map { it.route } }
 
-    if (currentDestination?.route in opts) {
-        NavigationBar {
-
-            bottomNavBarOpts.forEach { item ->
+    if (currentRoute in opts) {
+        NavigationBar(
+            containerColor = md_theme_light_onPrimary
+        ) {
+            navOptions.forEach { item ->
                 NavigationBarItem(
-                    selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                    selected = currentRoute == item.route,
                     onClick = {
                         navController.navigate(item.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
+                            popUpTo(navController.graph.findStartDestination().id)
                             launchSingleTop = true
-                            restoreState = true
                         }
                     },
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
