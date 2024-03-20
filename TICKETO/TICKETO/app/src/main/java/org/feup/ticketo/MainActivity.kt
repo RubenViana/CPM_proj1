@@ -1,12 +1,16 @@
 package org.feup.ticketo
 
+import android.content.res.Resources.Theme
 import android.os.Bundle
+import android.view.Window
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,8 +29,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColor
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -34,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import org.feup.ticketo.ui.components.BottomNavBar
 import org.feup.ticketo.ui.components.TopNavBar
 import org.feup.ticketo.ui.theme.TICKETOTheme
+import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,20 +58,28 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TicketoApp() {
     TICKETOTheme {
-        val navController = rememberNavController()
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-        Scaffold(
-            topBar = {
-                TopNavBar(navController, scrollBehavior)
-            },
-            bottomBar = {
-                BottomNavBar(navController = navController)
+        Surface (
+            modifier = Modifier.fillMaxSize()
+        )
+        {
+            val navController = rememberNavController()
+            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                topBar = {
+                    TopNavBar(navController, scrollBehavior)
+                },
+                bottomBar = {
+                    BottomNavBar(navController)
+                }
+            ) {
+                Column(Modifier.padding(it)) {
+                    TicketoNavHost(
+                        navController = navController
+                    )
+                }
             }
-        ) { innerPadding ->
-            TicketoNavHost(
-                navController = navController,
-                modifier = Modifier.padding(innerPadding)
-            )
         }
     }
 }

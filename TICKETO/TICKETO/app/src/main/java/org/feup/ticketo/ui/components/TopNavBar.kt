@@ -1,5 +1,6 @@
 package org.feup.ticketo.ui.components
 
+import android.content.res.Resources.Theme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -10,16 +11,21 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
+import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @ExperimentalMaterial3Api
 @Composable
@@ -34,15 +40,18 @@ fun TopNavBar (
         title = currentDestination.route!!
     }
 
-    if (title == "Home"){
-        CenterAlignedTopAppBar(
+    if (title == "home"){
+        LargeTopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.primary,
+                containerColor = md_theme_light_primary,
+                actionIconContentColor = md_theme_light_onPrimary,
+                navigationIconContentColor = md_theme_light_onPrimary,
+                titleContentColor = md_theme_light_onPrimary,
+                scrolledContainerColor = md_theme_light_primary
             ),
             title = {
                 Text(
-                    title,
+                    "TICKETO",
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
 
@@ -56,15 +65,11 @@ fun TopNavBar (
                     )
                 }
             },
-            scrollBehavior = scrollBehavior,
+            scrollBehavior = scrollBehavior
         )
     }
-    else if (title == "Tickets"){
+    else if (title == "tickets"){
         TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.primary,
-            ),
             title = {
                 Text("Tickets"
                 )
@@ -76,16 +81,11 @@ fun TopNavBar (
                         contentDescription = null
                     )
                 }
-            },
-            scrollBehavior = scrollBehavior,
+            }
         )
     }
-    else if (title == "Orders"){
+    else if (title == "orders"){
         TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.primary,
-            ),
             title = {
                 Text("Orders")
             },
@@ -96,16 +96,11 @@ fun TopNavBar (
                         contentDescription = null
                     )
                 }
-            },
-            scrollBehavior = scrollBehavior,
+            }
         )
     }
-    else if (title == "Settings"){
+    else if (title == "settings"){
         CenterAlignedTopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.primary,
-            ),
             title = {
                 Text("Settings")
             },
@@ -113,8 +108,7 @@ fun TopNavBar (
                  IconButton(onClick = { navController.popBackStack() }) {
                      Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                  }
-            },
-            scrollBehavior = scrollBehavior,
+            }
         )
     }
 }
