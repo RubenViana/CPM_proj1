@@ -30,7 +30,6 @@ sealed class NavRoutes (val route: String, val icon: ImageVector) {
     data object Home : NavRoutes("home", Icons.Default.Search)
     data object Tickets : NavRoutes("tickets", Icons.Default.MobileFriendly)
     data object Orders : NavRoutes("orders", Icons.Default.AccessTime)
-    data object Settings : NavRoutes("settings", Icons.Default.Settings)
 }
 
 @Composable
@@ -50,7 +49,7 @@ fun TicketoNavHost(
         composable(route = NavRoutes.Orders.route){
             OrdersScreen()
         }
-        composable(route = NavRoutes.Settings.route,
+        composable(route = "settings",
             enterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
             exitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) },
             popEnterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },

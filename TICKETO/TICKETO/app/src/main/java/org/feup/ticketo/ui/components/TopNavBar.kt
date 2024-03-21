@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,85 +43,87 @@ fun TopNavBar (
         title = currentDestination.route!!
     }
 
-    if (title == "home"){
-        LargeTopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = {
-                Text(
-                    "TICKETO",
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+    when (title) {
+        "home" -> {
+            LargeTopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = md_theme_light_primary,
+                    actionIconContentColor = md_theme_light_onPrimary,
+                    navigationIconContentColor = md_theme_light_onPrimary,
+                    titleContentColor = md_theme_light_onPrimary,
+                    scrolledContainerColor = md_theme_light_primary
+                ),
+                title = {
+                    Text(
+                        "TICKETO",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
 
-                )
-            },
-            actions = {
-                IconButton(onClick = { navController.navigate("Settings") }) {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = null
                     )
-                }
-            },
-            scrollBehavior = scrollBehavior
-        )
-    }
-    else if (title == "tickets"){
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = {
-                Text("Tickets"
-                )
-            },
-            actions = {
-                IconButton(onClick = { /* do something */ }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
+                },
+                actions = {
+                    IconButton(onClick = { navController.navigate("Settings") }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior
+            )
+        }
+        "tickets" -> {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = md_theme_light_primary,
+                    actionIconContentColor = md_theme_light_onPrimary,
+                    navigationIconContentColor = md_theme_light_onPrimary,
+                    titleContentColor = md_theme_light_onPrimary,
+                    scrolledContainerColor = md_theme_light_primary
+                ),
+                title = {
+                    Text("Tickets"
                     )
+                },
+                actions = {
+                    IconButton(onClick = { /* do something */ }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    }
                 }
-            }
 
 
-        )
-    }
-    else if (title == "orders"){
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = {
-                Text("Orders")
-            },
-            actions = {
-                IconButton(onClick = { /* do something */ }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
-                    )
+            )
+        }
+        "orders" -> {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = md_theme_light_primary,
+                    actionIconContentColor = md_theme_light_onPrimary,
+                    navigationIconContentColor = md_theme_light_onPrimary,
+                    titleContentColor = md_theme_light_onPrimary,
+                    scrolledContainerColor = md_theme_light_primary
+                ),
+                title = {
+                    Text("Orders")
+                },
+                actions = {
+                    IconButton(onClick = { /* do something */ }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(onClick = { /* do something */ }) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null
+                        )
+                    }
                 }
-                IconButton(onClick = { /* do something */ }) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null
-                    )
-                }
-            }
-        )
+            )
+        }
     }
 }
