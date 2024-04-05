@@ -22,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.feup.ticketo.ui.HomeScreen
 import org.feup.ticketo.ui.OrdersScreen
+import org.feup.ticketo.ui.RegisterScreen
 import org.feup.ticketo.ui.TicketsScreen
 import org.feup.ticketo.ui.SettingsScreen
 
@@ -38,8 +39,11 @@ fun TicketoNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.Home.route
+        startDestination = "register"// if already register -> NavRoutes.Home.route else register
     ) {
+        composable(route = "register"){
+            RegisterScreen(navController)
+        }
         composable(route = NavRoutes.Home.route){
             HomeScreen()
         }
