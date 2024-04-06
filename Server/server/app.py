@@ -827,7 +827,7 @@ def validate_order():
     Returns:
     - JSON:
         - A message confirming successful order validation.
-        - If validation was successful, the total price of the order, the order_id, products and vouchers with a validation flag and error description if not valid
+        - If validation was successful, the total price of the order, the tax_number, the order_id, products and vouchers with a validation flag and error description if not valid
 
     """
     try:
@@ -841,15 +841,15 @@ def validate_order():
         # Check if all required fields are present
         if not customer_id or not products or not vouchers or not signature:
             return jsonify({'error': 'Missing required fields'}), 400
-        
+
         # Check if there are more than 2 vouchers
         if len(vouchers) > 2:
             return jsonify({'error': 'Only two vouchers can be used per order'}), 400
-        
+
 
         # Get public key of customer
         conn, cursor = get_db()
-        cursor.execute('SELECT PUBLIC_KEY FROM customer WHERE CUSTOMER_ID = ?', (customer_id,))
+        cursor.execute('SELECT PUBLIC_KEY, TAX_NUMBER FROM customer WHERE CUSTOMER_ID = ?', (customer_id,))
         customer = cursor.fetchone()
 
         # If customer not found
@@ -979,9 +979,10 @@ def validate_order():
             'total_price': total_price,
             'order_id': order_id,
             'products': products,
-            'vouchers': vouchers
+            'vouchers': vouchers,
+            'tax_number': customer['TAX_NUMBER']
         }), 200
-    
+
     except Exception as e:
         return jsonify({'error': 'Error validating order: {}'.format(e)}), 500
     finally:
@@ -1059,7 +1060,7 @@ def pay_order():
 def validate_message(data, public_key, signature):
     message = json.dumps(data, sort_keys=True)
     hash_object = SHA256.new(message.encode())
-        # select vouchers where voucher id in list of voucher ids
+    # select vouchers where voucher id in list of voucher ids
     verifier = PKCS1_v1_5.new(public_key)
     return verifier.verify(hash_object, base64.b64decode(signature))
 
