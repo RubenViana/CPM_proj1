@@ -219,7 +219,7 @@ def get_event():
         - event_id (str): Identifier of the event.
 
     Example:
-        - /next_events?event_id=abcdefg
+        - /event?event_id=abcdefg
 
     Returns:
     - JSON: Details of the event.
@@ -448,7 +448,7 @@ def validate_tickets():
                 {"ticket_id": "ticket_id_1"},
                 {"ticket_id": "ticket_id_2"}
             ],
-            "signature": "signature_here"
+            "signature": "signature_here`»
         }
 
     Returns:
@@ -494,15 +494,15 @@ def validate_tickets():
             ticket = cursor.fetchone()
             # Check if ticket exists
             if not ticket:
-                return jsonify({'error': f'Ticket {t['ticket_id']} not found'}), 404
+                return jsonify({'error': f"Ticket {t['ticket_id']} not found"}), 404
             # Check if ticket is used
             if ticket['USED']:
-                return jsonify({'error': f'Ticket {t['ticket_id']} already used'}), 400
+                return jsonify({'error': f"Ticket {t['ticket_id']} already used"}), 400
             # Check if ticket purchase belongs to customer
             cursor.execute('SELECT CUSTOMER_ID FROM PURCHASE WHERE PURCHASE_ID = ?', (ticket['PURCHASE_ID']))
             c_id = cursor.fetchone().get('CUSTOMER_ID')
             if c_id != customer_id:
-                return jsonify({'error': f'Ticket {t['ticket_id']} does not belong to customer'}), 400
+                return jsonify({'error': f"Ticket {t['ticket_id']} does not belong to customer"}), 400
             t['valid'] = True
             cursor.execute('UPDATE TICKET SET USED = 1 WHERE TICKET_ID = ?', (t['ticket_id'],))
 
@@ -706,7 +706,7 @@ def orders():
             products = cursor.fetchall()
 
             if not products:
-                raise Exception(f'Products for order {o['ORDER_ID']} not found')
+                raise Exception(f"Products for order {o['ORDER_ID']} not found")
 
             o['products'] = [dict(product) for product in products]
 
@@ -875,7 +875,7 @@ def validate_order():
             product = cursor.fetchone()
             # Check if the product exists
             if not product:
-                return jsonify({'error': f'Product {p['product_id']} not found'}), 404
+                return jsonify({'error': f"Product {p['product_id']} not found"}), 404
 
 
         discount_vouchers = 0
@@ -887,7 +887,7 @@ def validate_order():
             # Check if voucher exists
             if not voucher:
                 v['accepted'] = False
-                v['error'] = f'Voucher {v['voucher_id']} not found'
+                v['error'] = f"Voucher {v['voucher_id']} not found"
             # Check the voucher type
             if voucher['TYPE'] == 'Discount':
                 discount_vouchers += 1
@@ -897,15 +897,15 @@ def validate_order():
             # Check if voucher belongs to customer
             if voucher['CUSTOMER_ID'] != customer_id:
                 v['accepted'] = False
-                v['error'] = f'Voucher {v['voucher_id']} does not belong to customer'
+                v['error'] = f"Voucher {v['voucher_id']} does not belong to customer"
             # Check if voucher is redeemed
             if voucher['REDEEMED']:
                 v['accepted'] = False
-                v['error'] = f'Voucher {v['voucher_id']} already redeemed'
+                v['error'] = f"Voucher {v['voucher_id']} already redeemed"
             # Check if the voucher is for the right product
             if voucher['PRODUCT_ID'] != v['product_id'] and voucher['TYPE'] == 'Free Product':
                 v['accepted'] = False
-                v['error'] = f'Voucher {v['voucher_id']} is not for product {v['product_id']}'
+                v['error'] = f"Voucher {v['voucher_id']} is not for product {v['product_id']}"
             v['accepted'] = True
             v['applied_to_order'] = False
 
