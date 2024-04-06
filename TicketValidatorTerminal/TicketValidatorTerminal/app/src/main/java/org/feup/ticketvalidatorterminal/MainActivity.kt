@@ -138,13 +138,14 @@ fun readQRCode(
 
     scanner.startScan()
         .addOnSuccessListener { barcode ->
-            val rawValue: String? = barcode.rawValue
+            val rawValue: ByteArray? = barcode.rawBytes
             if (rawValue != null) {
-                val tvm = TicketValidationMessage("hello", null, "aojdgnsorj")
-                val tvm_byte_array = Json.encodeToString(tvm).toByteArray()
-                Log.i("mytag_bytearray", tvm_byte_array.toString())
-                val ticketsToValidate = Json.decodeFromString<TicketValidationMessage>(tvm_byte_array.toString(Charsets.UTF_8))
-                Log.i("mytag_tvm_after", Json.encodeToString(ticketsToValidate))
+//                val tvm = TicketValidationMessage("hello", null, "aojdgnsorj")
+//                val tvm_byte_array = Json.encodeToString(tvm).toByteArray()
+//                Log.i("mytag_bytearray", tvm_byte_array.toString())
+//                val ticketsToValidate = Json.decodeFromString<TicketValidationMessage>(tvm_byte_array.toString(Charsets.UTF_8))
+//                Log.i("mytag_tvm_after", Json.encodeToString(ticketsToValidate))
+                val ticketsToValidate = Json.decodeFromString<TicketValidationMessage>(rawValue.toString(Charsets.UTF_8))
                 validateTicketsInServer(
                     context,
                     ticketsToValidate,
