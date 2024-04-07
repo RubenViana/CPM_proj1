@@ -1,10 +1,12 @@
 package org.feup.ticketo
 
-import android.content.res.Resources.Theme
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.Window
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import android.graphics.Color
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +52,11 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge(
+            // This app is only ever in dark mode, so hard code detectDarkMode to true.
+            SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+            SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
+        )
         setContent {
             TicketoApp()
         }
@@ -56,6 +64,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TicketoApp() {
@@ -74,14 +83,8 @@ fun TicketoApp() {
             bottomBar = {
                 BottomNavBar(navController)
             }
-        ) { paddingValues ->
-            Column (
-                Modifier.padding(paddingValues).fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ){
+        ) {
                 TicketoNavHost(navController = navController)
-            }
-
         }
 
     }
