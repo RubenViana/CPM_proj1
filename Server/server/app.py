@@ -90,7 +90,7 @@ def register_user():
 
         # Check if all required fields are present
         if not name or not username or not password or not tax_number or not public_key or not credit_card_number or not credit_card_validity or not credit_card_type:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if customer already exists
         conn, cursor = get_db()
@@ -116,7 +116,7 @@ def register_user():
             'customer_id': customer_id
         }), 201
     except Exception as e:
-        return jsonify({'error': 'Error registering customer: {}'.format(e)}), 500
+        return jsonify({'message': 'Error registering customer: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -152,7 +152,7 @@ def login():
 
         # Check if all required fields are present
         if not username or not password:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if customer exists
         conn, cursor = get_db()
@@ -160,11 +160,11 @@ def login():
         customer = cursor.fetchone()
 
         if not customer:
-            return jsonify({'error': 'Invalid username or password'}), 401
+            return jsonify({'message': 'Invalid username or password'}), 401
 
         return jsonify({'message': 'Login successful'}), 200
     except Exception as e:
-        return jsonify({'error': 'Error logging in: {}'.format(e)}), 500
+        return jsonify({'message': 'Error logging in: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -194,7 +194,7 @@ def next_events():
 
         # if no events parameter is passed
         if not nr_of_events:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Query next nr_of_events
         conn, cursor = get_db()
@@ -207,7 +207,7 @@ def next_events():
 
         return jsonify([dict(event) for event in events]), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting next events: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting next events: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -236,7 +236,7 @@ def get_event():
 
         # if no event_id parameter is passed
         if not event_id:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Query event
         conn, cursor = get_db()
@@ -249,7 +249,7 @@ def get_event():
 
         return jsonify(dict(event)), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting event: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting event: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -290,7 +290,7 @@ def buy_ticket():
 
         # Check if all required fields are present
         if not customer_id or not event_id or not nr_of_tickets or not signature:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Get public key of customer
         conn, cursor = get_db()
@@ -299,7 +299,7 @@ def buy_ticket():
 
         # if customer not found
         if not customer:
-            return jsonify({'error': f'Customer {customer_id} not found'}), 404
+            return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
         public_key = RSA.importKey(customer['PUBLIC_KEY'])
@@ -312,13 +312,13 @@ def buy_ticket():
         }
 
         if not validate_message(data, public_key, signature):
-            return jsonify({'error': 'Invalid signature'}), 401
+            return jsonify({'message': 'Invalid signature'}), 401
 
         # Get ticket details
         cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (event_id,))
         event = cursor.fetchone()
         if not event:
-            return jsonify({'error': f'Event {event_id} not found'}), 404
+            return jsonify({'message': f'Event {event_id} not found'}), 404
 
         # Calculate total price
         total_price = event['PRICE'] * nr_of_tickets
@@ -375,7 +375,7 @@ def buy_ticket():
             cursor.execute('SELECT PRODUCT_ID FROM PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
             products = cursor.fetchall()
             if not products:
-                return jsonify({'error': 'Products not found'}), 404
+                return jsonify({'message': 'Products not found'}), 404
 
             products = [dict(product) for product in products]
 
@@ -430,7 +430,7 @@ def buy_ticket():
             'vouchers': created_vouchers
         }), 201
     except Exception as e:
-        return jsonify({'error': 'Error buying ticket: {}'.format(e)}), 500
+        return jsonify({'message': 'Error buying ticket: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -458,7 +458,7 @@ def validate_tickets():
         }
 
     Returns:
-    - JSON: 
+    - JSON:
         - A message confirming successful ticket validation.
         - If validation was successful, tickets with a validation flag and error description if not valid
     """
@@ -472,7 +472,7 @@ def validate_tickets():
 
         # Check if all required fields are present
         if not customer_id or not tickets or not signature:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Get public key of customer
         conn, cursor = get_db()
@@ -481,7 +481,7 @@ def validate_tickets():
 
         # if customer not found
         if not customer:
-            return jsonify({'error': f'Customer {customer_id} not found'}), 404
+            return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
         public_key = RSA.importKey(customer['PUBLIC_KEY'])
@@ -493,7 +493,7 @@ def validate_tickets():
         }
 
         if not validate_message(data, public_key, signature):
-            return jsonify({'error': 'Invalid signature'}), 401
+            return jsonify({'message': 'Invalid signature'}), 401
 
         # Validate tickets
         for t in tickets:
@@ -501,15 +501,15 @@ def validate_tickets():
             ticket = cursor.fetchone()
             # Check if ticket exists
             if not ticket:
-                return jsonify({'error': f"Ticket {t['ticket_id']} not found"}), 404
+                return jsonify({'message': f"Ticket {t['ticket_id']} not found"}), 404
             # Check if ticket is used
             if ticket['USED']:
-                return jsonify({'error': f"Ticket {t['ticket_id']} already used"}), 400
+                return jsonify({'message': f"Ticket {t['ticket_id']} already used"}), 400
             # Check if ticket purchase belongs to customer
             cursor.execute('SELECT CUSTOMER_ID FROM PURCHASE WHERE PURCHASE_ID = ?', (ticket['PURCHASE_ID']))
             c_id = cursor.fetchone().get('CUSTOMER_ID')
             if c_id != customer_id:
-                return jsonify({'error': f"Ticket {t['ticket_id']} does not belong to customer"}), 400
+                return jsonify({'message': f"Ticket {t['ticket_id']} does not belong to customer"}), 400
             t['valid'] = True
             cursor.execute('UPDATE TICKET SET USED = 1 WHERE TICKET_ID = ?', (t['ticket_id'],))
 
@@ -520,7 +520,7 @@ def validate_tickets():
             'tickets' : tickets
         }), 200
     except Exception as e:
-        return jsonify({'error': 'Error validating tickets: {}'.format(e)}), 500
+        return jsonify({'message': 'Error validating tickets: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -548,7 +548,7 @@ def products():
             return jsonify({'message': 'No products found'}), 404
         return jsonify([dict(product) for product in products]), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting products: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting products: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -573,7 +573,7 @@ def vouchers():
 
         # if no customer_id parameter is passed
         if not customer_id:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM VOUCHER WHERE CUSTOMER_ID = ?', (customer_id,))
@@ -582,7 +582,7 @@ def vouchers():
             return jsonify({'message': 'No vouchers found'}), 404
         return jsonify([dict(voucher) for voucher in vouchers]), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting vouchers: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting vouchers: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -607,7 +607,7 @@ def purchases():
 
         # if no customer_id parameter is passed
         if not customer_id:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Get customer purchases
         conn, cursor = get_db()
@@ -628,7 +628,7 @@ def purchases():
 
         return jsonify(purchases), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting purchases: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting purchases: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -654,7 +654,7 @@ def purchase_receipt():
 
         # if no purchase_id parameter is passed
         if not purchase_id:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Get purchase receipt
         conn, cursor = get_db()
@@ -674,7 +674,7 @@ def purchase_receipt():
 
         return jsonify(purchase), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting purchase receipt: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting purchase receipt: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -699,7 +699,7 @@ def orders():
 
         # if no customer_id parameter is passed
         if not customer_id:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Get customer orders
         conn, cursor = get_db()
@@ -736,7 +736,7 @@ def orders():
 
         return jsonify(orders), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting orders: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting orders: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -762,7 +762,7 @@ def order_receipt():
 
         # if no order_id parameter is passed
         if not order_id:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Get order receipt
         conn, cursor = get_db()
@@ -804,7 +804,7 @@ def order_receipt():
 
         return jsonify(order), 200
     except Exception as e:
-        return jsonify({'error': 'Error getting order receipt: {}'.format(e)}), 500
+        return jsonify({'message': 'Error getting order receipt: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -836,7 +836,7 @@ def validate_order():
             ],
             "signature": "signature_here"
         }
-    
+
     Returns:
     - JSON:
         - A message confirming successful order validation.
@@ -854,11 +854,11 @@ def validate_order():
 
         # Check if all required fields are present
         if not customer_id or not products or not vouchers or not signature:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if there are more than 2 vouchers
         if len(vouchers) > 2:
-            return jsonify({'error': 'Only two vouchers can be used per order'}), 400
+            return jsonify({'message': 'Only two vouchers can be used per order'}), 400
 
 
         # Get public key of customer
@@ -868,7 +868,7 @@ def validate_order():
 
         # If customer not found
         if not customer:
-            return jsonify({'error': f'Customer {customer_id} not found'}), 404
+            return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
         public_key = RSA.importKey(customer['PUBLIC_KEY'])
@@ -881,7 +881,7 @@ def validate_order():
         }
 
         if not validate_message(data, public_key, signature):
-            return jsonify({'error': 'Invalid signature'}), 401
+            return jsonify({'message': 'Invalid signature'}), 401
 
         # Validate products
         for p in products:
@@ -889,7 +889,7 @@ def validate_order():
             product = cursor.fetchone()
             # Check if the product exists
             if not product:
-                return jsonify({'error': f"Product {p['product_id']} not found"}), 404
+                return jsonify({'message': f"Product {p['product_id']} not found"}), 404
 
 
         discount_vouchers = 0
@@ -903,25 +903,25 @@ def validate_order():
             # Check if voucher exists
             if not voucher:
                 v['accepted'] = False
-                v['error'] = f"Voucher {v['voucher_id']} not found"
+                v['message'] = f"Voucher {v['voucher_id']} not found"
             # Check the voucher type
             if voucher['TYPE'] == 'Discount':
                 discount_vouchers += 1
             if discount_vouchers > 1:
                 v['accepted'] = False
-                v['error'] = 'Only one discount voucher can be used per order'
+                v['message'] = 'Only one discount voucher can be used per order'
             # Check if voucher belongs to customer
             if voucher['CUSTOMER_ID'] != customer_id:
                 v['accepted'] = False
-                v['error'] = f"Voucher {v['voucher_id']} does not belong to customer"
+                v['message'] = f"Voucher {v['voucher_id']} does not belong to customer"
             # Check if voucher is redeemed
             if voucher['REDEEMED']:
                 v['accepted'] = False
-                v['error'] = f"Voucher {v['voucher_id']} already redeemed"
+                v['message'] = f"Voucher {v['voucher_id']} already redeemed"
             # Check if the voucher is for the right product
             if voucher['PRODUCT_ID'] != v['product_id'] and voucher['TYPE'] == 'Free Product':
                 v['accepted'] = False
-                v['error'] = f"Voucher {v['voucher_id']} is not for product {v['product_id']}"
+                v['message'] = f"Voucher {v['voucher_id']} is not for product {v['product_id']}"
             v['accepted'] = True
             v['applied_to_order'] = False
 
@@ -1000,7 +1000,7 @@ def validate_order():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': 'Error validating order: {}'.format(e)}), 500
+        return jsonify({'message': 'Error validating order: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
@@ -1036,7 +1036,7 @@ def pay_order():
 
         # Check if all required fields are present
         if not customer_id or not order_id or not signature:
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'message': 'Missing required fields'}), 400
 
         # Get public key of customer
         conn, cursor = get_db()
@@ -1045,7 +1045,7 @@ def pay_order():
 
         # if customer not found
         if not customer:
-            return jsonify({'error': f'Customer {customer_id} not found'}), 404
+            return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
         public_key = RSA.importKey(customer['PUBLIC_KEY'])
@@ -1057,7 +1057,7 @@ def pay_order():
         }
 
         if not validate_message(data, public_key, signature):
-            return jsonify({'error': 'Invalid signature'}), 401
+            return jsonify({'message': 'Invalid signature'}), 401
 
         # Pay order
         cursor.execute('UPDATE "ORDER" SET PAID = 1 WHERE ORDER_ID = ?', (order_id,))
@@ -1069,7 +1069,7 @@ def pay_order():
 
         return jsonify({'message': 'Order paid successfully'}), 200
     except Exception as e:
-        return jsonify({'error': 'Error paying order: {}'.format(e)}), 500
+        return jsonify({'message': 'Error paying order: {}'.format(e)}), 500
     finally:
         if conn:
             conn.close()
