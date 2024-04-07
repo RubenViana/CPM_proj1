@@ -1,22 +1,14 @@
 package org.feup.ticketo.ui
 
-import androidx.compose.foundation.layout.Box
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.feup.ticketo.utils.serverUrl
 
 @Composable
 fun HomeScreen() {
@@ -25,5 +17,26 @@ fun HomeScreen() {
         Modifier.fillMaxSize()
     ) {
     }
+
+}
+
+fun getNextEventsFromServer(context: Context, nr_of_events: Int) {
+
+    // Server endpoint
+    val endpoint = "/next_events?nr_of_events=$nr_of_events"
+
+    // Create the request
+    val request = JsonObjectRequest(
+        Request.Method.POST, serverUrl + endpoint, null,
+        { response ->
+            // Handle response
+        },
+        { error ->
+            //
+        }
+    )
+
+    // Add the request to the RequestQueue
+    Volley.newRequestQueue(context).add(request)
 
 }

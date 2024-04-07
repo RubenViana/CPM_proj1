@@ -3,6 +3,18 @@ package org.feup.ticketo.data
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class UserRegistrationMessage(
+    val name: String,
+    val username: String,
+    val password: String,
+    val tax_number: Long,
+    val public_key: String,
+    val credit_card_number: String,
+    val credit_card_validity: String,
+    val credit_card_type: String
+)
+
+@Serializable
 data class TicketValidationMessage(
     val customer_id: String?,
     val tickets: List<MutableMap<String, String>>,
@@ -32,6 +44,19 @@ data class OrderValidationResponse(
     val vouchers: List<MutableMap<String, String>>,
     val tax_number: Int
 )
+
+fun UserRegistrationMessage(customer: Customer, creditCard: CreditCard): UserRegistrationMessage {
+    return UserRegistrationMessage(
+        customer.customer_id.orEmpty(),
+        customer.username.orEmpty(),
+        customer.password.orEmpty(),
+        customer.tax_number ?: 0,
+        customer.public_key.orEmpty(),
+        creditCard.number.orEmpty(),
+        creditCard.validity.orEmpty(),
+        creditCard.type.orEmpty()
+    )
+}
 
 fun ticketValidationMessage(
     customer: Customer,
