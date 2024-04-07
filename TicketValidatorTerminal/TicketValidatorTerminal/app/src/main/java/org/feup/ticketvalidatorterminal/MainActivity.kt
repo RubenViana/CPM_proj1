@@ -2,7 +2,6 @@ package org.feup.ticketvalidatorterminal
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -39,17 +38,16 @@ import com.google.gson.Gson
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.buildJsonObject
 import org.feup.ticketvalidatorterminal.data.TicketValidationMessage
+import org.feup.ticketvalidatorterminal.data.ServerValidationState
 import org.feup.ticketvalidatorterminal.ui.theme.TicketValidatorTerminalTheme
+import org.feup.ticketvalidatorterminal.utils.*
 import org.json.JSONObject
-import kotlin.concurrent.thread
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             TicketValidatorTerminalApp()
         }
@@ -62,7 +60,9 @@ fun TicketValidatorTerminalApp() {
     TicketValidatorTerminalTheme {
 
         val context = LocalContext.current
-        val validationState = remember { mutableStateOf<ValidationState?>(null) }
+        // Variable to store the state of the validation from the server
+        val serverValidationState = remember { mutableStateOf<ServerValidationState?>(null) }
+        // Variable to toggle the opening of the validation dialog
         val openValidationDialog = remember { mutableStateOf(false) }
 
         Surface(
@@ -91,7 +91,8 @@ fun TicketValidatorTerminalApp() {
                     // Button
                     Button(
                         onClick = {
-                            readQRCode(context, validationState, openValidationDialog)
+                            // Read QR Code
+                            readQRCode(context, serverValidationState, openValidationDialog)
                         }) {
                         Text("Scan Tickets QR Code")
                     }
@@ -99,35 +100,28 @@ fun TicketValidatorTerminalApp() {
 
                 when {
                     openValidationDialog.value -> {
-                        validationState.value?.let { state ->
+                        serverValidationState.value?.let { state ->
                             when (state) {
-                                is ValidationState.Success -> ShowValidationSuccessfulDialog(
+                                is ServerValidationState.Success -> ShowValidationSuccessfulDialog(
                                     openValidationDialog
                                 )
 
-                                is ValidationState.Failure -> ShowValidationFailedDialog(
+                                is ServerValidationState.Failure -> ShowValidationFailedDialog(
                                     state.error,
                                     openValidationDialog
                                 )
                             }
                         }
                     }
-
                 }
-
             }
         }
     }
 }
 
-sealed class ValidationState {
-    data object Success : ValidationState()
-    data class Failure(val error: VolleyError) : ValidationState()
-}
-
 fun readQRCode(
     context: Context,
-    validationState: MutableState<ValidationState?>,
+    serverValidationState: MutableState<ServerValidationState?>,
     openValidationDialog: MutableState<Boolean>
 ) {
     val options = GmsBarcodeScannerOptions.Builder()
@@ -138,18 +132,26 @@ fun readQRCode(
 
     scanner.startScan()
         .addOnSuccessListener { barcode ->
-            val rawValue: ByteArray? = barcode.rawBytes
-            if (rawValue != null) {
-//                val tvm = TicketValidationMessage("hello", null, "aojdgnsorj")
+            val byteArray: ByteArray? = barcode.rawBytes
+            if (byteArray != null) {
+//                val tvm = TicketValidationMessage(
+//                    "hello",
+//                    listOf(
+//                        mutableMapOf("ticket_id" to "ticket1"),
+//                        mutableMapOf("ticket_id" to "ticket2")
+//                    ),
+//                    "aojdgnsorj"
+//                )
+//                Log.i("mytag_tvm_tostring", Json.encodeToString(tvm))
 //                val tvm_byte_array = Json.encodeToString(tvm).toByteArray()
 //                Log.i("mytag_bytearray", tvm_byte_array.toString())
 //                val ticketsToValidate = Json.decodeFromString<TicketValidationMessage>(tvm_byte_array.toString(Charsets.UTF_8))
 //                Log.i("mytag_tvm_after", Json.encodeToString(ticketsToValidate))
-                val ticketsToValidate = Json.decodeFromString<TicketValidationMessage>(rawValue.toString(Charsets.UTF_8))
+                val ticketsToValidate = byteArrayToObject<TicketValidationMessage>(byteArray)
                 validateTicketsInServer(
                     context,
                     ticketsToValidate,
-                    validationState,
+                    serverValidationState,
                     openValidationDialog
                 )
             }
@@ -159,22 +161,20 @@ fun readQRCode(
 fun validateTicketsInServer(
     context: Context,
     ticketsToValidate: TicketValidationMessage,
-    validationState: MutableState<ValidationState?>,
+    serverValidationState: MutableState<ServerValidationState?>,
     openValidationDialog: MutableState<Boolean>
 ) {
-    val url = "http://127.0.0.1:5000/validate_tickets"
-    val json = JSONObject(Gson().toJson(ticketsToValidate))
-
+    val url = "http://10.0.2.2:5000/validate_tickets"
+    val json = objectToJson(ticketsToValidate)
     val jsonObjectRequest = JsonObjectRequest(
         Request.Method.POST, url, json,
         { _ ->
-            validationState.value = ValidationState.Success
+            serverValidationState.value = ServerValidationState.Success
             openValidationDialog.value = true
         },
         { error ->
-            validationState.value = ValidationState.Failure(error)
+            serverValidationState.value = ServerValidationState.Failure(error)
             openValidationDialog.value = true
-
         }
     )
 
@@ -199,6 +199,7 @@ fun ValidationSuccessfulDialog(openValidationDialog: MutableState<Boolean>) {
         },
         text = {
             Column(
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -230,6 +231,7 @@ fun ShowValidationFailedDialog(
 
 @Composable
 fun ValidationFailedDialog(error: VolleyError, openValidationDialog: MutableState<Boolean>) {
+    val errorMessage = getServerResponseErrorMessage(error)
     AlertDialog(
         icon = {
             Icon(Icons.Default.Close, contentDescription = "Validation Failed")
@@ -239,11 +241,14 @@ fun ValidationFailedDialog(error: VolleyError, openValidationDialog: MutableStat
         },
         text = {
             Column(
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(text = "Something went wrong", textAlign = TextAlign.Center)
-                Text(text = error.message.toString(), textAlign = TextAlign.Center)
+                if (errorMessage != null) {
+                    Text(text = errorMessage, textAlign = TextAlign.Center)
+                }
             }
         },
         onDismissRequest = {},
@@ -258,5 +263,3 @@ fun ValidationFailedDialog(error: VolleyError, openValidationDialog: MutableStat
         }
     )
 }
-
-
