@@ -2,7 +2,6 @@ package org.feup.ticketvalidatorterminal.utils
 
 import com.android.volley.VolleyError
 import com.google.gson.Gson
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
@@ -18,11 +17,11 @@ fun byteArrayToString(byteArray: ByteArray): String {
     return byteArray.toString(Charsets.UTF_8)
 }
 
-fun objectToByteArray(data: Serializable) : ByteArray {
-    return stringToByteArray(objectToString(data))
+inline fun <reified T : Any> objectToByteArray(data: T) : ByteArray {
+    return stringToByteArray(objectToJsonString(data))
 }
 
-inline fun <reified T : Any> objectToString(data: T): String {
+inline fun <reified T : Any> objectToJsonString(data: T): String {
     return Json.encodeToString(data)
 }
 

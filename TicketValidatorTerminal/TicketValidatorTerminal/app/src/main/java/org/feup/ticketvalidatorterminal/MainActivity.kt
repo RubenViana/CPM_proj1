@@ -2,6 +2,7 @@ package org.feup.ticketvalidatorterminal
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +35,6 @@ import com.android.volley.Request
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.google.gson.Gson
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -134,19 +134,6 @@ fun readQRCode(
         .addOnSuccessListener { barcode ->
             val byteArray: ByteArray? = barcode.rawBytes
             if (byteArray != null) {
-//                val tvm = TicketValidationMessage(
-//                    "hello",
-//                    listOf(
-//                        mutableMapOf("ticket_id" to "ticket1"),
-//                        mutableMapOf("ticket_id" to "ticket2")
-//                    ),
-//                    "aojdgnsorj"
-//                )
-//                Log.i("mytag_tvm_tostring", Json.encodeToString(tvm))
-//                val tvm_byte_array = Json.encodeToString(tvm).toByteArray()
-//                Log.i("mytag_bytearray", tvm_byte_array.toString())
-//                val ticketsToValidate = Json.decodeFromString<TicketValidationMessage>(tvm_byte_array.toString(Charsets.UTF_8))
-//                Log.i("mytag_tvm_after", Json.encodeToString(ticketsToValidate))
                 val ticketsToValidate = byteArrayToObject<TicketValidationMessage>(byteArray)
                 validateTicketsInServer(
                     context,
@@ -168,8 +155,8 @@ fun validateTicketsInServer(
     val json = objectToJson(ticketsToValidate)
     val jsonObjectRequest = JsonObjectRequest(
         Request.Method.POST, url, json,
-        { _ ->
-            serverValidationState.value = ServerValidationState.Success
+        { response ->
+            serverValidationState.value = ServerValidationState.Success(response)
             openValidationDialog.value = true
         },
         { error ->
