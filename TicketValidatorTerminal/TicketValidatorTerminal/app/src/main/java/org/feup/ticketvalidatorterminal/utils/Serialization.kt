@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 import org.json.JSONObject
 
 fun getServerResponseErrorMessage (error: VolleyError): String? {
-    return Json.decodeFromString<HashMap<String, String>>(error.networkResponse.data.decodeToString())["error"]
+    return Json.decodeFromString<HashMap<String, String>>(error.networkResponse.data.decodeToString())["message"]
 }
 inline fun <reified T> byteArrayToObject(byteArray: ByteArray): T {
     return Json.decodeFromString(byteArrayToString(byteArray))
