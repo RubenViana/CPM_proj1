@@ -18,6 +18,7 @@ DB_SCHEMA = 'database/schema.sql'
 
 # Initialize database
 def init_db():
+    conn = None
     try:
         print('Initializing database')
         conn = sqlite3.connect(DB_FILE)
@@ -74,6 +75,7 @@ def register_user():
     - JSON: A message confirming successful registration along with customer_id.
     """
 
+    conn = None
     try:
         # Get data from request
         data = request.json
@@ -141,6 +143,7 @@ def login():
     - JSON: A message confirming successful login.
     """
 
+    conn = None
     try:
         # Get data from request
         data = request.json
@@ -183,6 +186,7 @@ def next_events():
     Returns:
     - JSON: List of next events with details.
     """
+    conn = None
     try:
         args = request.args
 
@@ -224,6 +228,7 @@ def get_event():
     Returns:
     - JSON: Details of the event.
     """
+    conn = None
     try:
         args = request.args
 
@@ -274,6 +279,7 @@ def buy_ticket():
     Returns:
     - JSON: A message confirming successful ticket purchase along with details.
     """
+    conn = None
     try:
         # Get data from request
         data = request.json
@@ -456,6 +462,7 @@ def validate_tickets():
         - A message confirming successful ticket validation.
         - If validation was successful, tickets with a validation flag and error description if not valid
     """
+    conn = None
     try:
         # Get data from request
         data = request.json
@@ -532,6 +539,7 @@ def products():
 
     :return: JSON with all products.
     """
+    conn = None
     try:
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM PRODUCT')
@@ -558,6 +566,7 @@ def vouchers():
 
     :return: JSON with all vouchers for the customer.
     """
+    conn = None
     try:
         args = request.args
         customer_id = args.get('customer_id')
@@ -591,6 +600,7 @@ def purchases():
 
     :return: JSON with all purchases for the customer.
     """
+    conn = None
     try:
         args = request.args
         customer_id = args.get('customer_id')
@@ -637,6 +647,7 @@ def purchase_receipt():
 
     :return: JSON with the receipt of the purchase.
     """
+    conn = None
     try:
         args = request.args
         purchase_id = args.get('purchase_id')
@@ -681,6 +692,7 @@ def orders():
         - /orders?customer_id=abcdefg
     :return: JSON with all orders for the customer.
     """
+    conn = None
     try:
         args = request.args
         customer_id = args.get('customer_id')
@@ -743,6 +755,7 @@ def order_receipt():
 
     :return: JSON with the receipt of the order.
     """
+    conn = None
     try:
         args = request.args
         order_id = args.get('order_id')
@@ -830,6 +843,7 @@ def validate_order():
         - If validation was successful, the total price of the order, the tax_number, the order_id, products and vouchers with a validation flag and error description if not valid
 
     """
+    conn = None
     try:
         # Get data from request
         data = request.json
@@ -1010,6 +1024,7 @@ def pay_order():
     Returns:
     - JSON: A message confirming successful order payment.
     """
+    conn = None
     try:
         # Get data from request
         data = request.json
