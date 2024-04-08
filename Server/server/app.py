@@ -254,6 +254,50 @@ def get_event():
         if conn:
             conn.close()
 
+# Get client tickets Route
+@app.route('/tickets', methos=['GET'])
+def get_tickets():
+    """
+    Get tickets for a customer.
+
+    Request Parameters:
+        - customer_id (str): Identifier of the customer.
+
+    Example:
+        - /tickets?customer_id=abcdefg
+
+    Returns:
+    - JSON: List of tickets for the customer.
+    """
+    conn = None
+    try:
+        args = request.args
+        customer_id = args.get('customer_id')
+
+        # if no customer_id parameter is passed
+        if not customer_id:
+            return jsonify({'message': 'Missing required fields'}), 400
+
+        # Get customer tickets
+        conn, cursor = get_db()
+        cursor.execute('SELECT * '
+                       'FROM TICKET t, PURCHASE p, EVENT e '
+                       'WHERE p.CUSTOMER_ID = ? '
+                       'and p.PURCHASE_ID = t.PURCHASE_ID '
+                       'and e.EVENT_ID = t.EVENT_ID',
+                       (customer_id,))
+        tickets = cursor.fetchall()
+
+        # If no tickets are found
+        if not tickets:
+            return jsonify({'message': 'No tickets found'}), 404
+
+        return jsonify([dict(ticket) for ticket in tickets]), 200
+    except Exception as e:
+        return jsonify({'message': 'Error getting tickets: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 # Buy Ticket Route
 @app.route('/buy_ticket', methods=['POST'])
@@ -314,7 +358,7 @@ def buy_ticket():
         if not validate_message(data, public_key, signature):
             return jsonify({'message': 'Invalid signature'}), 401
 
-        # Get ticket details
+        # Get event details
         cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (event_id,))
         event = cursor.fetchone()
         if not event:
