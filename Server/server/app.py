@@ -254,6 +254,50 @@ def get_event():
         if conn:
             conn.close()
 
+# Get client tickets Route
+@app.route('/tickets', methos=['GET'])
+def get_tickets():
+    """
+    Get tickets for a customer.
+
+    Request Parameters:
+        - customer_id (str): Identifier of the customer.
+
+    Example:
+        - /tickets?customer_id=abcdefg
+
+    Returns:
+    - JSON: List of tickets for the customer.
+    """
+    conn = None
+    try:
+        args = request.args
+        customer_id = args.get('customer_id')
+
+        # if no customer_id parameter is passed
+        if not customer_id:
+            return jsonify({'message': 'Missing required fields'}), 400
+
+        # Get customer tickets
+        conn, cursor = get_db()
+        cursor.execute('SELECT * '
+                       'FROM TICKET t, PURCHASE p, EVENT e '
+                       'WHERE p.CUSTOMER_ID = ? '
+                       'and p.PURCHASE_ID = t.PURCHASE_ID '
+                       'and e.EVENT_ID = t.EVENT_ID',
+                       (customer_id,))
+        tickets = cursor.fetchall()
+
+        # If no tickets are found
+        if not tickets:
+            return jsonify({'message': 'No tickets found'}), 404
+
+        return jsonify([dict(ticket) for ticket in tickets]), 200
+    except Exception as e:
+        return jsonify({'message': 'Error getting tickets: {}'.format(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 # Buy Ticket Route
 @app.route('/buy_ticket', methods=['POST'])
@@ -314,7 +358,7 @@ def buy_ticket():
         if not validate_message(data, public_key, signature):
             return jsonify({'message': 'Invalid signature'}), 401
 
-        # Get ticket details
+        # Get event details
         cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (event_id,))
         event = cursor.fetchone()
         if not event:
@@ -494,7 +538,11 @@ def validate_tickets():
 
         if not validate_message(data, public_key, signature):
             return jsonify({'message': 'Invalid signature'}), 401
-
+     
+        # Check if all tickets refer to the same event
+        cursor.execute('SELECT EVENT_ID FROM TICKET WHERE TICKET_ID = ?', (tickets[0]['ticket_id'],))
+        event_id = cursor.fetchone().get('EVENT_ID')
+                
         # Validate tickets
         for t in tickets:
             cursor.execute('SELECT * FROM TICKET WHERE TICKET_ID = ?', (t['ticket_id'],))
@@ -502,6 +550,9 @@ def validate_tickets():
             # Check if ticket exists
             if not ticket:
                 return jsonify({'message': f"Ticket {t['ticket_id']} not found"}), 404
+            # Check if ticket refers to the same event
+            if event_id != ticket['EVENT_ID']:
+                return jsonify({'message': 'Tickets refer to different events'}), 400
             # Check if ticket is used
             if ticket['USED']:
                 return jsonify({'message': f"Ticket {t['ticket_id']} already used"}), 400
@@ -625,6 +676,11 @@ def purchases():
             cursor.execute('SELECT * FROM TICKET WHERE PURCHASE_ID = ?', (p['PURCHASE_ID'],))
             tickets = cursor.fetchall()
             p['tickets'] = [dict(ticket) for ticket in tickets]
+            # Get event details for each ticket in the purchase and append the details to the corresponding entry
+            for t in p['tickets']:
+                cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (t['EVENT_ID'],))
+                event = cursor.fetchone()
+                t['event_details'] = [dict(detail) for detail in event]
 
         return jsonify(purchases), 200
     except Exception as e:
