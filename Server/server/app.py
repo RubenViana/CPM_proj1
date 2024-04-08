@@ -898,6 +898,8 @@ def validate_order():
         for v in vouchers:
             cursor.execute('SELECT * FROM VOUCHER WHERE VOUCHER_ID = ?', (v['voucher_id'],))
             voucher = cursor.fetchone()
+            v['type'] = voucher['TYPE']
+            v['description'] = voucher['DESCRIPTION']
             # Check if voucher exists
             if not voucher:
                 v['accepted'] = False
