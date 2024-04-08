@@ -1,6 +1,7 @@
+package org.feup.cafeteriaorderterminal
+
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -36,11 +37,9 @@ import com.android.volley.toolbox.Volley
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import kotlinx.serialization.json.buildJsonObject
 import org.feup.cafeteriaorderterminal.data.ServerValidationState
 import org.feup.cafeteriaorderterminal.ui.theme.CafeteriaOrderTerminalTheme
 import org.feup.cafeteriaorderterminal.data.OrderValidationMessage
-import org.feup.cafeteriaorderterminal.ui.theme.CafeteriaOrderTerminalTheme
 import org.feup.cafeteriaorderterminal.utils.*
 import org.json.JSONObject
 
@@ -101,9 +100,10 @@ fun CafeteriaOrderTerminalApp() {
                     openValidationDialog.value -> {
                         serverValidationState.value?.let { state ->
                             when (state) {
-                                is ServerValidationState.Success -> ShowValidationSuccessfulDialog(
-                                    openValidationDialog
-                                )
+                                is ServerValidationState.Success -> {
+                                    val response = state.response // Access the response object
+                                    ShowValidationSuccessfulDialog(openValidationDialog,response)
+                                }
 
                                 is ServerValidationState.Failure -> ShowValidationFailedDialog(
                                     state.error,
@@ -170,42 +170,76 @@ fun validateOrdersInServer(
 
 
 @Composable
-fun ShowValidationSuccessfulDialog(openValidationDialog: MutableState<Boolean>) {
-    ValidationSuccessfulDialog(openValidationDialog = openValidationDialog)
+fun ShowValidationSuccessfulDialog(
+    openValidationDialog: MutableState<Boolean>,
+    response: JSONObject
+) {
+    ValidationSuccessfulDialog(
+        openValidationDialog = openValidationDialog,
+        response = response
+    )
 }
 
 @Composable
-fun ValidationSuccessfulDialog(openValidationDialog: MutableState<Boolean>) {
+fun ValidationSuccessfulDialog(openValidationDialog: MutableState<Boolean>,response: JSONObject) {
 
-    AlertDialog(
-        icon = {
-            Icon(Icons.Default.CheckCircle, contentDescription = "Orders Validated")
-        },
-        title = {
-            Text(text = "Orders Validated Successfully", textAlign = TextAlign.Center)
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        val orderNumber = response.getString("order_id")
+        val products = response.getJSONArray("products")
+        val vouchers = response.getJSONArray("vouchers")
+        val totalPrice = response.getDouble("total_price")
 
-                // data of the order
-            }
-        },
-        onDismissRequest = {},
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    openValidationDialog.value = false
+        AlertDialog(
+            icon = {
+                Icon(Icons.Default.CheckCircle, contentDescription = "Orders Validated")
+            },
+            title = {
+                Text(text = "Orders Validated Successfully", textAlign = TextAlign.Center)
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Display order number
+                    Text("Order Number: $orderNumber")
+
+                    // Display products
+                    Text("Products Ordered:")
+                    for (i in 0 until products.length()) {
+                        val product = products.getJSONObject(i)
+                        Text("- ${product.getString("product_id")}: ${product.getInt("quantity")}")
+                    }
+
+                    // Display vouchers accepted
+                    Text("Vouchers Accepted:")
+                    for (i in 0 until vouchers.length()) {
+                        val voucher = vouchers.getJSONObject(i)
+                        val accepted = voucher.getBoolean("accepted")
+                        val voucherId = voucher.getString("voucher_id")
+                        if (accepted) {
+                            Text("- $voucherId")
+                        }
+                    }
+
+                    // Display final price
+                    Text("Total Price to Pay: $totalPrice")
                 }
-            ) {
-                Text("Confirm")
+            },
+            onDismissRequest = {
+                openValidationDialog.value = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openValidationDialog.value = false
+                    }
+                ) {
+                    Text("Confirm")
+                }
             }
-        }
-    )
-}
+        )
+    }
 
 
 @Composable
