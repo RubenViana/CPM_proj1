@@ -538,7 +538,11 @@ def validate_tickets():
 
         if not validate_message(data, public_key, signature):
             return jsonify({'message': 'Invalid signature'}), 401
-
+     
+        # Check if all tickets refer to the same event
+        cursor.execute('SELECT EVENT_ID FROM TICKET WHERE TICKET_ID = ?', (tickets[0]['ticket_id'],))
+        event_id = cursor.fetchone().get('EVENT_ID')
+                
         # Validate tickets
         for t in tickets:
             cursor.execute('SELECT * FROM TICKET WHERE TICKET_ID = ?', (t['ticket_id'],))
@@ -546,6 +550,9 @@ def validate_tickets():
             # Check if ticket exists
             if not ticket:
                 return jsonify({'message': f"Ticket {t['ticket_id']} not found"}), 404
+            # Check if ticket refers to the same event
+            if event_id != ticket['EVENT_ID']:
+                return jsonify({'message': 'Tickets refer to different events'}), 400
             # Check if ticket is used
             if ticket['USED']:
                 return jsonify({'message': f"Ticket {t['ticket_id']} already used"}), 400
