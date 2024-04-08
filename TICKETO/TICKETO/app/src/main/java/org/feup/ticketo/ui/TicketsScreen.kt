@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.MobileFriendly
+import androidx.compose.material.icons.filled.PanoramaVertical
+import androidx.compose.material.icons.filled.PanoramaVerticalSelect
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +34,9 @@ import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 @Composable
 fun TicketsScreen(navController: NavHostController) {
     Surface(
-        modifier = Modifier.fillMaxSize().padding(10.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp),
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -47,14 +53,26 @@ fun TicketsScreen(navController: NavHostController) {
 fun TicketCard(ticket: Ticket, navController: NavHostController) {
     ElevatedCard(
         modifier = Modifier.padding(10.dp),
-        onClick = { navController.navigate("ticket/${ticket.ticket_id}") }
+        onClick = { navController.navigate("tickets/${ticket.event_id}") }
     ) {
-        ListItem(
-            headlineContent = { Text(text = "Ticket #${ticket.ticket_id}") },
-            supportingContent = { Text(text = "Date: {} | Seat: ${ticket.place}") },
-            leadingContent = {
-                Image(painter = ColorPainter(Color.Gray), contentDescription = null, modifier = Modifier.size(56.dp))
+        Row(
+            modifier = Modifier.fillMaxSize().padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(painter = ColorPainter(Color.Gray), contentDescription = null, modifier = Modifier.size(50.dp))
+            Column(
+                modifier = Modifier.weight(1f).padding(start = 5.dp)
+            ) {
+                Text("Event Name", style = MaterialTheme.typography.bodyLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Text("Date", style = MaterialTheme.typography.bodyMedium)
             }
-        )
+            Column(
+            ) {
+                Row {
+                    Text(text = "2x", style = MaterialTheme.typography.bodySmall)
+                    Icon(imageVector = Icons.Default.PanoramaVertical, contentDescription = null)
+                }
+            }
+        }
     }
 }

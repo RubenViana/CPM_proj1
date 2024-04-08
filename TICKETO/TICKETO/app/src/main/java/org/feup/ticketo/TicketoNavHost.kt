@@ -23,6 +23,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import org.feup.ticketo.ui.EventTicketViewModel
 import org.feup.ticketo.ui.HomeScreen
 import org.feup.ticketo.ui.OrdersScreen
 import org.feup.ticketo.ui.RegisterScreen
@@ -70,9 +71,9 @@ fun TicketoNavHost(
             ){
             SettingsScreen(navController)
         }
-        composable(route = "ticket/{ticketId}"){
-            // fetch ticket with ticketId from database
-            TicketScreen(navController, it.arguments?.getString("ticketId") ?: "")
+        composable(route = "tickets/{eventId}"){
+            val viewModel = EventTicketViewModel(it.arguments?.getInt("eventId") ?: 0)
+            TicketScreen(navController, viewModel.getEventTickets())
         }
     }
 }

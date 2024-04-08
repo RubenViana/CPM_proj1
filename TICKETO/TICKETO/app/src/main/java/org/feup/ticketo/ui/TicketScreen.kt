@@ -1,12 +1,15 @@
 package org.feup.ticketo.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CardDefaults
@@ -15,6 +18,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.feup.ticketo.data.Event
@@ -34,7 +40,7 @@ import org.feup.ticketo.utils.generateQRCode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketScreen(navController: NavHostController, ticket: String) {
+fun TicketScreen(navController: NavHostController, eventTickets: EventTickets) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -48,7 +54,7 @@ fun TicketScreen(navController: NavHostController, ticket: String) {
                 scrolledContainerColor = md_theme_light_primary
             ),
             title = {
-                Text("Ticket $ticket")
+                Text("${eventTickets.eventName} Tickets")
             },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
@@ -56,23 +62,17 @@ fun TicketScreen(navController: NavHostController, ticket: String) {
                 }
             }
         )
-        // get ticket object from ticketId passed above
-        val t = Ticket(
-            ticket_id = ticket,
-            purchase_id = 1,
-            event_id = 1,
-            purchase_date = "2022-01-01",
-            used = false,
-            qrcode = "qrcode",
-            place = "A1"
-        )
-        QRCodeCard(t)
+        LazyRow {
+            items(eventTickets.tickets.size) { item ->
+                QRCodeCard(eventTickets.tickets[item], eventTickets.eventName, eventTickets.eventDate)
+            }
+        }
 
     }
 }
 
 @Composable
-fun QRCodeCard(ticket: Ticket) {
+fun QRCodeCard(ticket: Ticket, eventName: String, eventDate: String) {
     OutlinedCard(
         modifier = Modifier.padding(50.dp),
         colors = CardDefaults.outlinedCardColors(
@@ -80,7 +80,9 @@ fun QRCodeCard(ticket: Ticket) {
         )
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val qrcode = generateQRCode(ticket.qrcode)
@@ -91,12 +93,39 @@ fun QRCodeCard(ticket: Ticket) {
                     modifier = Modifier.size(300.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.size(20.dp))
-
-            Text(text = "Event: ${ticket.event_id}")
-            Text(text = "Date: {ticket.event_id.date}")
-            Text(text = "Seat: ${ticket.place}")
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start
+                ){
+                    Row {
+                        Text(text = "Ticket:  ")
+                    }
+                    Row {
+                        Text(text = "Date:  ")
+                    }
+                    Row {
+                        Text(text = "Seat:  ")
+                    }
+                }
+                Column (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Row {
+                        Text(text = ticket.ticket_id, fontWeight = FontWeight.Bold)
+                    }
+                    Row {
+                        Text(text = eventDate, fontWeight = FontWeight.Bold)
+                    }
+                    Row {
+                        Text(text = ticket.place, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
         }
     }
 }
