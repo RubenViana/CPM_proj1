@@ -42,7 +42,7 @@ inline fun <reified T : Any> signMessageWithPrivateKey(data: T) : T {
         return data
     }
 
-    val signatureAlgorithm = "SHA256withECDSA"
+    val signatureAlgorithm = "SHA256WithRSA"
     val signatureInstance = Signature.getInstance(signatureAlgorithm).apply {
         initSign(entry.privateKey)
         update(objectToByteArray(data))
