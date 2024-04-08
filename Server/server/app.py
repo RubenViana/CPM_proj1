@@ -669,6 +669,11 @@ def purchases():
             cursor.execute('SELECT * FROM TICKET WHERE PURCHASE_ID = ?', (p['PURCHASE_ID'],))
             tickets = cursor.fetchall()
             p['tickets'] = [dict(ticket) for ticket in tickets]
+            # Get event details for each ticket in the purchase and append the details to the corresponding entry
+            for t in p['tickets']:
+                cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (t['EVENT_ID'],))
+                event = cursor.fetchone()
+                t['event_details'] = [dict(detail) for detail in event]
 
         return jsonify(purchases), 200
     except Exception as e:
