@@ -16,15 +16,22 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import org.feup.ticketo.ui.HomeScreen
 import org.feup.ticketo.ui.OrdersScreen
 import org.feup.ticketo.ui.RegisterScreen
 import org.feup.ticketo.ui.TicketsScreen
 import org.feup.ticketo.ui.SettingsScreen
+import org.feup.ticketo.ui.TicketScreen
+import org.feup.ticketo.ui.theme.SetSystemBarsColors
+import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
+import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 
 sealed class NavRoutes (val route: String, val icon: ImageVector) {
@@ -35,23 +42,25 @@ sealed class NavRoutes (val route: String, val icon: ImageVector) {
 
 @Composable
 fun TicketoNavHost(
-    navController: NavHostController
+    navController: NavHostController,
+    startDestination: String = "register"
 ) {
     NavHost(
         navController = navController,
-        startDestination = "register"// if already register -> NavRoutes.Home.route else register
+        startDestination
     ) {
         composable(route = "register"){
             RegisterScreen(navController)
         }
         composable(route = NavRoutes.Home.route){
-            HomeScreen()
+            SetSystemBarsColors(md_theme_light_primary.toArgb(), md_theme_light_onPrimary.toArgb(), statusTheme = false, navigationTheme = true)
+            HomeScreen(navController)
         }
         composable(route = NavRoutes.Tickets.route){
-            TicketsScreen()
+            TicketsScreen(navController)
         }
         composable(route = NavRoutes.Orders.route){
-            OrdersScreen()
+            OrdersScreen(navController)
         }
         composable(route = "settings",
             enterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
@@ -60,6 +69,10 @@ fun TicketoNavHost(
             popExitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)}
             ){
             SettingsScreen(navController)
+        }
+        composable(route = "ticket/{ticketId}"){
+            // fetch ticket with ticketId from database
+            TicketScreen(navController, it.arguments?.getString("ticketId") ?: "")
         }
     }
 }

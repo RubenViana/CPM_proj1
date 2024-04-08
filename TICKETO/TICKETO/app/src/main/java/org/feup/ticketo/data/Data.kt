@@ -23,11 +23,11 @@ data class CreditCard(
 
 @Serializable
 data class Event(
-    val event_id: Int? = null,
-    val name: String? = null,
-    val date: String? = null,
-    val picture: ByteArray? = null,
-    val price: Float? = null
+    val event_id: Int,
+    val name: String,
+    val date: String,
+    val picture: ByteArray,
+    val price: Float
 )
 
 @Serializable
@@ -66,13 +66,13 @@ data class Purchase(
 
 @Serializable
 data class Ticket(
-    val ticket_id: String? = null,
-    val purchase_id: Int? = null,
-    val event_id: Int? = null,
-    val purchase_date: String? = null,
-    val used: Boolean? = null,
-    val qrcode: String? = null,
-    val place: String? = null
+    val ticket_id: String,
+    val purchase_id: Int,
+    val event_id: Int,
+    val purchase_date: String,
+    val used: Boolean,
+    val qrcode: String,
+    val place: String
 )
 
 @Serializable

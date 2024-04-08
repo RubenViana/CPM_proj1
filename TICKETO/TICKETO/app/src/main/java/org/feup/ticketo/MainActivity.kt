@@ -54,8 +54,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             // This app is only ever in dark mode, so hard code detectDarkMode to true.
-            SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
-            SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { false },
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { false }
         )
         setContent {
             TicketoApp()
@@ -73,6 +73,8 @@ fun TicketoApp() {
         val navController = rememberNavController()
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
+        // get username and key if exists
+
         Scaffold(
             modifier = Modifier
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -83,8 +85,14 @@ fun TicketoApp() {
             bottomBar = {
                 BottomNavBar(navController)
             }
-        ) {
-                TicketoNavHost(navController = navController)
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier.padding(innerPadding)
+            )
+            {
+                // if user already in database, show home screen else show register screen
+                TicketoNavHost(navController = navController, "register")
+            }
         }
 
     }
