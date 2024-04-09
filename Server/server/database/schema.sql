@@ -17,7 +17,7 @@ drop table if exists VOUCHER;
 /*==============================================================*/
 /* Table: CUSTOMER                                              */
 /*==============================================================*/
-create table CUSTOMER
+create table if not exists CUSTOMER
 (
     CUSTOMER_ID                    varchar(128)                   not null,
     USERNAME                       varchar(512),
@@ -31,7 +31,7 @@ create table CUSTOMER
 /*==============================================================*/
 /* Table: CREDIT_CARD                                           */
 /*==============================================================*/
-create table CREDIT_CARD
+create table if not exists CREDIT_CARD
 (
     CREDIT_CARD_ID                 integer                        primary key autoincrement,
     CUSTOMER_ID                    varchar(128)                   not null,
@@ -44,7 +44,7 @@ create table CREDIT_CARD
 /*==============================================================*/
 /* Table: EVENT                                                 */
 /*==============================================================*/
-create table EVENT
+create table if not exists EVENT
 (
     EVENT_ID                       integer                        primary key autoincrement,
     NAME                           varchar(1024),
@@ -56,7 +56,7 @@ create table EVENT
 /*==============================================================*/
 /* Table: "ORDER"                                               */
 /*==============================================================*/
-create table "ORDER"
+create table if not exists "ORDER"
 (
     ORDER_ID                       integer                        primary key autoincrement,
     CUSTOMER_ID                    varchar(128)                   not null,
@@ -70,7 +70,7 @@ create table "ORDER"
 /*==============================================================*/
 /* Table: PRODUCT                                               */
 /*==============================================================*/
-create table PRODUCT
+create table if not exists PRODUCT
 (
     PRODUCT_ID                     integer                        primary key autoincrement,
     AVAILABLE                      bool,
@@ -82,7 +82,7 @@ create table PRODUCT
 /*==============================================================*/
 /* Table: ORDER_PRODUCT                                         */
 /*==============================================================*/
-create table ORDER_PRODUCT
+create table if not exists ORDER_PRODUCT
 (
     PRODUCT_ID                     integer                        not null,
     ORDER_ID                       integer                        not null,
@@ -95,7 +95,7 @@ create table ORDER_PRODUCT
 /*==============================================================*/
 /* Table: PURCHASE                                              */
 /*==============================================================*/
-create table PURCHASE
+create table if not exists PURCHASE
 (
     PURCHASE_ID                    integer                        primary key autoincrement,
     CUSTOMER_ID                    varchar(128)                   not null,
@@ -107,7 +107,7 @@ create table PURCHASE
 /*==============================================================*/
 /* Table: TICKET                                                */
 /*==============================================================*/
-create table TICKET
+create table if not exists TICKET
 (
     TICKET_ID                      varchar(128)                   not null,
     PURCHASE_ID                    integer                        not null,
@@ -124,7 +124,7 @@ create table TICKET
 /*==============================================================*/
 /* Table: VOUCHER                                               */
 /*==============================================================*/
-create table VOUCHER
+create table if not exists VOUCHER
 (
     VOUCHER_ID                     varchar(128)                   not null,
     CUSTOMER_ID                    varchar(128)                   not null,
