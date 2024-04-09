@@ -21,7 +21,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventScreen(navController: NavHostController, viewModel: `EventViewModel.kt`) {
+fun EventScreen(navController: NavHostController, viewModel: EventViewModel) {
     Column (
         Modifier.fillMaxSize().background(color = md_theme_light_background),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -35,7 +35,7 @@ fun EventScreen(navController: NavHostController, viewModel: `EventViewModel.kt`
                 scrolledContainerColor = md_theme_light_primary
             ),
             title = {
-                Text(viewModel.event.name)
+                Text(viewModel.event.name.orEmpty())
             },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
