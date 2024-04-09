@@ -1,6 +1,7 @@
 package org.feup.ticketo.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.feup.ticketo.data.Event
 import org.feup.ticketo.data.Ticket
+import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.generateQRCode
@@ -42,7 +44,7 @@ import org.feup.ticketo.utils.generateQRCode
 @Composable
 fun TicketScreen(navController: NavHostController, eventTickets: EventTickets) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(color = md_theme_light_background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CenterAlignedTopAppBar(

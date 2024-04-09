@@ -51,7 +51,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.serverUrl
 
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel) {
     val event = Event(
         event_id = 1,
         name = "Event 1",
@@ -66,8 +66,8 @@ fun HomeScreen(navController: NavHostController) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2)
         ) {
-            items(10) {
-                EventCard(event)
+            items(viewModel.eventsList.size) {
+                item -> EventCard(viewModel.eventsList[item], navController)
             }
         }
     }
@@ -77,9 +77,11 @@ fun HomeScreen(navController: NavHostController) {
 
 @Composable
 fun EventCard(
-    event: Event
+    event: Event,
+    navController: NavHostController
 ) {
     OutlinedCard(
+        onClick = {navController.navigate("event/${event.event_id}")},
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White,

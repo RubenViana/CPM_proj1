@@ -23,13 +23,20 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import org.feup.ticketo.ui.EventScreen
 import org.feup.ticketo.ui.EventTicketViewModel
+import org.feup.ticketo.ui.EventViewModel
 import org.feup.ticketo.ui.HomeScreen
+import org.feup.ticketo.ui.HomeViewModel
 import org.feup.ticketo.ui.OrdersScreen
+import org.feup.ticketo.ui.OrdersViewModel
 import org.feup.ticketo.ui.RegisterScreen
+import org.feup.ticketo.ui.RegisterViewModel
 import org.feup.ticketo.ui.TicketsScreen
 import org.feup.ticketo.ui.SettingsScreen
+import org.feup.ticketo.ui.SettingsViewModel
 import org.feup.ticketo.ui.TicketScreen
+import org.feup.ticketo.ui.TicketsViewModel
 import org.feup.ticketo.ui.theme.SetSystemBarsColors
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -51,17 +58,21 @@ fun TicketoNavHost(
         startDestination
     ) {
         composable(route = "register"){
-            RegisterScreen(navController)
+            val viewModel = RegisterViewModel()
+            RegisterScreen(navController, viewModel)
         }
         composable(route = NavRoutes.Home.route){
             SetSystemBarsColors(md_theme_light_primary.toArgb(), md_theme_light_onPrimary.toArgb(), statusTheme = false, navigationTheme = true)
-            HomeScreen(navController)
+            val viewModel = HomeViewModel()
+            HomeScreen(navController, viewModel)
         }
         composable(route = NavRoutes.Tickets.route){
-            TicketsScreen(navController)
+            val viewModel = TicketsViewModel()
+            TicketsScreen(navController, viewModel)
         }
         composable(route = NavRoutes.Orders.route){
-            OrdersScreen(navController)
+            val viewModel = OrdersViewModel()
+            OrdersScreen(navController, viewModel)
         }
         composable(route = "settings",
             enterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
@@ -69,11 +80,16 @@ fun TicketoNavHost(
             popEnterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
             popExitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)}
             ){
-            SettingsScreen(navController)
+            val viewModel = SettingsViewModel()
+            SettingsScreen(navController, viewModel)
         }
         composable(route = "tickets/{eventId}"){
             val viewModel = EventTicketViewModel(it.arguments?.getInt("eventId") ?: 0)
             TicketScreen(navController, viewModel.getEventTickets())
+        }
+        composable(route = "event/{eventId}"){
+            val viewModel = EventViewModel(it.arguments?.getInt("eventId") ?: 0)
+            EventScreen(navController, viewModel)
         }
     }
 }

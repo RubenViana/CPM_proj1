@@ -47,7 +47,7 @@ import org.feup.ticketo.utils.objectToJson
 import org.feup.ticketo.utils.serverUrl
 
 @Composable
-fun RegisterScreen(navController: NavHostController) {
+fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewModel) {
     Surface(
         color = md_theme_light_onPrimary,
         modifier = Modifier.fillMaxSize()

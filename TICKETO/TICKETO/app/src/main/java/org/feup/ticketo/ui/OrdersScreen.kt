@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 @Composable
-fun OrdersScreen(navController: NavHostController) {
+fun OrdersScreen(navController: NavHostController, viewModel: OrdersViewModel) {
     Column(
         Modifier.fillMaxSize()
     ) {

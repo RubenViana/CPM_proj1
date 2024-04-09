@@ -1,6 +1,7 @@
 package org.feup.ticketo.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,15 +48,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.navigation.NavController
+import org.feup.ticketo.ui.theme.md_theme_dark_background
+import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
     Column (
-        Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        Modifier.fillMaxSize().background(color = md_theme_light_background),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ){
         CenterAlignedTopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
