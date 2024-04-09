@@ -1,7 +1,7 @@
 package org.feup.ticketo.ui
 
 import androidx.lifecycle.ViewModel
-import org.feup.ticketo.data.Event
+import org.feup.ticketo.data.storage.Event
 
 class EventViewModel(
     private val eventId: Int,

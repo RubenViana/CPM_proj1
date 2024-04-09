@@ -28,8 +28,6 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import org.feup.ticketo.data.Event
-import org.feup.ticketo.data.Ticket
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary

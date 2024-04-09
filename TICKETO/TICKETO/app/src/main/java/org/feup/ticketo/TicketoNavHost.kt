@@ -12,10 +12,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import org.feup.ticketo.ui.EventScreen
 import org.feup.ticketo.ui.EventTicketViewModel
-import org.feup.ticketo.ui.EventViewModel
+import org.feup.ticketo.ui.`EventViewModel.kt`
 import org.feup.ticketo.ui.HomeScreen
 import org.feup.ticketo.ui.HomeViewModel
 import org.feup.ticketo.ui.OrdersScreen
@@ -27,7 +26,6 @@ import org.feup.ticketo.ui.SettingsScreen
 import org.feup.ticketo.ui.SettingsViewModel
 import org.feup.ticketo.ui.TicketScreen
 import org.feup.ticketo.ui.TicketsViewModel
-import org.feup.ticketo.ui.TicketsScreen
 import org.feup.ticketo.ui.theme.SetSystemBarsColors
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -80,7 +78,7 @@ fun TicketoNavHost(
             TicketScreen(navController, viewModel.getEventTickets())
         }
         composable(route = "event/{eventId}"){
-            val viewModel = EventViewModel(it.arguments?.getInt("eventId") ?: 0)
+            val viewModel = `EventViewModel.kt`(it.arguments?.getInt("eventId") ?: 0)
             EventScreen(navController, viewModel)
         }
     }

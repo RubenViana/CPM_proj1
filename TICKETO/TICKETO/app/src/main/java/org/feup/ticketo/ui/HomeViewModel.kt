@@ -1,7 +1,7 @@
 package org.feup.ticketo.ui
 
 import androidx.lifecycle.ViewModel
-import org.feup.ticketo.data.Event
+import org.feup.ticketo.data.storage.Event
 
 class HomeViewModel(
     //repo = localRepo
@@ -9,7 +9,7 @@ class HomeViewModel(
 ) : ViewModel() {
     val eventsList = getEvents()
 
-    fun getEvents(): List<Event> {
+    private fun getEvents(): List<Event> {
         return listOf(
             Event(
                 event_id = 1,

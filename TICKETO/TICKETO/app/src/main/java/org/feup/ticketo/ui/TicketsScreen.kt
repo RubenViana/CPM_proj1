@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import org.feup.ticketo.data.storage.Ticket
 
 @Composable
 fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel) {
