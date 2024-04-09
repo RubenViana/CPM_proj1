@@ -109,11 +109,14 @@ def register_user():
         # Insert new credit card
         cursor.execute('INSERT INTO credit_card (CUSTOMER_ID, TYPE, NUMBER, VALIDITY) VALUES (?, ?, ?, ?)',
                        (customer_id, credit_card_type, credit_card_number, credit_card_validity))
+        # Get last row id
+        credit_card_id = cursor.lastrowid
         conn.commit()
 
         return jsonify({
             'message': 'Customer registered successfully',
-            'customer_id': customer_id
+            'customer_id': customer_id,
+            'credit_card_id': credit_card_id
         }), 201
     except Exception as e:
         return jsonify({'message': 'Error registering customer: {}'.format(e)}), 500
