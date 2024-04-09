@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,13 +14,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -29,13 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.feup.ticketo.data.Event
 import org.feup.ticketo.data.Ticket
 import org.feup.ticketo.ui.theme.md_theme_light_background
+import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.generateQRCode
@@ -65,8 +61,10 @@ fun TicketScreen(navController: NavHostController, eventTickets: EventTickets) {
             }
         )
         LazyRow {
-            items(eventTickets.tickets.size) { item ->
-                QRCodeCard(eventTickets.tickets[item], eventTickets.eventName, eventTickets.eventDate)
+            eventTickets.tickets?.let {
+                items(it.size) { item ->
+                    QRCodeCard(eventTickets.tickets[item], eventTickets.eventName.orEmpty(), eventTickets.eventDate.orEmpty())
+                }
             }
         }
 
@@ -87,7 +85,7 @@ fun QRCodeCard(ticket: Ticket, eventName: String, eventDate: String) {
                 .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            val qrcode = generateQRCode(ticket.qrcode)
+            val qrcode = generateQRCode(ticket)
             qrcode?.let { BitmapPainter(it.asImageBitmap()) }?.let {
                 Image(
                     painter = it,
@@ -118,13 +116,13 @@ fun QRCodeCard(ticket: Ticket, eventName: String, eventDate: String) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Row {
-                        Text(text = ticket.ticket_id, fontWeight = FontWeight.Bold)
+                        Text(text = ticket.ticket_id.orEmpty(), fontWeight = FontWeight.Bold)
                     }
                     Row {
                         Text(text = eventDate, fontWeight = FontWeight.Bold)
                     }
                     Row {
-                        Text(text = ticket.place, fontWeight = FontWeight.Bold)
+                        Text(text = ticket.place.orEmpty(), fontWeight = FontWeight.Bold)
                     }
                 }
             }

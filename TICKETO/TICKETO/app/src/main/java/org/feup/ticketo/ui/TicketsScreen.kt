@@ -1,23 +1,16 @@
 package org.feup.ticketo.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.MobileFriendly
 import androidx.compose.material.icons.filled.PanoramaVertical
-import androidx.compose.material.icons.filled.PanoramaVerticalSelect
-import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,8 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import org.feup.ticketo.data.Ticket
-import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
+import org.feup.ticketo.data.storage.Ticket
 
 @Composable
 fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel) {

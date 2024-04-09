@@ -255,7 +255,7 @@ def get_event():
             conn.close()
 
 # Get client tickets Route
-@app.route('/tickets', methos=['GET'])
+@app.route('/tickets', methods=['GET'])
 def get_tickets():
     """
     Get tickets for a customer.
@@ -346,7 +346,7 @@ def buy_ticket():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.importKey(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
@@ -528,7 +528,7 @@ def validate_tickets():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.importKey(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
@@ -927,7 +927,7 @@ def validate_order():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.importKey(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
@@ -1104,7 +1104,7 @@ def pay_order():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.importKey(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
@@ -1131,9 +1131,8 @@ def pay_order():
             conn.close()
 
 def validate_message(data, public_key, signature):
-    message = json.dumps(data, sort_keys=True)
+    message = json.dumps(data, separators=(',', ':'))
     hash_object = SHA256.new(message.encode())
-    # select vouchers where voucher id in list of voucher ids
     verifier = PKCS1_v1_5.new(public_key)
     return verifier.verify(hash_object, base64.b64decode(signature))
 
