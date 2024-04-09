@@ -21,7 +21,7 @@ class EventTicketsViewModel(
         TicketoStorage(ticketoDatabase.ticketDao())
     }
 
-    private lateinit var eventTickets: EventTickets
+    private var eventTickets: EventTickets? = null
 
     init {
 //        Log.i("mytag", eventTickets.toString())
@@ -40,7 +40,7 @@ class EventTicketsViewModel(
 
     }
 
-    fun getEventTickets(): EventTickets {
+    fun getEventTickets(): EventTickets? {
         return eventTickets
     }
 
