@@ -1,4 +1,4 @@
-package org.feup.ticketo.ui
+package org.feup.ticketo.ui.screens.eventTickets
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -7,7 +7,7 @@ import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoDatabase
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 
-class EventTicketViewModel(
+class EventTicketsViewModel(
     private val eventId: Int,
     private val context: Context
 ) : ViewModel() {

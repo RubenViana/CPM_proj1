@@ -1,8 +1,7 @@
-package org.feup.ticketo.ui
+package org.feup.ticketo.ui.screens.eventTickets
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,15 +27,15 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.data.storage.Ticket
+import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.generateQRCode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketScreen(navController: NavHostController, eventTickets: EventTickets) {
+fun EventTicketsScreen(navController: NavHostController, eventTickets: EventTickets) {
     Column(
         modifier = Modifier.fillMaxSize().background(color = md_theme_light_background),
         horizontalAlignment = Alignment.CenterHorizontally

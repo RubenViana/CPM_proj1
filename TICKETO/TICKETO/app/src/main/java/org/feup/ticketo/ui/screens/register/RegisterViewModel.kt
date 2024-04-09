@@ -1,4 +1,4 @@
-package org.feup.ticketo.ui
+package org.feup.ticketo.ui.screens.register
 
 import androidx.lifecycle.ViewModel
 

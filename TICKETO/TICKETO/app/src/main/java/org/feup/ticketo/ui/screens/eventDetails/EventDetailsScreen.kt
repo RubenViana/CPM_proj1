@@ -1,4 +1,4 @@
-package org.feup.ticketo.ui
+package org.feup.ticketo.ui.screens.eventDetails
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventScreen(navController: NavHostController, viewModel: EventViewModel) {
+fun EventDetailsScreen(navController: NavHostController, viewModel: EventDetailsViewModel) {
     Column (
         Modifier.fillMaxSize().background(color = md_theme_light_background),
         horizontalAlignment = Alignment.CenterHorizontally,

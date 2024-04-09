@@ -12,20 +12,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import org.feup.ticketo.ui.EventScreen
-import org.feup.ticketo.ui.EventTicketViewModel
-import org.feup.ticketo.ui.EventViewModel
-import org.feup.ticketo.ui.HomeScreen
-import org.feup.ticketo.ui.HomeViewModel
-import org.feup.ticketo.ui.OrdersScreen
-import org.feup.ticketo.ui.OrdersViewModel
-import org.feup.ticketo.ui.RegisterScreen
-import org.feup.ticketo.ui.RegisterViewModel
-import org.feup.ticketo.ui.SettingsScreen
-import org.feup.ticketo.ui.SettingsViewModel
-import org.feup.ticketo.ui.TicketScreen
-import org.feup.ticketo.ui.TicketsScreen
-import org.feup.ticketo.ui.TicketsViewModel
+import org.feup.ticketo.ui.screens.eventDetails.EventDetailsViewModel
+import org.feup.ticketo.ui.screens.eventDetails.EventDetailsScreen
+import org.feup.ticketo.ui.screens.eventTickets.EventTicketsScreen
+import org.feup.ticketo.ui.screens.eventTickets.EventTicketsViewModel
+import org.feup.ticketo.ui.screens.home.HomeScreen
+import org.feup.ticketo.ui.screens.home.HomeViewModel
+import org.feup.ticketo.ui.screens.orders.OrdersScreen
+import org.feup.ticketo.ui.screens.orders.OrdersViewModel
+import org.feup.ticketo.ui.screens.register.RegisterScreen
+import org.feup.ticketo.ui.screens.register.RegisterViewModel
+import org.feup.ticketo.ui.screens.settings.SettingsScreen
+import org.feup.ticketo.ui.screens.settings.SettingsViewModel
+import org.feup.ticketo.ui.screens.tickets.TicketsScreen
+import org.feup.ticketo.ui.screens.tickets.TicketsViewModel
 import org.feup.ticketo.ui.theme.SetSystemBarsColors
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -74,12 +74,12 @@ fun TicketoNavHost(
         }
         composable(route = "tickets/{eventId}") {
             val viewModel =
-                EventTicketViewModel(it.arguments?.getInt("eventId") ?: 0, LocalContext.current)
-            TicketScreen(navController, viewModel.getEventTickets())
+                EventTicketsViewModel(it.arguments?.getInt("eventId") ?: 0, LocalContext.current)
+            EventTicketsScreen(navController, viewModel.getEventTickets())
         }
         composable(route = "event/{eventId}"){
-            val viewModel = EventViewModel(it.arguments?.getInt("eventId") ?: 0)
-            EventScreen(navController, viewModel)
+            val viewModel = EventDetailsViewModel(it.arguments?.getInt("eventId") ?: 0)
+            EventDetailsScreen(navController, viewModel)
         }
     }
 }
