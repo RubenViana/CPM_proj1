@@ -11,10 +11,12 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import org.feup.ticketo.ui.screens.eventDetails.EventDetailsViewModel
+import androidx.navigation.navArgument
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsScreen
+import org.feup.ticketo.ui.screens.eventDetails.EventDetailsViewModel
 import org.feup.ticketo.ui.screens.eventTickets.EventTicketsScreen
 import org.feup.ticketo.ui.screens.eventTickets.EventTicketsViewModel
 import org.feup.ticketo.ui.screens.home.HomeScreen
@@ -48,38 +50,57 @@ fun TicketoNavHost(
         navController = navController,
         startDestination,
     ) {
-        composable(route = "register"){
+        composable(route = "register") {
             val viewModel = RegisterViewModel()
             RegisterScreen(navController, viewModel, snackbarHostState)
         }
-        composable(route = NavRoutes.Home.route){
-            SetSystemBarsColors(md_theme_light_primary.toArgb(), md_theme_light_onPrimary.toArgb(), statusTheme = false, navigationTheme = true)
+        composable(route = NavRoutes.Home.route) {
+            SetSystemBarsColors(
+                md_theme_light_primary.toArgb(),
+                md_theme_light_onPrimary.toArgb(),
+                statusTheme = false,
+                navigationTheme = true
+            )
             val viewModel = HomeViewModel()
             HomeScreen(navController, viewModel)
         }
-        composable(route = NavRoutes.Tickets.route){
+        composable(route = NavRoutes.Tickets.route) {
             val viewModel = TicketsViewModel()
             TicketsScreen(navController, viewModel)
         }
-        composable(route = NavRoutes.Orders.route){
+        composable(route = NavRoutes.Orders.route) {
             val viewModel = OrdersViewModel()
             OrdersScreen(navController, viewModel)
         }
         composable(route = "settings",
-            enterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
-            exitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) },
-            popEnterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
-            popExitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)}
-            ){
+            enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) },
+            popEnterTransition = {
+                return@composable slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Up
+                )
+            },
+            popExitTransition = {
+                return@composable slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down
+                )
+            }
+        ) {
             val viewModel = SettingsViewModel()
             SettingsScreen(navController, viewModel)
         }
-        composable(route = "tickets/{eventId}") {
+        composable(
+            route = "tickets/{eventId}",
+            arguments = listOf(navArgument("eventId") { type = NavType.IntType })
+        ) {
             val viewModel =
                 EventTicketsViewModel(it.arguments?.getInt("eventId") ?: 0, LocalContext.current)
             EventTicketsScreen(navController, viewModel.getEventTickets())
         }
-        composable(route = "event/{eventId}"){
+        composable(
+            route = "event/{eventId}",
+            arguments = listOf(navArgument("eventId") { type = NavType.IntType })
+        ) {
             val viewModel = EventDetailsViewModel(it.arguments?.getInt("eventId") ?: 0)
             EventDetailsScreen(navController, viewModel)
         }

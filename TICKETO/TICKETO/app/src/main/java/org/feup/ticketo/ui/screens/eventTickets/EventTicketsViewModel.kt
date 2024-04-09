@@ -11,7 +11,7 @@ class EventTicketsViewModel(
     private val eventId: Int,
     private val context: Context
 ) : ViewModel() {
-    private val db = TicketoDatabase.getInstance(context = context)
+    private val db = TicketoDatabase.getDatabase(context = context)
     fun getEventTickets(): EventTickets {
         val event = getEvent()
         return EventTickets(

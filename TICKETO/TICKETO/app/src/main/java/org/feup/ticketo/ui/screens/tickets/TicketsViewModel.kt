@@ -21,7 +21,7 @@ class TicketsViewModel(
 }
 
 //example data class -> Move out of here
-data class TicketsByEvent (
+data class  TicketsByEvent (
     val eventId: Int,
     val eventName: String,
     val numberTickets: Int,
