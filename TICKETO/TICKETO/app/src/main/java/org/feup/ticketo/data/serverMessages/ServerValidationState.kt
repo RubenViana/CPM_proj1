@@ -1,4 +1,4 @@
-package org.feup.ticketo.data
+package org.feup.ticketo.data.serverMessages
 
 import com.android.volley.VolleyError
 import org.json.JSONObject
