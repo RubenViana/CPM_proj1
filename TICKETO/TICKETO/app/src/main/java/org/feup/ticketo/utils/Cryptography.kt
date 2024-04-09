@@ -1,37 +1,56 @@
 package org.feup.ticketo.utils
 
-import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Base64
 import android.util.Log
 import java.lang.reflect.Field
-import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
+import java.util.Calendar
+import java.util.GregorianCalendar
 
-fun createAndStoreKeyPair(context: Context): KeyPair? {
+fun createAndStoreKeyPair(): String? {
 
     val kpg: KeyPairGenerator = KeyPairGenerator.getInstance(
-        KeyProperties.KEY_ALGORITHM_EC,
+        KeyProperties.KEY_ALGORITHM_RSA,
         "AndroidKeyStore"
     )
     val parameterSpec: KeyGenParameterSpec = KeyGenParameterSpec.Builder(
         "customerKeyPair",
         KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
-    ).run {
-        setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-        build()
-    }
+    ).setKeySize(512)
+        .run {
+            setDigests(KeyProperties.DIGEST_SHA256)
+            setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
+            setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
+            setCertificateNotBefore(GregorianCalendar().time)
+            setCertificateNotAfter(GregorianCalendar().apply { add(Calendar.YEAR, 10) }.time)
+            build()
+        }
 
     kpg.initialize(parameterSpec)
 
-    return kpg.generateKeyPair()
+    kpg.generateKeyPair()
+
+    val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+        load(null)
+    }
+
+    val entry: KeyStore.Entry = ks.getEntry("customerKeyPair", null)
+
+    return if (entry is KeyStore.PrivateKeyEntry) {
+        Base64.encodeToString(entry.certificate.publicKey.encoded, Base64.NO_WRAP)
+    } else {
+        Log.w("mytag_createAndStoreKeyPairWarning", "Not an instance of a PrivateKeyEntry")
+        null
+    }
 
 
 }
 
-inline fun <reified T : Any> signMessageWithPrivateKey(data: T) : T {
+inline fun <reified T : Any> signMessageWithPrivateKey(data: T): T {
     val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
         load(null)
     }
@@ -42,12 +61,12 @@ inline fun <reified T : Any> signMessageWithPrivateKey(data: T) : T {
         return data
     }
 
-    val signatureAlgorithm = "SHA256WithRSA"
-    val signatureInstance = Signature.getInstance(signatureAlgorithm).apply {
+    val signatureInstance = Signature.getInstance("SHA256WithRSA").apply {
         initSign(entry.privateKey)
         update(objectToByteArray(data))
     }
-    val signature = android.util.Base64.encodeToString(signatureInstance.sign(), android.util.Base64.DEFAULT)
+
+    val signature = Base64.encodeToString(signatureInstance.sign(), Base64.NO_WRAP)
 
     // Set the signature field dynamically using Kotlin reflection
     val signatureField: Field? = try {
