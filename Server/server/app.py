@@ -346,7 +346,7 @@ def buy_ticket():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
@@ -528,7 +528,7 @@ def validate_tickets():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
@@ -927,7 +927,7 @@ def validate_order():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
@@ -1104,7 +1104,7 @@ def pay_order():
             return jsonify({'message': f'Customer {customer_id} not found'}), 404
 
         # Create public key from string
-        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY'])
+        public_key = RSA.import_key(base64.b64decode(customer['PUBLIC_KEY']))
 
         # Create a json object with data
         data = {
