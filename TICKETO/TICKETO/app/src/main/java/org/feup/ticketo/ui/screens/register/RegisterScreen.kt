@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,11 +20,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -36,6 +41,7 @@ import androidx.navigation.NavHostController
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.UserRegistrationMessage
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -43,7 +49,8 @@ import org.feup.ticketo.utils.objectToJson
 import org.feup.ticketo.utils.serverUrl
 
 @Composable
-fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewModel) {
+fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewModel, snackbarHostState: SnackbarHostState) {
+    val scope = rememberCoroutineScope()
     Surface(
         color = md_theme_light_onPrimary,
         modifier = Modifier.fillMaxSize()
@@ -54,13 +61,6 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            val username = remember { mutableStateOf(TextFieldValue()) }
-            val nif = remember { mutableStateOf(TextFieldValue()) }
-            val creditCardNumber = remember { mutableStateOf(TextFieldValue()) }
-            val creditCardDate = remember { mutableStateOf(TextFieldValue()) }
-            val creditCardType = remember { mutableStateOf(TextFieldValue()) }
-
             Text(
                 text = "Sign Up",
                 style = TextStyle(fontSize = 32.sp, fontFamily = FontFamily.Default),
@@ -90,8 +90,8 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                         contentDescription = null
                     )
                 },
-                value = username.value,
-                onValueChange = { username.value = it }
+                value = viewModel.username.value,
+                onValueChange = { viewModel.username.value = it },
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -117,9 +117,9 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                         contentDescription = null
                     )
                 },
-                value = nif.value,
-                onValueChange = { nif.value = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                value = viewModel.nif.value,
+                onValueChange = { viewModel.nif.value = it },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -145,9 +145,9 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                         contentDescription = null
                     )
                 },
-                value = creditCardNumber.value,
-                onValueChange = { creditCardNumber.value = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                value = viewModel.creditCardNumber.value,
+                onValueChange = { viewModel.creditCardNumber.value = it },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -179,9 +179,9 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                             contentDescription = null
                         )
                     },
-                    value = creditCardDate.value,
-                    onValueChange = { creditCardDate.value = it },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    value = viewModel.creditCardDate.value,
+                    onValueChange = { viewModel.creditCardDate.value = it },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
 
                 OutlinedTextField(
@@ -206,8 +206,8 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                             contentDescription = null
                         )
                     },
-                    value = creditCardType.value,
-                    onValueChange = { creditCardType.value = it }
+                    value = viewModel.creditCardType.value,
+                    onValueChange = { viewModel.creditCardType.value = it },
                 )
             }
 
@@ -216,9 +216,16 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
             Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
                 Button(
                     onClick = {
-                        // handle user registration
-                        navController.navigate("home") {
-                            popUpTo(0)
+                        if (viewModel.username.value.isEmpty() || viewModel.nif.value.isEmpty() || viewModel.creditCardNumber.value.isEmpty() || viewModel.creditCardDate.value.isEmpty() || viewModel.creditCardType.value.isEmpty()){
+                            scope.launch {
+                                snackbarHostState.showSnackbar(message = "Missing Input Fields", duration = SnackbarDuration.Short)
+                            }
+                        }
+                        else {
+                            // handle user registration
+                            navController.navigate("home") {
+                                popUpTo(0)
+                            }
                         }
                     },
                     shape = RoundedCornerShape(50.dp),

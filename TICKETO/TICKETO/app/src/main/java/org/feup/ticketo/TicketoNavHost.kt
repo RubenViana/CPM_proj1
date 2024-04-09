@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.MobileFriendly
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -40,15 +41,16 @@ sealed class NavRoutes(val route: String, val icon: ImageVector) {
 @Composable
 fun TicketoNavHost(
     navController: NavHostController,
-    startDestination: String = "register"
+    startDestination: String = "register",
+    snackbarHostState: SnackbarHostState
 ) {
     NavHost(
         navController = navController,
-        startDestination
+        startDestination,
     ) {
         composable(route = "register"){
             val viewModel = RegisterViewModel()
-            RegisterScreen(navController, viewModel)
+            RegisterScreen(navController, viewModel, snackbarHostState)
         }
         composable(route = NavRoutes.Home.route){
             SetSystemBarsColors(md_theme_light_primary.toArgb(), md_theme_light_onPrimary.toArgb(), statusTheme = false, navigationTheme = true)
