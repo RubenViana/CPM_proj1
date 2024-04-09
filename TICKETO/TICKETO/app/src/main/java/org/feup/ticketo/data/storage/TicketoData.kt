@@ -14,13 +14,13 @@ data class Customer(
     @PrimaryKey
     @NonNull
     @ColumnInfo(name = "CUSTOMER_ID")
-    val customer_id: String,
+    var customer_id: String,
     @ColumnInfo(name = "USERNAME")
     val username: String? = null,
     @ColumnInfo(name = "PASSWORD")
     val password: String? = null,
     @ColumnInfo(name = "TAX_NUMBER")
-    val tax_number: Long? = null,
+    val tax_number: Int? = null,
     @ColumnInfo(name = "PUBLIC_KEY")
     val public_key: String? = null,
     @ColumnInfo(name = "NAME")
@@ -41,7 +41,7 @@ data class CreditCard(
     @PrimaryKey
     @NonNull
     @ColumnInfo(name = "CREDIT_CARD_ID")
-    val credit_card_id: Int,
+    var credit_card_id: Int,
     @ColumnInfo(name = "CUSTOMER_ID")
     val customer_id: String? = null,
     @ColumnInfo(name = "TYPE")

@@ -1,6 +1,6 @@
 package org.feup.ticketo.ui.screens.register
 
-import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,30 +19,35 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.android.volley.Request
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import org.feup.ticketo.data.serverMessages.UserRegistrationMessage
+import com.android.volley.VolleyError
+import kotlinx.coroutines.launch
+import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
-import org.feup.ticketo.utils.objectToJson
-import org.feup.ticketo.utils.serverUrl
+import org.feup.ticketo.utils.getServerResponseErrorMessage
 
 @Composable
-fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewModel, snackbarHostState: SnackbarHostState) {
+fun RegisterScreen(
+    navController: NavHostController,
+    viewModel: RegisterViewModel,
+    snackbarHostState: SnackbarHostState
+) {
     val scope = rememberCoroutineScope()
     Surface(
         color = md_theme_light_onPrimary,
@@ -209,17 +214,16 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
             Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
                 Button(
                     onClick = {
-//                        if (viewModel.username.value.isEmpty() || viewModel.nif.value.isEmpty() || viewModel.creditCardNumber.value.isEmpty() || viewModel.creditCardDate.value.isEmpty() || viewModel.creditCardType.value.isEmpty()){
-//                            scope.launch {
-//                                snackbarHostState.showSnackbar(message = "Missing Input Fields", duration = SnackbarDuration.Short)
-//                            }
-//                        }
-//                        else {
-                            // handle user registration
-                            navController.navigate("home") {
-                                popUpTo(0)
+                        if (viewModel.username.value.isEmpty() || viewModel.nif.value.toInt() == 0 || viewModel.creditCardNumber.value.isEmpty() || viewModel.creditCardDate.value.isEmpty() || viewModel.creditCardType.value.isEmpty()) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Missing Input Fields",
+                                    duration = SnackbarDuration.Short
+                                )
                             }
-//                        }
+                        } else {
+                            viewModel.register()
+                        }
                     },
                     shape = RoundedCornerShape(50.dp),
                     modifier = Modifier
@@ -229,30 +233,43 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
                     Text(text = "Sign Up")
                 }
             }
+
+            when {
+                viewModel.showServerErrorToast.value -> {
+                    if (viewModel.serverValidationState.value is ServerValidationState.Failure)
+                        registrationErrorToast(
+                            (viewModel.serverValidationState.value as ServerValidationState.Failure).error,
+                            viewModel.showServerErrorToast
+                        )
+                }
+            }
+
+            when {
+                viewModel.showErrorToast.value -> {
+                    errorToast(viewModel.errorMessage.value, viewModel.showErrorToast)
+                }
+            }
+
+            when {
+                viewModel.serverValidationState.value is ServerValidationState.Success -> {
+                    navController.navigate("home") {
+                        popUpTo(0)
+                    }
+                }
+            }
         }
     }
 }
 
-fun registerUserInServer(context: Context, userRegistrationMessage: UserRegistrationMessage) {
+@Composable
+fun registrationErrorToast(error: VolleyError, showServerErrorToast: MutableState<Boolean>) {
+    val errorMessage = getServerResponseErrorMessage(error)
+    Toast.makeText(LocalContext.current, "Error Registering User: $errorMessage", Toast.LENGTH_LONG)
+    showServerErrorToast.value = false
+}
 
-    // Server endpoint
-    val endpoint = "register_user"
-
-    // Create the request body
-    val json = objectToJson(userRegistrationMessage)
-
-    // Create the request
-    val request = JsonObjectRequest(
-        Request.Method.POST, serverUrl + endpoint, json,
-        { response ->
-            // Handle response
-        },
-        { error ->
-
-        }
-    )
-
-    // Add the request to the RequestQueue
-    Volley.newRequestQueue(context).add(request)
-
+@Composable
+fun errorToast(error: String, showErrorToast: MutableState<Boolean>) {
+    Toast.makeText(LocalContext.current, "Error Registering User: $error", Toast.LENGTH_LONG)
+    showErrorToast.value = false
 }
