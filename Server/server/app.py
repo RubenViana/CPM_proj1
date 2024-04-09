@@ -255,7 +255,7 @@ def get_event():
             conn.close()
 
 # Get client tickets Route
-@app.route('/tickets', methos=['GET'])
+@app.route('/tickets', methods=['GET'])
 def get_tickets():
     """
     Get tickets for a customer.
