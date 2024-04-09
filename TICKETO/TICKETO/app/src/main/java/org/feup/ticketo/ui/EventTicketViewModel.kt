@@ -1,59 +1,42 @@
 package org.feup.ticketo.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
-import org.feup.ticketo.data.Event
-import org.feup.ticketo.data.Ticket
+import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.data.storage.Ticket
+import org.feup.ticketo.data.storage.TicketoDatabase
+import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 
 class EventTicketViewModel(
     private val eventId: Int,
+    private val context: Context
 ) : ViewModel() {
-
+    private val db = TicketoDatabase.getInstance(context = context)
     fun getEventTickets(): EventTickets {
+        val event = getEvent()
         return EventTickets(
-            getEvent().name,
-            getEvent().date,
-            getEvent().picture,
+            event?.name,
+            event?.date,
+            event?.picture,
             getTickets()
         )
     }
 
-    fun getEvent(): Event {
-        return Event(
-            event_id = eventId,
-            name = "Event 1",
-            date = "2022-01-01",
-            price = 10.0f,
-            picture = ByteArray(0)
-        )
+    private fun getEvent(): Event? {
+        return db.ticketDao().getEvent(eventId)
     }
 
-    fun getTickets(): List<Ticket> {
-        return listOf(
-            Ticket(
-                ticket_id = "1",
-                purchase_id = 1,
-                event_id = eventId,
-                purchase_date = "2022-01-01",
-                used = false,
-                qrcode = "qrcode",
-                place = "A1"
-            ),
-            Ticket(
-                ticket_id = "2",
-                purchase_id = 2,
-                event_id = eventId,
-                purchase_date = "2022-01-02",
-                used = false,
-                qrcode = "qrcode",
-                place = "A2"
-            )
+    private fun getTickets(): List<Ticket>? {
+        return db.ticketDao().getCustomerTicketsForEvent(
+            eventId = eventId,
+            customerId = getUserIdInSharedPreferences(context)
         )
     }
 }
 
 data class EventTickets(
-    val eventName: String,
-    val eventDate: String,
-    val eventImage: ByteArray,
-    val tickets: List<Ticket>
+    val eventName: String?,
+    val eventDate: String?,
+    val eventImage: ByteArray?,
+    val tickets: List<Ticket>?
 )

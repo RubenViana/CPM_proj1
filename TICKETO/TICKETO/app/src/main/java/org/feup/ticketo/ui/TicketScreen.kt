@@ -1,11 +1,10 @@
 package org.feup.ticketo.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -16,7 +15,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -25,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -59,8 +56,10 @@ fun TicketScreen(navController: NavHostController, eventTickets: EventTickets) {
             }
         )
         LazyRow {
-            items(eventTickets.tickets.size) { item ->
-                QRCodeCard(eventTickets.tickets[item], eventTickets.eventName, eventTickets.eventDate)
+            eventTickets.tickets?.let {
+                items(it.size) { item ->
+                    QRCodeCard(eventTickets.tickets[item], eventTickets.eventName.orEmpty(), eventTickets.eventDate.orEmpty())
+                }
             }
         }
 
@@ -112,13 +111,13 @@ fun QRCodeCard(ticket: Ticket, eventName: String, eventDate: String) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Row {
-                        Text(text = ticket.ticket_id, fontWeight = FontWeight.Bold)
+                        Text(text = ticket.ticket_id.orEmpty(), fontWeight = FontWeight.Bold)
                     }
                     Row {
                         Text(text = eventDate, fontWeight = FontWeight.Bold)
                     }
                     Row {
-                        Text(text = ticket.place, fontWeight = FontWeight.Bold)
+                        Text(text = ticket.place.orEmpty(), fontWeight = FontWeight.Bold)
                     }
                 }
             }
