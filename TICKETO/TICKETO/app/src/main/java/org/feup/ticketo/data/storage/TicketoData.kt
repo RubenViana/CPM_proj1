@@ -7,12 +7,14 @@ import androidx.room.ForeignKey
 import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import io.reactivex.annotations.NonNull
 
 @Entity(tableName = "CUSTOMER")
 data class Customer(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "CUSTOMER_ID")
-    val customer_id: String? = null,
+    val customer_id: String,
     @ColumnInfo(name = "USERNAME")
     val username: String? = null,
     @ColumnInfo(name = "PASSWORD")
@@ -37,8 +39,9 @@ data class Customer(
 )
 data class CreditCard(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "CREDIT_CARD_ID")
-    val credit_card_id: Int? = null,
+    val credit_card_id: Int,
     @ColumnInfo(name = "CUSTOMER_ID")
     val customer_id: String? = null,
     @ColumnInfo(name = "TYPE")
@@ -52,8 +55,9 @@ data class CreditCard(
 @Entity(tableName = "EVENT")
 data class Event(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "EVENT_ID")
-    val event_id: Int? = null,
+    val event_id: Int,
     @ColumnInfo(name = "NAME")
     val name: String? = null,
     @ColumnInfo(name = "DATE")
@@ -76,8 +80,9 @@ data class Event(
 )
 data class Order(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "ORDER_ID")
-    val order_id: Int? = null,
+    val order_id: Int,
     @ColumnInfo(name = "CUSTOMER_ID")
     val customer_id: String? = null,
     @ColumnInfo(name = "DATE")
@@ -93,8 +98,9 @@ data class Order(
 @Entity(tableName = "PRODUCT")
 data class Product(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "PRODUCT_ID")
-    val product_id: Int? = null,
+    val product_id: Int,
     @ColumnInfo(name = "AVAILABLE")
     val available: Boolean? = null,
     @ColumnInfo(name = "NAME")
@@ -126,10 +132,12 @@ data class Product(
     ]
 )
 data class OrderProduct(
+    @NonNull
     @ColumnInfo(name = "PRODUCT_ID")
-    val product_id: Int? = null,
+    val product_id: Int,
+    @NonNull
     @ColumnInfo(name = "ORDER_ID")
-    val order_id: Int? = null,
+    val order_id: Int,
     @ColumnInfo(name = "QUANTITY")
     val quantity: Int? = null
 )
@@ -147,8 +155,9 @@ data class OrderProduct(
 
 data class Purchase(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "PURCHASE_ID")
-    val purchase_id: Int? = null,
+    val purchase_id: Int,
     @ColumnInfo(name = "CUSTOMER_ID")
     val customer_id: String? = null,
     @ColumnInfo(name = "DATE")
@@ -178,8 +187,9 @@ data class Purchase(
 )
 data class Ticket(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "TICKET_ID")
-    val ticket_id: String? = null,
+    val ticket_id: String,
     @ColumnInfo(name = "PURCHASE_ID")
     val purchase_id: Int? = null,
     @ColumnInfo(name = "EVENT_ID")
@@ -222,8 +232,9 @@ data class Ticket(
 )
 data class Voucher(
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = "VOUCHER_ID")
-    val voucher_id: String? = null,
+    val voucher_id: String,
     @ColumnInfo(name = "CUSTOMER_ID")
     val customer_id: String? = null,
     @ColumnInfo(name = "PRODUCT_ID")
@@ -238,10 +249,15 @@ data class Voucher(
     val redeemed: Boolean? = null
 )
 
-data class EventWithTicketCount(
-    val event: Event,
-    val ticketsBought: Int
+data class EventWithTicketsCount(
+    @Embedded val event: Event,
+    @Relation(
+        parentColumn = "EVENT_ID",
+        entityColumn = "EVENT_ID"
+    )
+    val tickets: List<Ticket>
 )
+
 
 data class PurchaseWithTicketsAndEvents(
     @Embedded val purchase: Purchase,
@@ -251,25 +267,25 @@ data class PurchaseWithTicketsAndEvents(
     )
     val tickets: List<Ticket>,
     @Relation(
-        parentColumn = "EVENT_ID",
+        parentColumn = "PURCHASE_ID",
         entityColumn = "EVENT_ID"
     )
     val events: List<Event>
-)
-
-data class ProductWithQuantity(
-    @Embedded val product: Product,
-    @ColumnInfo(name = "QUANTITY") val quantity: Int
 )
 
 data class OrderWithProductsAndQuantityAndVouchers(
     @Embedded val order: Order,
     @Relation(
         parentColumn = "ORDER_ID",
-        entityColumn = "PRODUCT_ID",
+        entityColumn = "ORDER_ID",
         associateBy = Junction(OrderProduct::class)
     )
-    val productsWithQuantity: List<ProductWithQuantity>,
+    val products: List<OrderProduct>,
+    @Relation(
+        parentColumn = "ORDER_ID",
+        entityColumn = "PRODUCT_ID"
+    )
+    val orderProducts: List<Product>,
     @Relation(
         parentColumn = "ORDER_ID",
         entityColumn = "ORDER_ID"

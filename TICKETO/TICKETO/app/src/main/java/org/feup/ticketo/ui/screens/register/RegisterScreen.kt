@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,28 +19,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.UserRegistrationMessage
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -216,17 +209,17 @@ fun RegisterScreen(navController: NavHostController, viewModel: RegisterViewMode
             Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
                 Button(
                     onClick = {
-                        if (viewModel.username.value.isEmpty() || viewModel.nif.value.isEmpty() || viewModel.creditCardNumber.value.isEmpty() || viewModel.creditCardDate.value.isEmpty() || viewModel.creditCardType.value.isEmpty()){
-                            scope.launch {
-                                snackbarHostState.showSnackbar(message = "Missing Input Fields", duration = SnackbarDuration.Short)
-                            }
-                        }
-                        else {
+//                        if (viewModel.username.value.isEmpty() || viewModel.nif.value.isEmpty() || viewModel.creditCardNumber.value.isEmpty() || viewModel.creditCardDate.value.isEmpty() || viewModel.creditCardType.value.isEmpty()){
+//                            scope.launch {
+//                                snackbarHostState.showSnackbar(message = "Missing Input Fields", duration = SnackbarDuration.Short)
+//                            }
+//                        }
+//                        else {
                             // handle user registration
                             navController.navigate("home") {
                                 popUpTo(0)
                             }
-                        }
+//                        }
                     },
                     shape = RoundedCornerShape(50.dp),
                     modifier = Modifier

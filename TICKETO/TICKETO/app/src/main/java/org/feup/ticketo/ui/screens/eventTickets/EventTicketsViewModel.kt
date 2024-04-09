@@ -1,33 +1,55 @@
 package org.feup.ticketo.ui.screens.eventTickets
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoDatabase
+import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 
 class EventTicketsViewModel(
     private val eventId: Int,
     private val context: Context
 ) : ViewModel() {
-    private val db = TicketoDatabase.getDatabase(context = context)
+    private val ticketoDatabase = TicketoDatabase.getDatabase(context = context)
+
+    private val ticketoStorage: TicketoStorage by lazy {
+        TicketoStorage(ticketoDatabase.ticketDao())
+    }
+
+    private lateinit var eventTickets: EventTickets
+
+    init {
+//        Log.i("mytag", eventTickets.toString())
+        viewModelScope.launch {
+            val event = getEvent()
+            eventTickets = EventTickets(
+                event?.name.orEmpty(),
+                event?.date.orEmpty(),
+                event?.picture?: ByteArray(0),
+                getTickets()?: null
+            )
+
+        }
+//        eventTickets = EventTickets(null, null, null, null)
+        Log.i("mytag", eventTickets.toString())
+
+    }
+
     fun getEventTickets(): EventTickets {
-        val event = getEvent()
-        return EventTickets(
-            event?.name,
-            event?.date,
-            event?.picture,
-            getTickets()
-        )
+        return eventTickets
     }
 
-    private fun getEvent(): Event? {
-        return db.ticketDao().getEvent(eventId)
+    private suspend fun getEvent(): Event? {
+        return ticketoStorage.getEvent(eventId)
     }
 
-    private fun getTickets(): List<Ticket>? {
-        return db.ticketDao().getCustomerTicketsForEvent(
+    private suspend fun getTickets(): List<Ticket>? {
+        return ticketoStorage.getCustomerTicketsForEvent(
             eventId = eventId,
             customerId = getUserIdInSharedPreferences(context)
         )

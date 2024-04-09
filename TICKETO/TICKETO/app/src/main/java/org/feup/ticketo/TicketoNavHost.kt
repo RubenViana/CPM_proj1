@@ -15,6 +15,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import org.feup.ticketo.data.storage.TicketoDatabase
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsScreen
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsViewModel
 import org.feup.ticketo.ui.screens.eventTickets.EventTicketsScreen
@@ -46,6 +47,10 @@ fun TicketoNavHost(
     startDestination: String = "register",
     snackbarHostState: SnackbarHostState
 ) {
+
+    val db = TicketoDatabase.getDatabase(LocalContext.current)
+
+
     NavHost(
         navController = navController,
         startDestination,
