@@ -15,6 +15,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import org.feup.ticketo.data.storage.TicketoDatabase
+import org.feup.ticketo.data.storage.TicketoStorage
+import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsScreen
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsViewModel
 import org.feup.ticketo.ui.screens.eventTickets.EventTicketsScreen
@@ -34,7 +37,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 
-sealed class NavRoutes(val route: String, val icon: ImageVector) {
+sealed class NavRoutes(val route: String, val icon: ImageVector?) {
     data object Home : NavRoutes("home", Icons.Default.Search)
     data object Tickets : NavRoutes("tickets", Icons.Default.MobileFriendly)
     data object Orders : NavRoutes("orders", Icons.Default.AccessTime)
@@ -43,15 +46,22 @@ sealed class NavRoutes(val route: String, val icon: ImageVector) {
 @Composable
 fun TicketoNavHost(
     navController: NavHostController,
-    startDestination: String = "register",
+    startDestination: String = if (getUserIdInSharedPreferences(context = LocalContext.current).isEmpty()) "register" else "home",
     snackbarHostState: SnackbarHostState
 ) {
+
+    val ticketoDatabase = TicketoDatabase.getDatabase(LocalContext.current)
+    val ticketoStorage: TicketoStorage by lazy {
+        TicketoStorage(ticketoDatabase.ticketDao())
+    }
+
+
     NavHost(
         navController = navController,
         startDestination,
     ) {
         composable(route = "register") {
-            val viewModel = RegisterViewModel()
+            val viewModel = RegisterViewModel(LocalContext.current)
             RegisterScreen(navController, viewModel, snackbarHostState)
         }
         composable(route = NavRoutes.Home.route) {
@@ -95,7 +105,11 @@ fun TicketoNavHost(
         ) {
             val viewModel =
                 EventTicketsViewModel(it.arguments?.getInt("eventId") ?: 0, LocalContext.current)
-            EventTicketsScreen(navController, viewModel.getEventTickets())
+            if (viewModel.getEventTickets() != null && viewModel.getEventTickets()?.tickets != null) {
+                EventTicketsScreen(navController, viewModel.getEventTickets()!!)
+            } else {
+                navController.navigate(NavRoutes.Tickets.route)
+            }
         }
         composable(
             route = "event/{eventId}",

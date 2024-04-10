@@ -25,7 +25,7 @@ abstract class TicketoDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     TicketoDatabase::class.java,
-                    "word_database"
+                    "ticketo-database"
                 ).build()
                 INSTANCE = instance
                 // return instance
