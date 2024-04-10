@@ -103,13 +103,8 @@ fun TicketoNavHost(
             route = "tickets/{eventId}",
             arguments = listOf(navArgument("eventId") { type = NavType.IntType })
         ) {
-            val viewModel =
-                EventTicketsViewModel(it.arguments?.getInt("eventId") ?: 0, LocalContext.current)
-            if (viewModel.getEventTickets() != null && viewModel.getEventTickets()?.tickets != null) {
-                EventTicketsScreen(navController, viewModel.getEventTickets()!!)
-            } else {
-                navController.navigate(NavRoutes.Tickets.route)
-            }
+            val viewModel = EventTicketsViewModel(it.arguments?.getInt("eventId") ?: 0, LocalContext.current)
+            EventTicketsScreen(navController, viewModel)
         }
         composable(
             route = "event/{eventId}",
