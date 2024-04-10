@@ -89,7 +89,7 @@ def register_user():
         credit_card_type = data.get('credit_card_type')
 
         # Check if all required fields are present
-        if not name or not username or not password or not tax_number or not public_key or not credit_card_number or not credit_card_validity or not credit_card_type:
+        if not username or not tax_number or not public_key or not credit_card_number or not credit_card_validity or not credit_card_type:
             return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if customer already exists
