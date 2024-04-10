@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import org.feup.ticketo.data.storage.TicketoDatabase
+import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsScreen
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsViewModel
@@ -49,7 +50,10 @@ fun TicketoNavHost(
     snackbarHostState: SnackbarHostState
 ) {
 
-    val db = TicketoDatabase.getDatabase(LocalContext.current)
+    val ticketoDatabase = TicketoDatabase.getDatabase(LocalContext.current)
+    val ticketoStorage: TicketoStorage by lazy {
+        TicketoStorage(ticketoDatabase.ticketDao())
+    }
 
 
     NavHost(

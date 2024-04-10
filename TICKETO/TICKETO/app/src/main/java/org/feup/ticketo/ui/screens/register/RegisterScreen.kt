@@ -263,13 +263,13 @@ fun RegisterScreen(
 
 @Composable
 fun registrationErrorToast(error: VolleyError, showServerErrorToast: MutableState<Boolean>) {
-    val errorMessage = getServerResponseErrorMessage(error)
-    Toast.makeText(LocalContext.current, "Error Registering User: $errorMessage", Toast.LENGTH_LONG)
+    val errorMessage = getServerResponseErrorMessage(error)?: "Unknown Error"
+    Toast.makeText(LocalContext.current, "Error Registering User: $errorMessage", Toast.LENGTH_LONG).show()
     showServerErrorToast.value = false
 }
 
 @Composable
 fun errorToast(error: String, showErrorToast: MutableState<Boolean>) {
-    Toast.makeText(LocalContext.current, "Error Registering User: $error", Toast.LENGTH_LONG)
+    Toast.makeText(LocalContext.current, "Error Registering User: $error", Toast.LENGTH_LONG).show()
     showErrorToast.value = false
 }
