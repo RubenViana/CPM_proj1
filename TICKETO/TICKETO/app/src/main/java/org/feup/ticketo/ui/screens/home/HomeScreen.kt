@@ -32,7 +32,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.ui.components.serverErrorToast
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @Composable
@@ -50,6 +52,19 @@ fun HomeScreen(navController: NavHostController, context: Context, viewModel: Ho
         } else {
             EventList(events = viewModel.events, navController = navController)
         }
+
+        when {
+            viewModel.showServerErrorToast.value -> {
+                if (viewModel.serverValidationState.value is ServerValidationState.Failure) {
+                    serverErrorToast(
+                        "Error getting events from server",
+                        (viewModel.serverValidationState.value as ServerValidationState.Failure).error
+                    )
+                    viewModel.showServerErrorToast.value = false
+                }
+            }
+        }
+
     }
 }
 
