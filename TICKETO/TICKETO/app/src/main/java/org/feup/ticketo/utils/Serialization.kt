@@ -10,7 +10,7 @@ fun getServerResponseErrorMessage (error: VolleyError): String? {
     try {
         return Json.decodeFromString<HashMap<String, String>>(error.networkResponse.data.decodeToString())["message"]
     } catch (e: Exception) {
-        return "Error parsing server response" + e.message
+        return "Error parsing server response: " + e.message
     }
 }
 inline fun <reified T> byteArrayToObject(byteArray: ByteArray): T {

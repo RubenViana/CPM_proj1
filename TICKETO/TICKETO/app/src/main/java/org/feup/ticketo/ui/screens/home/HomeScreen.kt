@@ -61,10 +61,10 @@ private fun EmptyList() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "No events available",
+            text = "No events available!",
             style = TextStyle(
                 color = md_theme_light_primary,
-                fontSize = 20.sp
+                fontSize = 22.sp
             )
         )
     }
