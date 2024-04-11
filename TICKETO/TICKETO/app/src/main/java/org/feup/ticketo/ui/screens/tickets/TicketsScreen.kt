@@ -23,7 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 @Composable
-fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel) {
+fun TicketsScreen(
+    navController: NavHostController,
+    viewModel: TicketsViewModel
+) {
+
+
     Surface(
         modifier = Modifier
             .fillMaxSize()

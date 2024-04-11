@@ -18,10 +18,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 import org.feup.ticketo.ui.components.BottomNavBar
 import org.feup.ticketo.ui.components.TopNavBar
 import org.feup.ticketo.ui.theme.TICKETOTheme
@@ -51,8 +52,6 @@ fun TicketoApp() {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
         val snackbarHostState = remember { SnackbarHostState() }
 
-        // get username and key if exists
-
         Scaffold(
             modifier = Modifier
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -63,14 +62,23 @@ fun TicketoApp() {
             bottomBar = {
                 BottomNavBar(navController)
             },
-            snackbarHost = {SnackbarHost(hostState = snackbarHostState)}
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { innerPadding ->
             Column(
                 modifier = Modifier.padding(innerPadding)
             )
             {
-                // if user already in database, show home screen else show register screen
-                TicketoNavHost(navController = navController, "register", snackbarHostState)
+                val customer_id = getUserIdInSharedPreferences(context = LocalContext.current)
+                val startDestination: String
+                if (customer_id.isNotEmpty())
+                    startDestination = "home"
+                else
+                    startDestination = "register"
+                TicketoNavHost(
+                    navController = navController,
+                    startDestination = startDestination,
+                    snackbarHostState
+                )
             }
         }
 

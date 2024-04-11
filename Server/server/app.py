@@ -201,15 +201,19 @@ def next_events():
 
         # Query next nr_of_events
         conn, cursor = get_db()
-        cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', nr_of_events)
+        stm = "SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?"
+        cursor.execute(stm, (nr_of_events,))
+        # cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', nr_of_events)
         events = cursor.fetchall()
 
         # If no events are found
         if not events:
             return jsonify({'message': 'No events found'}), 404
 
-        return jsonify([dict(event) for event in events]), 200
+        return jsonify({"events" : [dict(event) for event in events]}), 200
     except Exception as e:
+
+        print(e)
         return jsonify({'message': 'Error getting next events: {}'.format(e)}), 500
     finally:
         if conn:
@@ -250,7 +254,7 @@ def get_event():
         if not event:
             return jsonify({'message': f'Event {event_id} not found'}), 404
 
-        return jsonify(dict(event)), 200
+        return jsonify({"event" : dict(event)}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting event: {}'.format(e)}), 500
     finally:
@@ -295,7 +299,7 @@ def get_tickets():
         if not tickets:
             return jsonify({'message': 'No tickets found'}), 404
 
-        return jsonify([dict(ticket) for ticket in tickets]), 200
+        return jsonify({"tickets" : [dict(ticket) for ticket in tickets]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting tickets: {}'.format(e)}), 500
     finally:
@@ -600,7 +604,7 @@ def products():
         products = cursor.fetchall()
         if not products:
             return jsonify({'message': 'No products found'}), 404
-        return jsonify([dict(product) for product in products]), 200
+        return jsonify({"products" : [dict(product) for product in products]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting products: {}'.format(e)}), 500
     finally:
@@ -634,7 +638,7 @@ def vouchers():
         vouchers = cursor.fetchall()
         if not vouchers:
             return jsonify({'message': 'No vouchers found'}), 404
-        return jsonify([dict(voucher) for voucher in vouchers]), 200
+        return jsonify({"vouchers" : [dict(voucher) for voucher in vouchers]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting vouchers: {}'.format(e)}), 500
     finally:
@@ -685,7 +689,7 @@ def purchases():
                 event = cursor.fetchone()
                 t['event_details'] = [dict(detail) for detail in event]
 
-        return jsonify(purchases), 200
+        return jsonify({"purchases" : purchases}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting purchases: {}'.format(e)}), 500
     finally:
@@ -731,7 +735,7 @@ def purchase_receipt():
         tickets = cursor.fetchall()
         purchase['tickets'] = [dict(ticket) for ticket in tickets]
 
-        return jsonify(purchase), 200
+        return jsonify({"purchase" : purchase}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting purchase receipt: {}'.format(e)}), 500
     finally:
@@ -793,7 +797,7 @@ def orders():
                 p['description'] = product['DESCRIPTION']
                 p['price'] = product['PRICE']
 
-        return jsonify(orders), 200
+        return jsonify({"orders" : orders}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting orders: {}'.format(e)}), 500
     finally:
@@ -861,7 +865,7 @@ def order_receipt():
 
         order['vouchers'] = [dict(voucher) for voucher in vouchers]
 
-        return jsonify(order), 200
+        return jsonify({"receipt": order}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting order receipt: {}'.format(e)}), 500
     finally:

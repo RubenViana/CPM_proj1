@@ -2,11 +2,9 @@ package org.feup.ticketo.ui.screens.tickets
 
 import androidx.lifecycle.ViewModel
 
-class TicketsViewModel(
-    // repo = localRepo
-) : ViewModel() {
-    val ticketsByEventList: List<TicketsByEvent> = getTicketsByEvent()
+class TicketsViewModel : ViewModel() {
 
+    val ticketsByEventList: List<TicketsByEvent> = getTicketsByEvent()
     fun getTicketsByEvent(): List<TicketsByEvent> {
         // Example:
         return listOf(
@@ -21,7 +19,7 @@ class TicketsViewModel(
 }
 
 //example data class -> Move out of here
-data class  TicketsByEvent (
+data class TicketsByEvent(
     val eventId: Int,
     val eventName: String,
     val numberTickets: Int,
