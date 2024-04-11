@@ -112,7 +112,7 @@ fun TicketoNavHost(
                     )
                 }
             if (viewModel.getEventTickets() != null && viewModel.getEventTickets()?.tickets != null) {
-                EventTicketsScreen(navController, viewModel.getEventTickets()!!)
+                EventTicketsScreen(navController, viewModel)
             } else {
                 navController.navigate(NavRoutes.Tickets.route)
             }
