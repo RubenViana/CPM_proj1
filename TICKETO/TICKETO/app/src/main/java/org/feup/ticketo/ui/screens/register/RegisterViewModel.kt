@@ -13,7 +13,6 @@ import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.serverMessages.customerRegistrationMessage
 import org.feup.ticketo.data.storage.CreditCard
 import org.feup.ticketo.data.storage.Customer
-import org.feup.ticketo.data.storage.TicketoDatabase
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.storeUserIdInSharedPreferences
 import org.feup.ticketo.utils.createAndStoreKeyPair
@@ -22,7 +21,8 @@ import org.feup.ticketo.utils.serverUrl
 import org.json.JSONObject
 
 class RegisterViewModel(
-    private val context: Context
+    private val context: Context,
+    private val ticketoStorage: TicketoStorage
 ) : ViewModel() {
     var username = mutableStateOf("")
     var nif = mutableStateOf("")
@@ -36,12 +36,6 @@ class RegisterViewModel(
     val showServerErrorToast = mutableStateOf(false)
     val showErrorToast = mutableStateOf(false)
     val errorMessage = mutableStateOf("")
-
-    private val ticketoDatabase = TicketoDatabase.getDatabase(context = context)
-
-    private val ticketoStorage: TicketoStorage by lazy {
-        TicketoStorage(ticketoDatabase.ticketDao())
-    }
 
     fun register() {
 
