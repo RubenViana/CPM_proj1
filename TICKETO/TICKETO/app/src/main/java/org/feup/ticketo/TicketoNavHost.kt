@@ -121,7 +121,12 @@ fun TicketoNavHost(
             route = "event/{eventId}",
             arguments = listOf(navArgument("eventId") { type = NavType.IntType })
         ) {
-            val viewModel = EventDetailsViewModel(it.arguments?.getInt("eventId") ?: 0)
+            val viewModel = remember {
+                EventDetailsViewModel(
+                    it.arguments?.getInt("eventId") ?: 0,
+                    context
+                )
+            }
             EventDetailsScreen(navController, viewModel)
         }
     }
