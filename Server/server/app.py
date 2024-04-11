@@ -201,7 +201,9 @@ def next_events():
 
         # Query next nr_of_events
         conn, cursor = get_db()
-        cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', nr_of_events)
+        stm = "SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?"
+        cursor.execute(stm, (nr_of_events,))
+        # cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', nr_of_events)
         events = cursor.fetchall()
 
         # If no events are found
@@ -210,6 +212,8 @@ def next_events():
 
         return jsonify({"events" : [dict(event) for event in events]}), 200
     except Exception as e:
+
+        print(e)
         return jsonify({'message': 'Error getting next events: {}'.format(e)}), 500
     finally:
         if conn:
