@@ -201,18 +201,11 @@ def next_events():
 
         # Query next nr_of_events
         conn, cursor = get_db()
-        stm = "SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?"
-        cursor.execute(stm, (nr_of_events,))
-        # cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', nr_of_events)
+        cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', (nr_of_events,))
         events = cursor.fetchall()
-
-        # If no events are found
-        if not events:
-            return jsonify({'message': 'No events found'}), 404
 
         return jsonify({"events" : [dict(event) for event in events]}), 200
     except Exception as e:
-
         print(e)
         return jsonify({'message': 'Error getting next events: {}'.format(e)}), 500
     finally:
@@ -247,7 +240,7 @@ def get_event():
 
         # Query event
         conn, cursor = get_db()
-        cursor.execute('SELECT * FROM EVENT as e where e.EVENT_ID = ?', event_id)
+        cursor.execute('SELECT * FROM EVENT as e where e.EVENT_ID = ?', (event_id,))
         event = cursor.fetchone()
 
         # If no event is found
@@ -294,10 +287,6 @@ def get_tickets():
                        'and e.EVENT_ID = t.EVENT_ID',
                        (customer_id,))
         tickets = cursor.fetchall()
-
-        # If no tickets are found
-        if not tickets:
-            return jsonify({'message': 'No tickets found'}), 404
 
         return jsonify({"tickets" : [dict(ticket) for ticket in tickets]}), 200
     except Exception as e:
@@ -602,8 +591,6 @@ def products():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM PRODUCT')
         products = cursor.fetchall()
-        if not products:
-            return jsonify({'message': 'No products found'}), 404
         return jsonify({"products" : [dict(product) for product in products]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting products: {}'.format(e)}), 500
@@ -636,8 +623,6 @@ def vouchers():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM VOUCHER WHERE CUSTOMER_ID = ?', (customer_id,))
         vouchers = cursor.fetchall()
-        if not vouchers:
-            return jsonify({'message': 'No vouchers found'}), 404
         return jsonify({"vouchers" : [dict(voucher) for voucher in vouchers]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting vouchers: {}'.format(e)}), 500
@@ -671,9 +656,6 @@ def purchases():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM PURCHASE WHERE CUSTOMER_ID = ?', (customer_id,))
         purchases = cursor.fetchall()
-
-        if not purchases:
-            return jsonify({'message': 'No purchases found'}), 404
 
         # Convert purchases to dictionary
         purchases = [dict(purchase) for purchase in purchases]
@@ -768,9 +750,6 @@ def orders():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM "ORDER" WHERE CUSTOMER_ID = ?', (customer_id,))
         orders = cursor.fetchall()
-
-        if not orders:
-            return jsonify({'message': 'No orders found'}), 404
 
         # Convert orders to dictionary
         orders = [dict(order) for order in orders]
