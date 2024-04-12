@@ -4,15 +4,15 @@
 /*==============================================================*/
 
 -- Dropping tables
-drop table if exists CREDIT_CARD;
-drop table if exists CUSTOMER;
-drop table if exists EVENT;
-drop table if exists "ORDER";
-drop table if exists PRODUCT;
-drop table if exists ORDER_PRODUCT;
-drop table if exists PURCHASE;
-drop table if exists TICKET;
-drop table if exists VOUCHER;
+-- drop table if exists CREDIT_CARD;
+-- drop table if exists CUSTOMER;
+-- drop table if exists EVENT;
+-- drop table if exists "ORDER";
+-- drop table if exists PRODUCT;
+-- drop table if exists ORDER_PRODUCT;
+-- drop table if exists PURCHASE;
+-- drop table if exists TICKET;
+-- drop table if exists VOUCHER;
 
 /*==============================================================*/
 /* Table: CUSTOMER                                              */
@@ -48,7 +48,7 @@ create table if not exists EVENT
 (
     EVENT_ID                       integer                        primary key autoincrement,
     NAME                           varchar(1024),
-    DATE                           datetime,
+    DATE                           text,
     PICTURE                        blob, -- Changed to BLOB data type for image storage
     PRICE                          real
 );
@@ -60,7 +60,7 @@ create table if not exists "ORDER"
 (
     ORDER_ID                       integer                        primary key autoincrement,
     CUSTOMER_ID                    varchar(128)                   not null,
-    DATE                           datetime,
+    DATE                           text,
     PAID                           bool,
     PICKED_UP                      bool,
     TOTAL_PRICE                    real,
@@ -99,7 +99,7 @@ create table if not exists PURCHASE
 (
     PURCHASE_ID                    integer                        primary key autoincrement,
     CUSTOMER_ID                    varchar(128)                   not null,
-    DATE                           datetime,
+    DATE                           text,
     TOTAL_PRICE                    real,
     foreign key (CUSTOMER_ID) references CUSTOMER (CUSTOMER_ID) on delete cascade on update cascade
 );
@@ -112,7 +112,7 @@ create table if not exists TICKET
     TICKET_ID                      varchar(128)                   not null,
     PURCHASE_ID                    integer                        not null,
     EVENT_ID                       integer                        not null,
-    PURCHASE_DATE                  datetime,
+    PURCHASE_DATE                  text,
     USED                           bool,
     QRCODE                         text,
     PLACE                          varchar(1024),
