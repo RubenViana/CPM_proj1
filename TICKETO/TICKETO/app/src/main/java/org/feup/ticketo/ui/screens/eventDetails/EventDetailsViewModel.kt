@@ -22,7 +22,7 @@ class EventDetailsViewModel(
 ) : ViewModel() {
 
     val fetchEventFromServerState = mutableStateOf<ServerValidationState>(ServerValidationState.Loading("Loading event details..."))
-    val puchaseTicketsInServerState = mutableStateOf<ServerValidationState?>(null)
+    val purchaseTicketsInServerState = mutableStateOf<ServerValidationState?>(null)
 
     var event by mutableStateOf(Event(-1, "", "", ByteArray(0), 0.0f))
 
@@ -36,10 +36,10 @@ class EventDetailsViewModel(
             { response ->
 
                 event = Event(
-                    event_id = response.getJSONObject("event").getInt("event_id"),
-                    name = response.getJSONObject("event").getString("name"),
-                    date = response.getJSONObject("event").getString("date"),
-                    price = response.getJSONObject("event").getDouble("price").toFloat(),
+                    event_id = response.getJSONObject("event").getInt("EVENT_ID"),
+                    name = response.getJSONObject("event").getString("NAME"),
+                    date = response.getJSONObject("event").getString("DATE"),
+                    price = response.getJSONObject("event").getDouble("PRICE").toFloat(),
                     picture = ByteArray(0)
                 )
                 fetchEventFromServerState.value = ServerValidationState.Success(response)
@@ -65,7 +65,7 @@ class EventDetailsViewModel(
     }
 
     fun checkout() {
-        puchaseTicketsInServerState.value = ServerValidationState.Loading("Purchasing tickets...")
+        purchaseTicketsInServerState.value = ServerValidationState.Loading("Purchasing tickets...")
         // Send order to server
         val endpoint = "buy_ticket"
         // Create the request body
@@ -81,10 +81,10 @@ class EventDetailsViewModel(
         val request = JsonObjectRequest(
             Request.Method.POST, serverUrl + endpoint, json,
             { response ->
-                puchaseTicketsInServerState.value = ServerValidationState.Success(response)
+                purchaseTicketsInServerState.value = ServerValidationState.Success(response)
             },
             { error ->
-                puchaseTicketsInServerState.value = ServerValidationState.Failure(error)
+                purchaseTicketsInServerState.value = ServerValidationState.Failure(error)
             }
         )
 

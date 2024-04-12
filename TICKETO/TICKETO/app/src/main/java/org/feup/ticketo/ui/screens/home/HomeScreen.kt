@@ -47,10 +47,19 @@ fun HomeScreen(navController: NavHostController, context: Context, viewModel: Ho
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
-        if (viewModel.events.isEmpty()) {
-            EmptyList()
-        } else {
-            EventList(events = viewModel.events, navController = navController)
+
+        when (viewModel.serverValidationState.value) {
+            is ServerValidationState.Loading -> {
+                // Show loading spinner
+            }
+
+            is ServerValidationState.Failure -> {
+                EmptyList()
+            }
+
+            is ServerValidationState.Success -> {
+                EventList(events = viewModel.events.value, navController = navController)
+            }
         }
 
         when {
