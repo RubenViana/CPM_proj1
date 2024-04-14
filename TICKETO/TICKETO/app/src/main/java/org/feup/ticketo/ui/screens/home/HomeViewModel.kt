@@ -22,13 +22,13 @@ class HomeViewModel(private val context: Context) : ViewModel() {
         getNextEventsFromServer()
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun getNextEventsFromServer(nr_of_events: Int = 10) {
         val url = serverUrl + "next_events?nr_of_events=$nr_of_events"
         val request = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
                 val eventsList = mutableListOf<Event>()
-                Log.d("HomeViewModel", response.getJSONArray("events").toString())
                 for (i in 0 until response.getJSONArray("events").length()) {
                     val event = response.getJSONArray("events").getJSONObject(i)
                     eventsList.add(
@@ -37,7 +37,7 @@ class HomeViewModel(private val context: Context) : ViewModel() {
                             name = event.getString("NAME"),
                             date = event.getString("DATE"),
                             price = event.getDouble("PRICE").toFloat(),
-                            picture = ByteArray(0)
+                            picture = event.getString("PICTURE").hexToByteArray()
                         )
                     )
                 }

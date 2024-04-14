@@ -1,16 +1,19 @@
 package org.feup.ticketo.ui.screens.eventDetails
 
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,9 +39,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.android.volley.VolleyError
@@ -132,17 +137,22 @@ fun LoadingEventDetailsText(message: String, navController: NavHostController) {
             }
         )
 
-        Row {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             CircularProgressIndicator(
                 modifier = Modifier.size(50.dp),
                 color = Color.Blue
             )
+            Spacer(modifier = Modifier.width(20.dp))
             Text(
                 text = message,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(Alignment.Center),
-                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    color = md_theme_light_primary,
+                    fontSize = 22.sp
+                )
             )
         }
 
@@ -217,11 +227,16 @@ private fun EventDetails(
                 }
             }
         )
-        Image(
-            painter = ColorPainter(color = Color.Cyan),
-            contentDescription = null,
-            modifier = Modifier.size(400.dp)
-        )
+        viewModel.event.picture?.let { BitmapFactory.decodeByteArray(viewModel.event.picture, 0, it.size).asImageBitmap() }
+            ?.let {
+                Image(
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(400.dp)
+                        .fillMaxWidth(),
+                    bitmap = it
+                )
+            }
         Text(viewModel.event.name.orEmpty())
         Text(viewModel.event.date.orEmpty())
         Text(viewModel.event.price.toString())

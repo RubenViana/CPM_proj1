@@ -28,6 +28,7 @@ class EventDetailsViewModel(
 
     var numberTickets by mutableIntStateOf(0)
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun fetchEvent() {
         // get event from server
         val url = serverUrl + "event?event_id=$eventId"
@@ -40,7 +41,7 @@ class EventDetailsViewModel(
                     name = response.getJSONObject("event").getString("NAME"),
                     date = response.getJSONObject("event").getString("DATE"),
                     price = response.getJSONObject("event").getDouble("PRICE").toFloat(),
-                    picture = ByteArray(0)
+                    picture = response.getJSONObject("event").getString("PICTURE").hexToByteArray()
                 )
                 fetchEventFromServerState.value = ServerValidationState.Success(response)
             },
