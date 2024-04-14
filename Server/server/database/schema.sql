@@ -6,9 +6,9 @@
 -- Dropping tables
 -- drop table if exists CREDIT_CARD;
 -- drop table if exists CUSTOMER;
--- drop table if exists EVENT;
+drop table if exists EVENT;
 -- drop table if exists "ORDER";
--- drop table if exists PRODUCT;
+drop table if exists PRODUCT;
 -- drop table if exists ORDER_PRODUCT;
 -- drop table if exists PURCHASE;
 -- drop table if exists TICKET;
