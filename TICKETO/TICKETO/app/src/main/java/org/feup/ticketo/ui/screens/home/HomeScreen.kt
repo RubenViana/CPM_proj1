@@ -1,11 +1,13 @@
 package org.feup.ticketo.ui.screens.home
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedCard
@@ -27,7 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,10 +50,19 @@ fun HomeScreen(navController: NavHostController, context: Context, viewModel: Ho
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
-        if (viewModel.events.isEmpty()) {
-            EmptyList()
-        } else {
-            EventList(events = viewModel.events, navController = navController)
+
+        when (viewModel.serverValidationState.value) {
+            is ServerValidationState.Loading -> {
+                LoadingEvents((viewModel.serverValidationState.value as ServerValidationState.Loading)?.message ?: "Loading events...")
+            }
+
+            is ServerValidationState.Failure -> {
+                EmptyList()
+            }
+
+            is ServerValidationState.Success -> {
+                EventList(events = viewModel.events.value, navController = navController)
+            }
         }
 
         when {
@@ -65,6 +77,28 @@ fun HomeScreen(navController: NavHostController, context: Context, viewModel: Ho
             }
         }
 
+    }
+}
+
+@Composable
+fun LoadingEvents(s: String) {
+    Row(
+        modifier = Modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(50.dp),
+            color = Color.Blue
+        )
+        Spacer(modifier = Modifier.width(20.dp))
+        Text(
+            text = s,
+            style = TextStyle(
+                color = md_theme_light_primary,
+                fontSize = 22.sp
+            )
+        )
     }
 }
 
@@ -117,13 +151,17 @@ fun EventCard(
                 .fillMaxWidth()
                 .padding(10.dp),
         ) {
-            Image(
-                painter = ColorPainter(Color.Gray),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(180.dp)
-                    .fillMaxWidth()
-            )
+            event.picture?.let { BitmapFactory.decodeByteArray(event.picture, 0, it.size).asImageBitmap() }
+                ?.let {
+                    Image(
+//                        painter = ColorPainter(Color.Gray),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(180.dp)
+                            .fillMaxWidth(),
+                        bitmap = it
+                    )
+                }
             Row(modifier = Modifier.padding(top = 20.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
