@@ -1,6 +1,6 @@
 import json
 import random
-
+import os
 from flask import Flask, jsonify, request
 import uuid
 import sqlite3
@@ -8,22 +8,54 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 import base64
+import csv
 
 # Initialize Flask app
 app = Flask(__name__)
 
 DB_FILE = 'database/server.db'
 DB_SCHEMA = 'database/schema.sql'
+DB_EVENTS_IMAGES = 'database/data/event_images'
+DB_DUMMY_EVENTS = 'database/data/events.csv'
+DB_DUMMY_PRODUCTS = 'database/data/products.sql'
 
 
 # Initialize database
 def init_db():
     conn = None
     try:
-        print('Initializing database')
+        print('Initializing database...')
+
         conn = sqlite3.connect(DB_FILE)
         with open(DB_SCHEMA) as f:
             conn.executescript(f.read())
+
+        # Insert dummy events
+        with open(DB_DUMMY_EVENTS, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            cursor = conn.cursor()
+            for row in reader:
+                name = row['NAME']
+                date = row['DATE']
+                picture_path = row['PICTURE']
+                price = float(row['PRICE'])
+                # Read the image file and convert it to binary
+                with open(os.path.join(DB_EVENTS_IMAGES, picture_path), 'rb') as img_file:
+                    picture_data = img_file.read()
+                # Insert data into the database
+                cursor.execute("INSERT INTO EVENT (NAME, DATE, PRICE, PICTURE) VALUES (?, ?, ?, ?)",
+                               (name, date, price, picture_data.hex()))
+                
+        print('Events inserted successfully')
+
+        # Insert dummy products
+        with open(DB_DUMMY_PRODUCTS) as f:
+            conn.executescript(f.read())
+
+        print('Procuts inserted successfully')
+
+        conn.commit()
+
         print('Database initialized')
     except Exception as e:
         print('Error initializing database: {}'.format(e))
