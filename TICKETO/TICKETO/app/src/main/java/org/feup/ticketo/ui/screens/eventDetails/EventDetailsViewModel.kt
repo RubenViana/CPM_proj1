@@ -6,19 +6,26 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.serverMessages.ticketPurchaseMessage
 import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.data.storage.Ticket
+import org.feup.ticketo.data.storage.TicketoStorage
+import org.feup.ticketo.data.storage.Voucher
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 import org.feup.ticketo.utils.objectToJson
 import org.feup.ticketo.utils.serverUrl
+import org.json.JSONObject
 
 class EventDetailsViewModel(
     private val eventId: Int,
-    private val context: Context
+    private val context: Context,
+    private val ticketoStorage: TicketoStorage
 ) : ViewModel() {
 
     val fetchEventFromServerState = mutableStateOf<ServerValidationState>(ServerValidationState.Loading("Loading event details..."))
@@ -82,6 +89,7 @@ class EventDetailsViewModel(
         val request = JsonObjectRequest(
             Request.Method.POST, serverUrl + endpoint, json,
             { response ->
+                storeTicketsAndVouchersInDatabase(response)
                 purchaseTicketsInServerState.value = ServerValidationState.Success(response)
             },
             { error ->
@@ -92,5 +100,46 @@ class EventDetailsViewModel(
         // Add the request to the RequestQueue
         Volley.newRequestQueue(context).add(request)
 
+    }
+
+    private fun storeTicketsAndVouchersInDatabase(response: JSONObject?) {
+        // Store tickets and vouchers in database
+        val tickets = response?.getJSONArray("tickets")
+        val vouchers = response?.getJSONArray("vouchers")
+
+        // Store tickets
+        for (i in 0 until tickets!!.length()) {
+            val ticket = tickets.getJSONObject(i)
+            viewModelScope.launch {
+                ticketoStorage.insertTicket(
+                    Ticket(
+                        ticket_id = ticket.getString("ticket_id"),
+                        purchase_id = ticket.getInt("purchase_id"),
+                        event_id = ticket.getInt("event_id"),
+                        purchase_date = ticket.getString("purchase_date"),
+                        used = ticket.getInt("used") != 0,
+                        place = ticket.getInt("place").toString()
+                    )
+                )
+            }
+        }
+
+        // Store vouchers
+        for (i in 0 until vouchers!!.length()) {
+            val voucher = vouchers.getJSONObject(i)
+            viewModelScope.launch {
+                ticketoStorage.insertVoucher(
+                    Voucher(
+                        voucher_id = voucher.getString("voucher_id"),
+                        customer_id = voucher.getString("customer_id"),
+                        product_id = voucher.optInt("product_id"),
+                        order_id = null,
+                        type = voucher.getString("type"),
+                        description = voucher.getString("description"),
+                        redeemed = voucher.getInt("redeemed") != 0
+                    )
+                )
+            }
+        }
     }
 }

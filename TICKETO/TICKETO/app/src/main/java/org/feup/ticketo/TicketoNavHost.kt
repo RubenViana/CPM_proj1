@@ -124,7 +124,8 @@ fun TicketoNavHost(
             val viewModel = remember {
                 EventDetailsViewModel(
                     it.arguments?.getInt("eventId") ?: 0,
-                    context
+                    context,
+                    ticketoStorage
                 )
             }
             EventDetailsScreen(navController, viewModel)

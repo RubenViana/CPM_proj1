@@ -105,15 +105,15 @@ fun RegisterScreen(
                     errorCursorColor = md_theme_light_primary,
                 ),
                 singleLine = true,
-                label = { Text(text = "NIF") },
+                label = { Text(text = "Tax Number") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.PermIdentity,
                         contentDescription = null
                     )
                 },
-                value = viewModel.nif.value,
-                onValueChange = { viewModel.nif.value = it },
+                value = viewModel.tax_number.value,
+                onValueChange = { viewModel.tax_number.value = it },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
 
@@ -211,7 +211,7 @@ fun RegisterScreen(
             Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
                 Button(
                     onClick = {
-                        if (viewModel.username.value.isEmpty() || viewModel.nif.value.toInt() == 0 || viewModel.creditCardNumber.value.isEmpty() || viewModel.creditCardDate.value.isEmpty() || viewModel.creditCardType.value.isEmpty()) {
+                        if (viewModel.username.value.isEmpty() || viewModel.tax_number.value.toInt() == 0 || viewModel.creditCardNumber.value.isEmpty() || viewModel.creditCardDate.value.isEmpty() || viewModel.creditCardType.value.isEmpty()) {
                             scope.launch {
                                 snackbarHostState.showSnackbar(
                                     message = "Missing Input Fields",

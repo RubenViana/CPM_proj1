@@ -25,7 +25,7 @@ class RegisterViewModel(
     private val ticketoStorage: TicketoStorage
 ) : ViewModel() {
     var username = mutableStateOf("")
-    var nif = mutableStateOf("")
+    var tax_number = mutableStateOf("")
     var creditCardNumber = mutableStateOf("")
     var creditCardDate = mutableStateOf("")
     var creditCardType = mutableStateOf("")
@@ -51,7 +51,7 @@ class RegisterViewModel(
             Customer(
                 customer_id = "",
                 username = username.value,
-                tax_number = nif.value.toInt(),
+                tax_number = tax_number.value.toInt(),
                 public_key = publicKey
             )
         creditCard = CreditCard(

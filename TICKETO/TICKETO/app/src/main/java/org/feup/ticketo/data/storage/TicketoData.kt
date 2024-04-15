@@ -3,7 +3,6 @@ package org.feup.ticketo.data.storage
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
@@ -29,13 +28,13 @@ data class Customer(
 
 @Entity(
     tableName = "CREDIT_CARD",
-    foreignKeys = [ForeignKey(
-        entity = Customer::class,
-        parentColumns = ["CUSTOMER_ID"],
-        childColumns = ["CUSTOMER_ID"],
-        onDelete = ForeignKey.CASCADE,
-        onUpdate = ForeignKey.CASCADE
-    )]
+//    foreignKeys = [ForeignKey(
+//        entity = Customer::class,
+//        parentColumns = ["CUSTOMER_ID"],
+//        childColumns = ["CUSTOMER_ID"],
+//        onDelete = ForeignKey.CASCADE,
+//        onUpdate = ForeignKey.CASCADE
+//    )]
 )
 data class CreditCard(
     @PrimaryKey
@@ -70,13 +69,13 @@ data class Event(
 
 @Entity(
     tableName = "ORDER",
-    foreignKeys = [ForeignKey(
-        entity = Customer::class,
-        parentColumns = ["CUSTOMER_ID"],
-        childColumns = ["CUSTOMER_ID"],
-        onDelete = ForeignKey.CASCADE,
-        onUpdate = ForeignKey.CASCADE
-    )]
+//    foreignKeys = [ForeignKey(
+//        entity = Customer::class,
+//        parentColumns = ["CUSTOMER_ID"],
+//        childColumns = ["CUSTOMER_ID"],
+//        onDelete = ForeignKey.CASCADE,
+//        onUpdate = ForeignKey.CASCADE
+//    )]
 )
 data class Order(
     @PrimaryKey
@@ -114,22 +113,22 @@ data class Product(
 @Entity(
     tableName = "ORDER_PRODUCT",
     primaryKeys = ["PRODUCT_ID", "ORDER_ID"],
-    foreignKeys = [
-        ForeignKey(
-            entity = Product::class,
-            parentColumns = ["PRODUCT_ID"],
-            childColumns = ["PRODUCT_ID"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = Order::class,
-            parentColumns = ["ORDER_ID"],
-            childColumns = ["ORDER_ID"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-    ]
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = Product::class,
+//            parentColumns = ["PRODUCT_ID"],
+//            childColumns = ["PRODUCT_ID"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        ),
+//        ForeignKey(
+//            entity = Order::class,
+//            parentColumns = ["ORDER_ID"],
+//            childColumns = ["ORDER_ID"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        )
+//    ]
 )
 data class OrderProduct(
     @NonNull
@@ -144,13 +143,13 @@ data class OrderProduct(
 
 @Entity(
     tableName = "PURCHASE",
-    foreignKeys = [ForeignKey(
-        entity = Customer::class,
-        parentColumns = ["CUSTOMER_ID"],
-        childColumns = ["CUSTOMER_ID"],
-        onDelete = ForeignKey.CASCADE,
-        onUpdate = ForeignKey.CASCADE
-    )]
+//    foreignKeys = [ForeignKey(
+//        entity = Customer::class,
+//        parentColumns = ["CUSTOMER_ID"],
+//        childColumns = ["CUSTOMER_ID"],
+//        onDelete = ForeignKey.CASCADE,
+//        onUpdate = ForeignKey.CASCADE
+//    )]
 )
 
 data class Purchase(
@@ -168,22 +167,22 @@ data class Purchase(
 
 @Entity(
     tableName = "TICKET",
-    foreignKeys = [
-        ForeignKey(
-            entity = Purchase::class,
-            parentColumns = ["PURCHASE_ID"],
-            childColumns = ["PURCHASE_ID"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = Event::class,
-            parentColumns = ["EVENT_ID"],
-            childColumns = ["EVENT_ID"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-    ]
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = Purchase::class,
+//            parentColumns = ["PURCHASE_ID"],
+//            childColumns = ["PURCHASE_ID"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        ),
+//        ForeignKey(
+//            entity = Event::class,
+//            parentColumns = ["EVENT_ID"],
+//            childColumns = ["EVENT_ID"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        )
+//    ]
 )
 data class Ticket(
     @PrimaryKey
@@ -206,29 +205,29 @@ data class Ticket(
 
 @Entity(
     tableName = "VOUCHER",
-    foreignKeys = [
-        ForeignKey(
-            entity = Customer::class,
-            parentColumns = ["CUSTOMER_ID"],
-            childColumns = ["CUSTOMER_ID"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = Order::class,
-            parentColumns = ["ORDER_ID"],
-            childColumns = ["ORDER_ID"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = Product::class,
-            parentColumns = ["PRODUCT_ID"],
-            childColumns = ["PRODUCT_ID"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-    ]
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = Customer::class,
+//            parentColumns = ["CUSTOMER_ID"],
+//            childColumns = ["CUSTOMER_ID"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        ),
+//        ForeignKey(
+//            entity = Order::class,
+//            parentColumns = ["ORDER_ID"],
+//            childColumns = ["ORDER_ID"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        ),
+//        ForeignKey(
+//            entity = Product::class,
+//            parentColumns = ["PRODUCT_ID"],
+//            childColumns = ["PRODUCT_ID"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        )
+//    ]
 )
 data class Voucher(
     @PrimaryKey

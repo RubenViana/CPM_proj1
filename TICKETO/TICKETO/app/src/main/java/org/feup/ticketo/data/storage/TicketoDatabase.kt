@@ -1,13 +1,18 @@
 package org.feup.ticketo.data.storage
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
     entities = [Customer::class, CreditCard::class, Event::class, Order::class, Product::class, OrderProduct::class, Purchase::class, Ticket::class, Voucher::class],
-    version = 1
+    version = 2,
+    autoMigrations = [
+        AutoMigration (from = 1, to = 2)
+    ],
+    exportSchema = true
 )
 abstract class TicketoDatabase : RoomDatabase() {
     abstract fun ticketDao(): TicketoDao
