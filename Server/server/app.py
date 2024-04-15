@@ -359,6 +359,7 @@ def buy_ticket():
         event_id = data.get('event_id')
         nr_of_tickets = data.get('nr_of_tickets')
         signature = data.get('signature')
+        print(data)
 
         # Check if all required fields are present
         if not customer_id or not event_id or not nr_of_tickets or not signature:
@@ -398,7 +399,7 @@ def buy_ticket():
         # Calculate total price of past purchases for the customer
         cursor.execute('SELECT SUM(TOTAL_PRICE) FROM PURCHASE WHERE CUSTOMER_ID = ?', (customer_id,))
         past_purchases = cursor.fetchone()
-        if not past_purchases:
+        if not past_purchases['SUM(TOTAL_PRICE)']:
             past_purchases = 0
         else:
             past_purchases = past_purchases['SUM(TOTAL_PRICE)']
@@ -421,7 +422,8 @@ def buy_ticket():
             # Get the highest place number for the event
             cursor.execute('SELECT MAX(PLACE) FROM TICKET WHERE EVENT_ID = ?', (event_id,))
             place = cursor.fetchone()
-            if not place:
+            print()
+            if not place['MAX(PLACE)']:
                 place = 1
             else:
                 place = place['MAX(PLACE)'] + 1
@@ -444,15 +446,17 @@ def buy_ticket():
             ### Insert new vouchers
 
             # Get products info
-            cursor.execute('SELECT PRODUCT_ID FROM PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
+            cursor.execute('SELECT PRODUCT_ID, NAME FROM PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
             products = cursor.fetchall()
             if not products:
                 return jsonify({'message': 'Products not found'}), 404
 
             products = [dict(product) for product in products]
+            print(products)
 
             # select a random product id
             product_id = random.choice(products)['PRODUCT_ID']
+            print(product_id)
 
             # Add voucher to created_vouchers list
             created_vouchers.append({
@@ -461,7 +465,7 @@ def buy_ticket():
                 'product_id': product_id,
                 'type': 'Free Product',
                 'description': 'Free {} for buying a ticket'.format(
-                    products.filter(lambda x: x['PRODUCT_ID'] == product_id)[0]['NAME']),
+                    [x for x in products if x['PRODUCT_ID'] == product_id][0]['NAME']),
                 'redeemed': 0
             })
 
@@ -502,6 +506,7 @@ def buy_ticket():
             'vouchers': created_vouchers
         }), 201
     except Exception as e:
+        print({'message': 'Error buying ticket: {}'.format(e)})
         return jsonify({'message': 'Error buying ticket: {}'.format(e)}), 500
     finally:
         if conn:
@@ -596,7 +601,7 @@ def validate_tickets():
 
         return jsonify({
             'message': 'Tickets validated successfully',
-            'tickets' : tickets
+            'tickets': tickets
         }), 200
     except Exception as e:
         return jsonify({'message': 'Error validating tickets: {}'.format(e)}), 500
@@ -623,7 +628,7 @@ def products():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM PRODUCT')
         products = cursor.fetchall()
-        return jsonify({"products" : [dict(product) for product in products]}), 200
+        return jsonify({"products": [dict(product) for product in products]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting products: {}'.format(e)}), 500
     finally:
