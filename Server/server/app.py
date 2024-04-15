@@ -238,7 +238,6 @@ def next_events():
 
         return jsonify({"events" : [dict(event) for event in events]}), 200
     except Exception as e:
-        print(e)
         return jsonify({'message': 'Error getting next events: {}'.format(e)}), 500
     finally:
         if conn:
@@ -359,7 +358,6 @@ def buy_ticket():
         event_id = data.get('event_id')
         nr_of_tickets = data.get('nr_of_tickets')
         signature = data.get('signature')
-        print(data)
 
         # Check if all required fields are present
         if not customer_id or not event_id or not nr_of_tickets or not signature:
@@ -422,11 +420,10 @@ def buy_ticket():
             # Get the highest place number for the event
             cursor.execute('SELECT MAX(PLACE) FROM TICKET WHERE EVENT_ID = ?', (event_id,))
             place = cursor.fetchone()
-            print()
             if not place['MAX(PLACE)']:
                 place = 1
             else:
-                place = place['MAX(PLACE)'] + 1
+                place = int(place['MAX(PLACE)']) + 1
 
             # Add ticket to created_tickets list
             created_tickets.append({
@@ -452,11 +449,9 @@ def buy_ticket():
                 return jsonify({'message': 'Products not found'}), 404
 
             products = [dict(product) for product in products]
-            print(products)
 
             # select a random product id
             product_id = random.choice(products)['PRODUCT_ID']
-            print(product_id)
 
             # Add voucher to created_vouchers list
             created_vouchers.append({
@@ -478,7 +473,6 @@ def buy_ticket():
         # Calculate the number of new vouchers to emit
         threshold = 200
         new_vouchers = int((past_purchases + total_price) / threshold) - int(past_purchases / threshold)
-
         # Emit new voucher for every new multiple of 200 surpassed by the customer
         for i in range(new_vouchers):
             # Add voucher to created_vouchers list
