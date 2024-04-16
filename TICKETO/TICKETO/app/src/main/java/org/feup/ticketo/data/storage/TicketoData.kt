@@ -291,3 +291,10 @@ data class OrderWithProductsAndQuantityAndVouchers(
     )
     val vouchers: List<Voucher>
 )
+
+data class TicketsByEvent(
+    val eventId: Int,
+    val eventName: String,
+    val numberTickets: Int,
+    val eventDate: String
+)
