@@ -1,34 +1,49 @@
 package org.feup.ticketo.ui.screens.orders
 
-import android.content.Context
-import android.view.MenuItem
 import androidx.lifecycle.ViewModel
-import org.feup.ticketo.data.storage.Event
+import androidx.room.ColumnInfo
 import org.feup.ticketo.data.storage.Product
-import org.feup.ticketo.data.storage.TicketoDatabase
 
 class OrdersViewModel(
-    private val productId: Int,
-    private val context: Context
+    //private val productId: Int,
+    //private val context: Context
 ) : ViewModel() {
-    private val db = TicketoDatabase.getDatabase(context = context)
+   // private val db = TicketoDatabase.getDatabase(context = context)
 
-    fun getProductItems(): ProductItem {
-       val product = getProduct()
-        return ProductItem(
-            product?.name,
-            product?.description,
-            product?.price
+    fun getProductItems(): List<ProductItem> {
+        //val products = db.ticketDao().getAllProducts()
+        /*return products.map { product ->
+            ProductItem(
+                product.name,
+                product.description,
+                product.price
+            )
+        }*/
+        return listOf(
+            ProductItem(
+                1,
+                "Coca Cola",
+                "Drink",
+                2.5f
+            )
         )
     }
 
-    private fun getProduct(): Product? {
+   /* private fun getProduct(): Product? {
         return db.ticketDao().getProduct(productId)
+    }*/
+
+
+    fun checkout() {
+        // checkout orders
+        // communication with server
+        //Orders Validation Message
     }
 
 }
 
 data class ProductItem(
+    val product_id: Int?,
     val name: String?,
     val description: String?,
     val price: Float?
