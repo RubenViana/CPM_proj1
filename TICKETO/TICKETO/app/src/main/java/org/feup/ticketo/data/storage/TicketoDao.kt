@@ -97,7 +97,7 @@ interface TicketoDao {
     @Query("SELECT * FROM PRODUCT")
     suspend fun getAllProducts(): List<Product>
 
-    // Get customer tickets for an event
+    // Get one product
     @Query("SELECT * FROM PRODUCT WHERE PRODUCT_ID = :productId")
     fun getProduct(productId: Int): Product?
 
