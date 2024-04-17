@@ -68,11 +68,11 @@ fun TicketoNavHost(
             RegisterScreen(navController, viewModel, snackbarHostState)
         }
         composable(route = NavRoutes.Home.route) {
-            val viewModel = remember { HomeViewModel(context)}
+            val viewModel = remember { HomeViewModel(context, ticketoStorage)}
             HomeScreen(navController, context, viewModel, modifier)
         }
         composable(route = NavRoutes.Tickets.route) {
-            val viewModel = remember { TicketsViewModel() }
+            val viewModel = remember { TicketsViewModel(context, ticketoStorage) }
             TicketsScreen(navController, viewModel, modifier)
         }
         composable(route = NavRoutes.Orders.route) {
@@ -121,7 +121,8 @@ fun TicketoNavHost(
             val viewModel = remember {
                 EventDetailsViewModel(
                     it.arguments?.getInt("eventId") ?: 0,
-                    context
+                    context,
+                    ticketoStorage
                 )
             }
             EventDetailsScreen(navController, viewModel)

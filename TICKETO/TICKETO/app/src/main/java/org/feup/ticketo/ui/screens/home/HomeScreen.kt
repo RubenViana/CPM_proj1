@@ -70,7 +70,11 @@ fun HomeScreen(navController: NavHostController, context: Context, viewModel: Ho
             }
 
             is ServerValidationState.Success -> {
-                EventList(events = viewModel.events.value, navController = navController)
+                if (viewModel.events.value.isEmpty()) {
+                    EmptyList()
+                } else {
+                    EventList(events = viewModel.events.value, navController = navController)
+                }
             }
         }
 

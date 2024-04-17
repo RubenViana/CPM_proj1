@@ -1,17 +1,22 @@
 package org.feup.ticketo.ui.screens.home
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.data.storage.TicketoStorage
+import org.feup.ticketo.utils.formatDate
 import org.feup.ticketo.utils.serverUrl
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-class HomeViewModel(private val context: Context) : ViewModel() {
+class HomeViewModel(private val context: Context, private val ticketoStorage: TicketoStorage) : ViewModel() {
     val serverValidationState = mutableStateOf<ServerValidationState?>(null)
     val showServerErrorToast = mutableStateOf(false)
 
@@ -35,13 +40,14 @@ class HomeViewModel(private val context: Context) : ViewModel() {
                         Event(
                             event_id = event.getInt("EVENT_ID"),
                             name = event.getString("NAME"),
-                            date = event.getString("DATE"),
+                            date = formatDate(event.getString("DATE")),
                             price = event.getDouble("PRICE").toFloat(),
                             picture = event.getString("PICTURE").hexToByteArray()
                         )
                     )
                 }
                 events.value = eventsList
+                storeEventsInDatabase()
                 serverValidationState.value = ServerValidationState.Success(response)
             },
             { error ->
@@ -53,4 +59,11 @@ class HomeViewModel(private val context: Context) : ViewModel() {
         Volley.newRequestQueue(context).add(request)
     }
 
+    private fun storeEventsInDatabase() {
+        for (event in events.value) {
+            viewModelScope.launch {
+                ticketoStorage.insertEvent(event)
+            }
+        }
+    }
 }

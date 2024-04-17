@@ -1,27 +1,34 @@
 package org.feup.ticketo.ui.screens.tickets
 
+import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import org.feup.ticketo.data.serverMessages.ServerValidationState
+import org.feup.ticketo.data.storage.EventWithTicketsCount
+import org.feup.ticketo.data.storage.TicketoStorage
+import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 
-class TicketsViewModel : ViewModel() {
+class TicketsViewModel(private val context: Context, private val ticketoStorage: TicketoStorage) :
+    ViewModel() {
+    val serverValidationState = mutableStateOf<ServerValidationState?>(null)
+    val showServerErrorToast = mutableStateOf(false)
 
-    val ticketsByEventList: List<TicketsByEvent> = getTicketsByEvent()
-    fun getTicketsByEvent(): List<TicketsByEvent> {
-        // Example:
-        return listOf(
-            TicketsByEvent(
-                1,
-                "Event 1",
-                2,
-                "2024-08-20"
-            )
-        )
+    val eventsWithTicketsCount = mutableStateOf<List<EventWithTicketsCount>>(emptyList())
+
+    fun fetchTickets() {
+        serverValidationState.value = ServerValidationState.Loading("Loading tickets...")
+        getTicketsFromLocalStorage()
+    }
+
+    private fun getTicketsFromLocalStorage() {
+        viewModelScope.launch {
+            ticketoStorage.getEventsWithTicketCount(getUserIdInSharedPreferences(context))?.let {
+                eventsWithTicketsCount.value = it
+                serverValidationState.value = ServerValidationState.Success(null)
+            }
+        }
     }
 }
 
-//example data class -> Move out of here
-data class TicketsByEvent(
-    val eventId: Int,
-    val eventName: String,
-    val numberTickets: Int,
-    val eventDate: String
-)

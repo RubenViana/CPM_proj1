@@ -1,13 +1,22 @@
 package org.feup.ticketo.data.storage
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
+import androidx.room.RenameColumn
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.AutoMigrationSpec
 
 @Database(
     entities = [Customer::class, CreditCard::class, Event::class, Order::class, Product::class, OrderProduct::class, Purchase::class, Ticket::class, Voucher::class],
-    version = 1
+    version = 4,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3, RenameColumnDateInTicket::class),
+        AutoMigration(from = 3, to = 4, RenameColumnDateInTicket2::class)
+    ],
+    exportSchema = true
 )
 abstract class TicketoDatabase : RoomDatabase() {
     abstract fun ticketDao(): TicketoDao
@@ -35,3 +44,21 @@ abstract class TicketoDatabase : RoomDatabase() {
     }
 
 }
+
+@RenameColumn.Entries(
+    RenameColumn(
+        tableName = "TICKET",
+        fromColumnName = "PURCHASE_DATE",
+        toColumnName = "DATE"
+    )
+)
+class RenameColumnDateInTicket : AutoMigrationSpec
+
+@RenameColumn.Entries(
+    RenameColumn(
+        tableName = "TICKET",
+        fromColumnName = "DATE",
+        toColumnName = "PURCHASE_DATE"
+    )
+)
+class RenameColumnDateInTicket2 : AutoMigrationSpec

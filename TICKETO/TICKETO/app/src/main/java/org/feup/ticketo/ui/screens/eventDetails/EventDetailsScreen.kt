@@ -68,7 +68,6 @@ import org.feup.ticketo.ui.theme.md_theme_light_onSecondaryContainer
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.getServerResponseErrorMessage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventDetailsScreen(navController: NavHostController, viewModel: EventDetailsViewModel) {
 
