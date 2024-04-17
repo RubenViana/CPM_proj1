@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,6 +37,8 @@ class EventDetailsViewModel(
     var event by mutableStateOf(Event(-1, "", "", ByteArray(0), 0.0f))
 
     var numberTickets by mutableIntStateOf(0)
+
+    var openPurchaseConfirmationDialog by mutableStateOf(false)
 
     @OptIn(ExperimentalStdlibApi::class)
     fun fetchEvent() {
@@ -75,6 +78,7 @@ class EventDetailsViewModel(
     }
 
     fun checkout() {
+        openPurchaseConfirmationDialog = false
         purchaseTicketsInServerState.value = ServerValidationState.Loading("Purchasing tickets...")
         // Send order to server
         val endpoint = "buy_ticket"

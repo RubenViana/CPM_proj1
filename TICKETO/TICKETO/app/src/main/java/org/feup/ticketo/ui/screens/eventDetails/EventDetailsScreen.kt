@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.PanoramaVertical
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
@@ -326,7 +327,7 @@ private fun EventDetails(
                 when {
                     viewModel.numberTickets > 0 -> {
                         Button(
-                            onClick = { viewModel.checkout() },
+                            onClick = { viewModel.openPurchaseConfirmationDialog = true},
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = md_theme_light_onSecondaryContainer,
@@ -339,9 +340,54 @@ private fun EventDetails(
                 }
             }
         }
+        when{
+            viewModel.openPurchaseConfirmationDialog -> {
+                PurchaseConfirmationDialog(
+                    viewModel.numberTickets,
+                    viewModel.event.name!!,
+                    viewModel
+                )
+            }
+        }
     }
 }
 
+@Composable
+fun PurchaseConfirmationDialog(
+    numberTickets: Int,
+    eventName: String,
+    viewModel: EventDetailsViewModel
+){
+    AlertDialog(
+        icon = {
+            Icon(Icons.Default.PanoramaVertical, contentDescription = null)
+        },
+        title = {
+            Text(text = "Buy selected tickets?", textAlign = TextAlign.Center)
+        },
+        text = { Text( "$numberTickets tickets for $eventName will be bought.") },
+        onDismissRequest = {},
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.openPurchaseConfirmationDialog = false
+                }
+            ) {
+                Text("Cancel")
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    viewModel.checkout()
+                }
+            ) {
+                Text("Confirm")
+            }
+        }
+    )
+
+}
 @Composable
 fun PurchaseFailedDialog(
     error: VolleyError,
@@ -353,7 +399,7 @@ fun PurchaseFailedDialog(
     }
     AlertDialog(
         icon = {
-            Icon(Icons.Default.Close, contentDescription = "Purchase Failed")
+            Icon(Icons.Default.Error, contentDescription = "Purchase Failed", tint = Color.Red)
         },
         title = {
             Text(text = "Failed to buy tickets", textAlign = TextAlign.Center)
@@ -377,7 +423,7 @@ fun PurchaseFailedDialog(
                     purchaseTicketsInServerState.value = null
                 }
             ) {
-                Text("Confirm")
+                Text("OK")
             }
         }
     )
@@ -387,7 +433,7 @@ fun PurchaseFailedDialog(
 fun PurchaseSuccessfulDialog(purchaseTicketsInServerState: MutableState<ServerValidationState?>) {
     AlertDialog(
         icon = {
-            Icon(Icons.Default.CheckCircle, contentDescription = "Purchase Completed")
+            Icon(Icons.Default.CheckCircle, contentDescription = "Purchase Completed", tint = Color.Green)
         },
         title = {
             Text(text = "Tickets Purchase Successfully", textAlign = TextAlign.Center)
@@ -400,7 +446,7 @@ fun PurchaseSuccessfulDialog(purchaseTicketsInServerState: MutableState<ServerVa
                     purchaseTicketsInServerState.value = null
                 }
             ) {
-                Text("Confirm")
+                Text("OK")
             }
         }
     )
