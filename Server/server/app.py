@@ -1,6 +1,6 @@
 import json
 import random
-
+import os
 from flask import Flask, jsonify, request
 import uuid
 import sqlite3
@@ -8,22 +8,54 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 import base64
+import csv
 
 # Initialize Flask app
 app = Flask(__name__)
 
 DB_FILE = 'database/server.db'
 DB_SCHEMA = 'database/schema.sql'
+DB_EVENTS_IMAGES = 'database/data/event_images'
+DB_DUMMY_EVENTS = 'database/data/events.csv'
+DB_DUMMY_PRODUCTS = 'database/data/products.sql'
 
 
 # Initialize database
 def init_db():
     conn = None
     try:
-        print('Initializing database')
+        print('Initializing database...')
+
         conn = sqlite3.connect(DB_FILE)
         with open(DB_SCHEMA) as f:
             conn.executescript(f.read())
+
+        # Insert dummy events
+        with open(DB_DUMMY_EVENTS, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            cursor = conn.cursor()
+            for row in reader:
+                name = row['NAME']
+                date = row['DATE']
+                picture_path = row['PICTURE']
+                price = float(row['PRICE'])
+                # Read the image file and convert it to binary
+                with open(os.path.join(DB_EVENTS_IMAGES, picture_path), 'rb') as img_file:
+                    picture_data = img_file.read()
+                # Insert data into the database
+                cursor.execute("INSERT INTO EVENT (NAME, DATE, PRICE, PICTURE) VALUES (?, ?, ?, ?)",
+                               (name, date, price, picture_data.hex()))
+                
+        print('Events inserted successfully')
+
+        # Insert dummy products
+        with open(DB_DUMMY_PRODUCTS) as f:
+            conn.executescript(f.read())
+
+        print('Procuts inserted successfully')
+
+        conn.commit()
+
         print('Database initialized')
     except Exception as e:
         print('Error initializing database: {}'.format(e))
@@ -89,7 +121,7 @@ def register_user():
         credit_card_type = data.get('credit_card_type')
 
         # Check if all required fields are present
-        if not name or not username or not password or not tax_number or not public_key or not credit_card_number or not credit_card_validity or not credit_card_type:
+        if not username or not tax_number or not public_key or not credit_card_number or not credit_card_validity or not credit_card_type:
             return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if customer already exists
@@ -109,11 +141,14 @@ def register_user():
         # Insert new credit card
         cursor.execute('INSERT INTO credit_card (CUSTOMER_ID, TYPE, NUMBER, VALIDITY) VALUES (?, ?, ?, ?)',
                        (customer_id, credit_card_type, credit_card_number, credit_card_validity))
+        # Get last row id
+        credit_card_id = cursor.lastrowid
         conn.commit()
 
         return jsonify({
             'message': 'Customer registered successfully',
-            'customer_id': customer_id
+            'customer_id': customer_id,
+            'credit_card_id': credit_card_id
         }), 201
     except Exception as e:
         return jsonify({'message': 'Error registering customer: {}'.format(e)}), 500
@@ -198,14 +233,10 @@ def next_events():
 
         # Query next nr_of_events
         conn, cursor = get_db()
-        cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', nr_of_events)
+        cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', (nr_of_events,))
         events = cursor.fetchall()
 
-        # If no events are found
-        if not events:
-            return jsonify({'message': 'No events found'}), 404
-
-        return jsonify([dict(event) for event in events]), 200
+        return jsonify({"events" : [dict(event) for event in events]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting next events: {}'.format(e)}), 500
     finally:
@@ -240,14 +271,14 @@ def get_event():
 
         # Query event
         conn, cursor = get_db()
-        cursor.execute('SELECT * FROM EVENT as e where e.EVENT_ID = ?', event_id)
+        cursor.execute('SELECT * FROM EVENT as e where e.EVENT_ID = ?', (event_id,))
         event = cursor.fetchone()
 
         # If no event is found
         if not event:
             return jsonify({'message': f'Event {event_id} not found'}), 404
 
-        return jsonify(dict(event)), 200
+        return jsonify({"event" : dict(event)}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting event: {}'.format(e)}), 500
     finally:
@@ -288,11 +319,7 @@ def get_tickets():
                        (customer_id,))
         tickets = cursor.fetchall()
 
-        # If no tickets are found
-        if not tickets:
-            return jsonify({'message': 'No tickets found'}), 404
-
-        return jsonify([dict(ticket) for ticket in tickets]), 200
+        return jsonify({"tickets" : [dict(ticket) for ticket in tickets]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting tickets: {}'.format(e)}), 500
     finally:
@@ -370,7 +397,7 @@ def buy_ticket():
         # Calculate total price of past purchases for the customer
         cursor.execute('SELECT SUM(TOTAL_PRICE) FROM PURCHASE WHERE CUSTOMER_ID = ?', (customer_id,))
         past_purchases = cursor.fetchone()
-        if not past_purchases:
+        if not past_purchases['SUM(TOTAL_PRICE)']:
             past_purchases = 0
         else:
             past_purchases = past_purchases['SUM(TOTAL_PRICE)']
@@ -393,10 +420,10 @@ def buy_ticket():
             # Get the highest place number for the event
             cursor.execute('SELECT MAX(PLACE) FROM TICKET WHERE EVENT_ID = ?', (event_id,))
             place = cursor.fetchone()
-            if not place:
+            if not place['MAX(PLACE)']:
                 place = 1
             else:
-                place = place['MAX(PLACE)'] + 1
+                place = int(place['MAX(PLACE)']) + 1
 
             # Add ticket to created_tickets list
             created_tickets.append({
@@ -416,7 +443,7 @@ def buy_ticket():
             ### Insert new vouchers
 
             # Get products info
-            cursor.execute('SELECT PRODUCT_ID FROM PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
+            cursor.execute('SELECT PRODUCT_ID, NAME FROM PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
             products = cursor.fetchall()
             if not products:
                 return jsonify({'message': 'Products not found'}), 404
@@ -433,7 +460,7 @@ def buy_ticket():
                 'product_id': product_id,
                 'type': 'Free Product',
                 'description': 'Free {} for buying a ticket'.format(
-                    products.filter(lambda x: x['PRODUCT_ID'] == product_id)[0]['NAME']),
+                    [x for x in products if x['PRODUCT_ID'] == product_id][0]['NAME']),
                 'redeemed': 0
             })
 
@@ -446,7 +473,6 @@ def buy_ticket():
         # Calculate the number of new vouchers to emit
         threshold = 200
         new_vouchers = int((past_purchases + total_price) / threshold) - int(past_purchases / threshold)
-
         # Emit new voucher for every new multiple of 200 surpassed by the customer
         for i in range(new_vouchers):
             # Add voucher to created_vouchers list
@@ -474,6 +500,7 @@ def buy_ticket():
             'vouchers': created_vouchers
         }), 201
     except Exception as e:
+        print({'message': 'Error buying ticket: {}'.format(e)})
         return jsonify({'message': 'Error buying ticket: {}'.format(e)}), 500
     finally:
         if conn:
@@ -568,7 +595,7 @@ def validate_tickets():
 
         return jsonify({
             'message': 'Tickets validated successfully',
-            'tickets' : tickets
+            'tickets': tickets
         }), 200
     except Exception as e:
         return jsonify({'message': 'Error validating tickets: {}'.format(e)}), 500
@@ -595,9 +622,7 @@ def products():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM PRODUCT')
         products = cursor.fetchall()
-        if not products:
-            return jsonify({'message': 'No products found'}), 404
-        return jsonify([dict(product) for product in products]), 200
+        return jsonify({"products": [dict(product) for product in products]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting products: {}'.format(e)}), 500
     finally:
@@ -629,9 +654,7 @@ def vouchers():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM VOUCHER WHERE CUSTOMER_ID = ?', (customer_id,))
         vouchers = cursor.fetchall()
-        if not vouchers:
-            return jsonify({'message': 'No vouchers found'}), 404
-        return jsonify([dict(voucher) for voucher in vouchers]), 200
+        return jsonify({"vouchers" : [dict(voucher) for voucher in vouchers]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting vouchers: {}'.format(e)}), 500
     finally:
@@ -665,9 +688,6 @@ def purchases():
         cursor.execute('SELECT * FROM PURCHASE WHERE CUSTOMER_ID = ?', (customer_id,))
         purchases = cursor.fetchall()
 
-        if not purchases:
-            return jsonify({'message': 'No purchases found'}), 404
-
         # Convert purchases to dictionary
         purchases = [dict(purchase) for purchase in purchases]
 
@@ -682,7 +702,7 @@ def purchases():
                 event = cursor.fetchone()
                 t['event_details'] = [dict(detail) for detail in event]
 
-        return jsonify(purchases), 200
+        return jsonify({"purchases" : purchases}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting purchases: {}'.format(e)}), 500
     finally:
@@ -728,7 +748,7 @@ def purchase_receipt():
         tickets = cursor.fetchall()
         purchase['tickets'] = [dict(ticket) for ticket in tickets]
 
-        return jsonify(purchase), 200
+        return jsonify({"purchase" : purchase}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting purchase receipt: {}'.format(e)}), 500
     finally:
@@ -762,9 +782,6 @@ def orders():
         cursor.execute('SELECT * FROM "ORDER" WHERE CUSTOMER_ID = ?', (customer_id,))
         orders = cursor.fetchall()
 
-        if not orders:
-            return jsonify({'message': 'No orders found'}), 404
-
         # Convert orders to dictionary
         orders = [dict(order) for order in orders]
 
@@ -790,7 +807,7 @@ def orders():
                 p['description'] = product['DESCRIPTION']
                 p['price'] = product['PRICE']
 
-        return jsonify(orders), 200
+        return jsonify({"orders" : orders}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting orders: {}'.format(e)}), 500
     finally:
@@ -858,7 +875,7 @@ def order_receipt():
 
         order['vouchers'] = [dict(voucher) for voucher in vouchers]
 
-        return jsonify(order), 200
+        return jsonify({"receipt": order}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting order receipt: {}'.format(e)}), 500
     finally:

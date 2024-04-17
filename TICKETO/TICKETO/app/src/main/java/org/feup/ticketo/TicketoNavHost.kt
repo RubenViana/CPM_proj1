@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.MobileFriendly
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -15,6 +16,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import org.feup.ticketo.data.storage.TicketoDatabase
+import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsScreen
 import org.feup.ticketo.ui.screens.eventDetails.EventDetailsViewModel
 import org.feup.ticketo.ui.screens.eventTickets.EventTicketsScreen
@@ -34,7 +37,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 
-sealed class NavRoutes(val route: String, val icon: ImageVector) {
+sealed class NavRoutes(val route: String, val icon: ImageVector?) {
     data object Home : NavRoutes("home", Icons.Default.Search)
     data object Tickets : NavRoutes("tickets", Icons.Default.MobileFriendly)
     data object Orders : NavRoutes("orders", Icons.Default.AccessTime)
@@ -43,15 +46,22 @@ sealed class NavRoutes(val route: String, val icon: ImageVector) {
 @Composable
 fun TicketoNavHost(
     navController: NavHostController,
-    startDestination: String = "register",
+    startDestination: String,
     snackbarHostState: SnackbarHostState
 ) {
+    val context = LocalContext.current
+    val ticketoDatabase = TicketoDatabase.getDatabase(context)
+    val ticketoStorage: TicketoStorage by lazy {
+        TicketoStorage(ticketoDatabase.ticketDao())
+    }
+
+
     NavHost(
         navController = navController,
         startDestination,
     ) {
         composable(route = "register") {
-            val viewModel = RegisterViewModel()
+            val viewModel = remember { RegisterViewModel(context, ticketoStorage) }
             RegisterScreen(navController, viewModel, snackbarHostState)
         }
         composable(route = NavRoutes.Home.route) {
@@ -61,11 +71,11 @@ fun TicketoNavHost(
                 statusTheme = false,
                 navigationTheme = true
             )
-            val viewModel = HomeViewModel()
-            HomeScreen(navController, viewModel)
+            val viewModel = remember { HomeViewModel(context, ticketoStorage)}
+            HomeScreen(navController, context, viewModel)
         }
         composable(route = NavRoutes.Tickets.route) {
-            val viewModel = TicketsViewModel()
+            val viewModel = remember { TicketsViewModel(context, ticketoStorage) }
             TicketsScreen(navController, viewModel)
         }
         composable(route = NavRoutes.Orders.route) {
@@ -94,14 +104,30 @@ fun TicketoNavHost(
             arguments = listOf(navArgument("eventId") { type = NavType.IntType })
         ) {
             val viewModel =
-                EventTicketsViewModel(it.arguments?.getInt("eventId") ?: 0, LocalContext.current)
-            EventTicketsScreen(navController, viewModel.getEventTickets())
+                remember {
+                    EventTicketsViewModel(
+                        it.arguments?.getInt("eventId") ?: 0,
+                        context,
+                        ticketoStorage
+                    )
+                }
+            if (viewModel.getEventTickets() != null && viewModel.getEventTickets()?.tickets != null) {
+                EventTicketsScreen(navController, viewModel)
+            } else {
+                navController.navigate(NavRoutes.Tickets.route)
+            }
         }
         composable(
             route = "event/{eventId}",
             arguments = listOf(navArgument("eventId") { type = NavType.IntType })
         ) {
-            val viewModel = EventDetailsViewModel(it.arguments?.getInt("eventId") ?: 0)
+            val viewModel = remember {
+                EventDetailsViewModel(
+                    it.arguments?.getInt("eventId") ?: 0,
+                    context,
+                    ticketoStorage
+                )
+            }
             EventDetailsScreen(navController, viewModel)
         }
     }

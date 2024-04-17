@@ -35,7 +35,7 @@ import org.feup.ticketo.utils.generateQRCode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventTicketsScreen(navController: NavHostController, eventTickets: EventTickets) {
+fun EventTicketsScreen(navController: NavHostController, viewModel: EventTicketsViewModel) {
     Column(
         modifier = Modifier.fillMaxSize().background(color = md_theme_light_background),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -49,7 +49,7 @@ fun EventTicketsScreen(navController: NavHostController, eventTickets: EventTick
                 scrolledContainerColor = md_theme_light_primary
             ),
             title = {
-                Text("${eventTickets.eventName} Tickets")
+                Text("${viewModel.getEventTickets()?.eventName} Tickets")
             },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
@@ -58,13 +58,12 @@ fun EventTicketsScreen(navController: NavHostController, eventTickets: EventTick
             }
         )
         LazyRow {
-            eventTickets.tickets?.let {
+            viewModel.getEventTickets()?.tickets?.let {
                 items(it.size) { item ->
-                    QRCodeCard(eventTickets.tickets[item], eventTickets.eventName.orEmpty(), eventTickets.eventDate.orEmpty())
+                    viewModel.getEventTickets()!!.tickets?.let { it1 -> QRCodeCard(it1[item], viewModel.getEventTickets()!!.eventName.orEmpty(), viewModel.getEventTickets()!!.eventDate.orEmpty()) }
                 }
             }
         }
-
     }
 }
 

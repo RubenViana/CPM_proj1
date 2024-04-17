@@ -1,10 +1,13 @@
 package org.feup.ticketo.ui.screens.home
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,49 +19,119 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.android.volley.Request
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
+import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.ui.components.serverErrorToast
 import org.feup.ticketo.ui.theme.md_theme_light_primary
-import org.feup.ticketo.utils.serverUrl
 
 @Composable
-fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel) {
-    val event = Event(
-        event_id = 1,
-        name = "Event 1",
-        date = "2022-01-01",
-        price = 10.0f,
-        picture = ByteArray(0)
-    )
+fun HomeScreen(navController: NavHostController, context: Context, viewModel: HomeViewModel) {
+    // Fetch events from server whenever the screen is launched
+    LaunchedEffect(viewModel) {
+        viewModel.fetchEvents()
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2)
-        ) {
-            items(viewModel.eventsList.size) {
-                item -> EventCard(viewModel.eventsList[item], navController)
+
+        when (viewModel.serverValidationState.value) {
+            is ServerValidationState.Loading -> {
+                LoadingEvents((viewModel.serverValidationState.value as ServerValidationState.Loading)?.message ?: "Loading events...")
+            }
+
+            is ServerValidationState.Failure -> {
+                EmptyList()
+            }
+
+            is ServerValidationState.Success -> {
+                if (viewModel.events.value.isEmpty()) {
+                    EmptyList()
+                } else {
+                    EventList(events = viewModel.events.value, navController = navController)
+                }
             }
         }
+
+        when {
+            viewModel.showServerErrorToast.value -> {
+                if (viewModel.serverValidationState.value is ServerValidationState.Failure) {
+                    serverErrorToast(
+                        "Error getting events from server",
+                        (viewModel.serverValidationState.value as ServerValidationState.Failure).error
+                    )
+                    viewModel.showServerErrorToast.value = false
+                }
+            }
+        }
+
     }
+}
 
+@Composable
+fun LoadingEvents(s: String) {
+    Row(
+        modifier = Modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(50.dp),
+            color = Color.Blue
+        )
+        Spacer(modifier = Modifier.width(20.dp))
+        Text(
+            text = s,
+            style = TextStyle(
+                color = md_theme_light_primary,
+                fontSize = 22.sp
+            )
+        )
+    }
+}
 
+@Composable
+private fun EmptyList() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "No events available!",
+            style = TextStyle(
+                color = md_theme_light_primary,
+                fontSize = 22.sp
+            )
+        )
+    }
+}
+
+@Composable
+fun EventList(events: List<Event>, navController: NavHostController) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2)
+    ) {
+        items(events.size) { item ->
+            EventCard(events[item], navController)
+        }
+    }
 }
 
 @Composable
@@ -67,7 +140,7 @@ fun EventCard(
     navController: NavHostController
 ) {
     OutlinedCard(
-        onClick = {navController.navigate("event/${event.event_id}")},
+        onClick = { navController.navigate("event/${event.event_id}") },
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White,
@@ -82,13 +155,17 @@ fun EventCard(
                 .fillMaxWidth()
                 .padding(10.dp),
         ) {
-            Image(
-                painter = ColorPainter(Color.Gray),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(180.dp)
-                    .fillMaxWidth()
-            )
+            event.picture?.let { BitmapFactory.decodeByteArray(event.picture, 0, it.size).asImageBitmap() }
+                ?.let {
+                    Image(
+//                        painter = ColorPainter(Color.Gray),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(180.dp)
+                            .fillMaxWidth(),
+                        bitmap = it
+                    )
+                }
             Row(modifier = Modifier.padding(top = 20.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -113,31 +190,9 @@ fun EventCard(
                         shape = RoundedCornerShape(10.dp)
                     )
                 ) {
-                    Icon(Icons.Default.Add, tint = Color.White,  contentDescription = null)
+                    Icon(Icons.Default.Add, tint = Color.White, contentDescription = null)
                 }
             }
         }
     }
-}
-
-
-fun getNextEventsFromServer(context: Context, nr_of_events: Int) {
-
-    // Server endpoint
-    val endpoint = "/next_events?nr_of_events=$nr_of_events"
-
-    // Create the request
-    val request = JsonObjectRequest(
-        Request.Method.POST, serverUrl + endpoint, null,
-        { response ->
-            // Handle response
-        },
-        { error ->
-            //
-        }
-    )
-
-    // Add the request to the RequestQueue
-    Volley.newRequestQueue(context).add(request)
-
 }
