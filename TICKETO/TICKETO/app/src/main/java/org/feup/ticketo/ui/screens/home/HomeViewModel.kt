@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.data.storage.TicketoStorage
+import org.feup.ticketo.utils.formatDate
 import org.feup.ticketo.utils.serverUrl
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -35,13 +36,11 @@ class HomeViewModel(private val context: Context, private val ticketoStorage: Ti
                 val eventsList = mutableListOf<Event>()
                 for (i in 0 until response.getJSONArray("events").length()) {
                     val event = response.getJSONArray("events").getJSONObject(i)
-                    val eventDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(event.getString("DATE"))
-                    val formattedEventDate = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(eventDate)
                     eventsList.add(
                         Event(
                             event_id = event.getInt("EVENT_ID"),
                             name = event.getString("NAME"),
-                            date = formattedEventDate,
+                            date = formatDate(event.getString("DATE")),
                             price = event.getDouble("PRICE").toFloat(),
                             picture = event.getString("PICTURE").hexToByteArray()
                         )
