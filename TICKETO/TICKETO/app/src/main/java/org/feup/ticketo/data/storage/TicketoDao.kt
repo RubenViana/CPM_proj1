@@ -2,6 +2,7 @@ package org.feup.ticketo.data.storage
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 
@@ -40,31 +41,31 @@ interface TicketoDao {
     suspend fun insertCreditCard(creditCard: CreditCard)
 
     // Insert an event into the database
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEvent(event: Event)
 
     // Insert an order into the database
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrder(order: Order)
 
     // Insert a product into the database
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProduct(product: Product)
 
     // Insert an order product into the database
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrderProduct(orderProduct: OrderProduct)
 
     // Insert a purchase into the database
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPurchase(purchase: Purchase)
 
     // Insert a ticket into the database
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTicket(ticket: Ticket)
 
     // Insert a voucher into the database
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVoucher(voucher: Voucher)
 
     // Get all vouchers for a client
@@ -99,5 +100,6 @@ interface TicketoDao {
     @Transaction
     @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId")
     suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers>
+
 
 }

@@ -42,7 +42,7 @@ data class CreditCard(
     @ColumnInfo(name = "CREDIT_CARD_ID")
     var credit_card_id: Int,
     @ColumnInfo(name = "CUSTOMER_ID")
-    val customer_id: String? = null,
+    var customer_id: String? = null,
     @ColumnInfo(name = "TYPE")
     val type: String? = null,
     @ColumnInfo(name = "NUMBER")
@@ -250,11 +250,8 @@ data class Voucher(
 
 data class EventWithTicketsCount(
     @Embedded val event: Event,
-    @Relation(
-        parentColumn = "EVENT_ID",
-        entityColumn = "EVENT_ID"
-    )
-    val tickets: List<Ticket>
+    @ColumnInfo(name = "tickets_count")
+    val tickets_count: Int
 )
 
 
@@ -296,5 +293,6 @@ data class TicketsByEvent(
     val eventId: Int,
     val eventName: String,
     val numberTickets: Int,
+    val picture : ByteArray? = null,
     val eventDate: String
 )

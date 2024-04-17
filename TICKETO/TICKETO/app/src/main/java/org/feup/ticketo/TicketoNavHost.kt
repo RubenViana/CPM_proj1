@@ -71,11 +71,11 @@ fun TicketoNavHost(
                 statusTheme = false,
                 navigationTheme = true
             )
-            val viewModel = remember { HomeViewModel(context)}
+            val viewModel = remember { HomeViewModel(context, ticketoStorage)}
             HomeScreen(navController, context, viewModel)
         }
         composable(route = NavRoutes.Tickets.route) {
-            val viewModel = remember { TicketsViewModel(context) }
+            val viewModel = remember { TicketsViewModel(context, ticketoStorage) }
             TicketsScreen(navController, viewModel)
         }
         composable(route = NavRoutes.Orders.route) {

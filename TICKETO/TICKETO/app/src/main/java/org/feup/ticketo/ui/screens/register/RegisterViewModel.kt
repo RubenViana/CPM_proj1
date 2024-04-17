@@ -98,6 +98,7 @@ class RegisterViewModel(
 
     private fun handleSuccessfulRegistration(response: JSONObject) {
         customer.customer_id = response.getString("customer_id")
+        creditCard.customer_id = response.getString("customer_id")
         creditCard.credit_card_id = response.getInt("credit_card_id")
         viewModelScope.launch {
             try {

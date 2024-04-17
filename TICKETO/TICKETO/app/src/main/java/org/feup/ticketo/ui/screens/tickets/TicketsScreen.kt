@@ -1,5 +1,6 @@
 package org.feup.ticketo.ui.screens.tickets
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,12 +25,14 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import org.feup.ticketo.data.serverMessages.ServerValidationState
+import org.feup.ticketo.data.storage.EventWithTicketsCount
 import org.feup.ticketo.ui.components.serverErrorToast
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
@@ -57,10 +60,10 @@ fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel)
 
 
             is ServerValidationState.Success -> {
-                if (viewModel.ticketsByEventList.value.isEmpty()) {
+                if (viewModel.eventsWithTicketsCount.value.isEmpty()) {
                     EmptyList()
                 } else {
-                    TicketsList(viewModel.ticketsByEventList, navController)
+                    TicketsList(viewModel.eventsWithTicketsCount, navController)
                 }
             }
         }
@@ -80,22 +83,22 @@ fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel)
 }
 
 @Composable
-fun TicketsList(tickets: MutableState<List<TicketsByEvent>>, navController: NavHostController) {
+fun TicketsList(tickets: MutableState<List<EventWithTicketsCount>>, navController: NavHostController) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         items(tickets.value.size) { index ->
-            TicketCard(ticket = tickets.value[index], navController = navController)
+            TicketCard(eventWithTickets = tickets.value[index], navController = navController)
         }
     }
 }
 
 @Composable
-fun TicketCard(ticket: TicketsByEvent, navController: NavHostController) {
+fun TicketCard(eventWithTickets: EventWithTicketsCount, navController: NavHostController) {
     ElevatedCard(
         modifier = Modifier.padding(10.dp),
-        onClick = { navController.navigate("tickets/${ticket.eventId}") }
+        onClick = { navController.navigate("tickets/${eventWithTickets.event.event_id}") }
     ) {
         Row(
             modifier = Modifier
@@ -103,33 +106,43 @@ fun TicketCard(ticket: TicketsByEvent, navController: NavHostController) {
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = ColorPainter(Color.Gray),
-                contentDescription = null,
-                modifier = Modifier.size(50.dp)
-            )
+            eventWithTickets.event.picture?.let {
+                BitmapFactory.decodeByteArray(eventWithTickets.event.picture, 0, it.size).asImageBitmap()
+            }
+                ?.let {
+                    Image(
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(50.dp),
+                        bitmap = it
+                    )
+                }
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 5.dp)
             ) {
-                Text(
-                    ticket.eventName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                )
-                Text(ticket.eventDate, style = MaterialTheme.typography.bodyMedium)
-            }
-            Column(
-            ) {
-                Row {
+                eventWithTickets.event.name?.let {
                     Text(
-                        text = "${ticket.numberTickets}x",
-                        style = MaterialTheme.typography.bodySmall
+                        it,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
                     )
-                    Icon(imageVector = Icons.Default.PanoramaVertical, contentDescription = null)
                 }
+                eventWithTickets.event.date?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             }
+
+            Row (
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Text(
+                    text = "${eventWithTickets.tickets_count}x",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Icon(imageVector = Icons.Default.PanoramaVertical, contentDescription = null)
+            }
+
         }
     }
 }

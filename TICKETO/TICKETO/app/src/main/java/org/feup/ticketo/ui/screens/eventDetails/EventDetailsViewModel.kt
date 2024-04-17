@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.serverMessages.ticketPurchaseMessage
 import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.data.storage.Purchase
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.Voucher
@@ -21,6 +22,8 @@ import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 import org.feup.ticketo.utils.objectToJson
 import org.feup.ticketo.utils.serverUrl
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class EventDetailsViewModel(
     private val eventId: Int,
@@ -42,11 +45,12 @@ class EventDetailsViewModel(
         val request = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
-
+                val eventDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(response.getJSONObject("event").getString("DATE"))
+                val formattedEventDate = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(eventDate)
                 event = Event(
                     event_id = response.getJSONObject("event").getInt("EVENT_ID"),
                     name = response.getJSONObject("event").getString("NAME"),
-                    date = response.getJSONObject("event").getString("DATE"),
+                    date = formattedEventDate,
                     price = response.getJSONObject("event").getDouble("PRICE").toFloat(),
                     picture = response.getJSONObject("event").getString("PICTURE").hexToByteArray()
                 )
@@ -106,6 +110,7 @@ class EventDetailsViewModel(
         // Store tickets and vouchers in database
         val tickets = response?.getJSONArray("tickets")
         val vouchers = response?.getJSONArray("vouchers")
+        val purchase = response?.getJSONObject("purchase")
 
         // Store tickets
         for (i in 0 until tickets!!.length()) {
@@ -140,6 +145,18 @@ class EventDetailsViewModel(
                     )
                 )
             }
+        }
+
+        // Store purchase
+        viewModelScope.launch {
+            ticketoStorage.insertPurchase(
+                Purchase(
+                    purchase_id = purchase!!.getInt("purchase_id"),
+                    customer_id = purchase.getString("customer_id"),
+                    total_price = purchase.getDouble("total_price").toFloat(),
+                    date = purchase.getString("date")
+                )
+            )
         }
     }
 }
