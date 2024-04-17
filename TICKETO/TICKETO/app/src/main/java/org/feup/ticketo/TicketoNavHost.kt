@@ -1,5 +1,6 @@
 package org.feup.ticketo
 
+import android.graphics.Color
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -8,6 +9,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +47,7 @@ sealed class NavRoutes(val route: String, val icon: ImageVector?) {
 
 @Composable
 fun TicketoNavHost(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
     startDestination: String,
     snackbarHostState: SnackbarHostState
@@ -65,22 +68,16 @@ fun TicketoNavHost(
             RegisterScreen(navController, viewModel, snackbarHostState)
         }
         composable(route = NavRoutes.Home.route) {
-            SetSystemBarsColors(
-                md_theme_light_primary.toArgb(),
-                md_theme_light_onPrimary.toArgb(),
-                statusTheme = false,
-                navigationTheme = true
-            )
             val viewModel = remember { HomeViewModel(context)}
-            HomeScreen(navController, context, viewModel)
+            HomeScreen(navController, context, viewModel, modifier)
         }
         composable(route = NavRoutes.Tickets.route) {
             val viewModel = remember { TicketsViewModel() }
-            TicketsScreen(navController, viewModel)
+            TicketsScreen(navController, viewModel, modifier)
         }
         composable(route = NavRoutes.Orders.route) {
             val viewModel = OrdersViewModel()
-            OrdersScreen(navController, viewModel)
+            OrdersScreen(navController, viewModel, modifier)
         }
         composable(route = "settings",
             enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },

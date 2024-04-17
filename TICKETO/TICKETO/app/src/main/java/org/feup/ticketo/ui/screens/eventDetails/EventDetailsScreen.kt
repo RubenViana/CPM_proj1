@@ -5,42 +5,55 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PanoramaVertical
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,8 +61,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.android.volley.VolleyError
 import org.feup.ticketo.data.serverMessages.ServerValidationState
+import org.feup.ticketo.ui.screens.home.formatDate
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
+import org.feup.ticketo.ui.theme.md_theme_light_onSecondaryContainer
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.getServerResponseErrorMessage
 
@@ -111,51 +126,14 @@ fun EventDetailsScreen(navController: NavHostController, viewModel: EventDetails
 @Composable
 fun LoadingEventDetailsText(message: String, navController: NavHostController) {
     Column(
-        Modifier
-            .fillMaxSize()
-            .background(color = md_theme_light_background),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        CenterAlignedTopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = {
-                Text("Event Details")
-            },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null
-                    )
-                }
-            }
+        CircularProgressIndicator(
+            modifier = Modifier.size(50.dp),
+            color = md_theme_light_primary
         )
-
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(50.dp),
-                color = Color.Blue
-            )
-            Spacer(modifier = Modifier.width(20.dp))
-            Text(
-                text = message,
-                style = TextStyle(
-                    color = md_theme_light_primary,
-                    fontSize = 22.sp
-                )
-            )
-        }
-
     }
 }
 
@@ -201,74 +179,164 @@ private fun EventDetails(
     viewModel: EventDetailsViewModel,
     navController: NavHostController
 ) {
-    Column(
+    Surface(
         Modifier
-            .fillMaxSize()
-            .background(color = md_theme_light_background),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .fillMaxSize(),
+        color = md_theme_light_onPrimary
     ) {
-        CenterAlignedTopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = {
-                Text(viewModel.event.name.orEmpty())
-            },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null
+        Column(
+            Modifier
+                .fillMaxSize(),
+        ) {
+            Box() {
+                Box(modifier = Modifier.height(500.dp)) {
+                    viewModel.event.picture?.let {
+                        BitmapFactory.decodeByteArray(
+                            viewModel.event.picture,
+                            0,
+                            it.size
+                        ).asImageBitmap()
+                    }
+                        ?.let {
+                            Image(
+                                contentDescription = "Event picture",
+                                bitmap = it,
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        md_theme_light_onPrimary
+                                    ),
+                                    startY = 800f,
+                                )
+                            )
                     )
                 }
-            }
-        )
-        viewModel.event.picture?.let { BitmapFactory.decodeByteArray(viewModel.event.picture, 0, it.size).asImageBitmap() }
-            ?.let {
-                Image(
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(400.dp)
-                        .fillMaxWidth(),
-                    bitmap = it
+                CenterAlignedTopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        actionIconContentColor = md_theme_light_onPrimary,
+                        navigationIconContentColor = md_theme_light_onPrimary,
+                        titleContentColor = md_theme_light_onPrimary,
+                        scrolledContainerColor = Color.Transparent
+                    ),
+                    title = {
+                        Text("")
+                    },
+                    modifier = Modifier.statusBarsPadding(),
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
+                    }
                 )
             }
-        Text(viewModel.event.name.orEmpty())
-        Text(viewModel.event.date.orEmpty())
-        Text(viewModel.event.price.toString())
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { viewModel.decreaseTickets() },
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 0.dp)
+                    .navigationBarsPadding(),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.Remove,
-                    contentDescription = null
-                )
-            }
-            Text(viewModel.numberTickets.toString())
-            IconButton(
-                onClick = { viewModel.increaseTickets() },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null
-                )
-            }
-        }
-        when {
-            viewModel.numberTickets > 0 -> {
-                Button(
-                    onClick = { viewModel.checkout() }
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Buy")
+                    Text(text = viewModel.event.name!!, style = TextStyle(fontSize = 40.sp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Row(
+                        Modifier
+                            .padding(vertical = 5.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Date",
+                            style = TextStyle(fontSize = 20.sp),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(viewModel.event.date!!)
+                    }
+                    Row(
+                        Modifier
+                            .padding(vertical = 5.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Price",
+                            style = TextStyle(fontSize = 20.sp),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(viewModel.event.price.toString() + "€")
+                    }
+                    Column(
+                        modifier = Modifier
+                            .padding(vertical = 5.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                "Tickets",
+                                style = TextStyle(fontSize = 20.sp),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Row {
+                                Text(text = "${viewModel.numberTickets} ")
+                                Icon(
+                                    imageVector = Icons.Default.PanoramaVertical,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.decreaseTickets() },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Remove,
+                                    contentDescription = null
+                                )
+                            }
+                            IconButton(
+                                onClick = { viewModel.increaseTickets() },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    }
+                }
+                when {
+                    viewModel.numberTickets > 0 -> {
+                        Button(
+                            onClick = { viewModel.checkout() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = md_theme_light_onSecondaryContainer,
+                                contentColor = md_theme_light_onPrimary
+                            )
+                        ) {
+                            Text("Buy")
+                        }
+                    }
                 }
             }
         }

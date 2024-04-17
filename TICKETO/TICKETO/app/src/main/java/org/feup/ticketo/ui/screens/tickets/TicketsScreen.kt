@@ -25,12 +25,13 @@ import androidx.navigation.NavHostController
 @Composable
 fun TicketsScreen(
     navController: NavHostController,
-    viewModel: TicketsViewModel
+    viewModel: TicketsViewModel,
+    modifier: Modifier
 ) {
 
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
     ) {
         LazyColumn(
