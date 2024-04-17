@@ -236,7 +236,7 @@ def next_events():
         cursor.execute('SELECT * FROM EVENT as e where e.DATE >= datetime() limit ?', (nr_of_events,))
         events = cursor.fetchall()
 
-        return jsonify({"events" : [dict(event) for event in events]}), 200
+        return jsonify({"events": [dict(event) for event in events]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting next events: {}'.format(e)}), 500
     finally:
@@ -304,6 +304,7 @@ def get_tickets():
     try:
         args = request.args
         customer_id = args.get('customer_id')
+        event_id = args.get('event_id')
 
         # if no customer_id parameter is passed
         if not customer_id:
@@ -311,12 +312,16 @@ def get_tickets():
 
         # Get customer tickets
         conn, cursor = get_db()
-        cursor.execute('SELECT * '
-                       'FROM TICKET t, PURCHASE p, EVENT e '
-                       'WHERE p.CUSTOMER_ID = ? '
-                       'and p.PURCHASE_ID = t.PURCHASE_ID '
-                       'and e.EVENT_ID = t.EVENT_ID',
-                       (customer_id,))
+        if not event_id:
+            cursor.execute('SELECT e.EVENT_ID, e.NAME, e.DATE, e.PICTURE, COUNT(t.TICKET_ID) as nr_of_tickets '
+                           'FROM TICKET t, PURCHASE p, EVENT e '
+                           'WHERE p.CUSTOMER_ID = ? '
+                           'and p.PURCHASE_ID = t.PURCHASE_ID '
+                           'and e.EVENT_ID = t.EVENT_ID '
+                           'GROUP BY e.EVENT_ID',
+                           (customer_id,))
+        else:
+            cursor.execute('')
         tickets = cursor.fetchall()
 
         return jsonify({"tickets" : [dict(ticket) for ticket in tickets]}), 200
@@ -412,6 +417,13 @@ def buy_ticket():
         cursor.execute('SELECT DATE FROM PURCHASE WHERE PURCHASE_ID = ?', (purchase_id,))
         date = cursor.fetchone()['DATE']
 
+        purchase = {
+            'purchase_id': purchase_id,
+            'customer_id': customer_id,
+            'date': date,
+            'total_price': total_price
+        }
+
         created_tickets = []
         created_vouchers = []
 
@@ -497,7 +509,8 @@ def buy_ticket():
             'message': 'Tickets bought successfully',
             'purchase_id': purchase_id,
             'tickets': created_tickets,
-            'vouchers': created_vouchers
+            'vouchers': created_vouchers,
+            'purchase': purchase
         }), 201
     except Exception as e:
         print({'message': 'Error buying ticket: {}'.format(e)})
