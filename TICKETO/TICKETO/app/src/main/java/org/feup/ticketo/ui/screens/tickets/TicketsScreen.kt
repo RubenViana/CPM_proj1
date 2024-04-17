@@ -47,15 +47,6 @@ fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel,
         modifier = modifier
             .fillMaxSize()
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            items(viewModel.ticketsByEventList.size) {
-                item -> TicketCard(ticket = viewModel.ticketsByEventList[item], navController = navController)
-            }
-        modifier = Modifier.fillMaxSize()
-    ) {
         when (viewModel.serverValidationState.value) {
             is ServerValidationState.Loading -> {
                 LoadingTickets(

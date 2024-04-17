@@ -180,7 +180,7 @@ fun EventCard(
 }
 
 fun formatDate(input: String): String {
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm", Locale.ENGLISH)
     val dateTime = LocalDateTime.parse(input, formatter)
     val dayOfMonth = dateTime.dayOfMonth
     val month = dateTime.month.toString().substring(0, 3)
