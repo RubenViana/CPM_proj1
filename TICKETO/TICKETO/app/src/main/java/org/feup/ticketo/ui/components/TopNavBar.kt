@@ -110,13 +110,13 @@ fun TopNavBar (
                     Text("Orders")
                 },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = {  }) {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = null
                         )
                     }
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { navController.navigate("addOrder") }) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null
