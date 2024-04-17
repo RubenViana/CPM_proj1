@@ -24,6 +24,7 @@ import org.feup.ticketo.ui.screens.eventTickets.EventTicketsScreen
 import org.feup.ticketo.ui.screens.eventTickets.EventTicketsViewModel
 import org.feup.ticketo.ui.screens.home.HomeScreen
 import org.feup.ticketo.ui.screens.home.HomeViewModel
+import org.feup.ticketo.ui.screens.orders.AddOrderScreen
 import org.feup.ticketo.ui.screens.orders.OrdersScreen
 import org.feup.ticketo.ui.screens.orders.OrdersViewModel
 import org.feup.ticketo.ui.screens.register.RegisterScreen
@@ -78,9 +79,13 @@ fun TicketoNavHost(
             val viewModel = remember { TicketsViewModel(context, ticketoStorage) }
             TicketsScreen(navController, viewModel)
         }
-        composable(route = NavRoutes.Orders.route) {
+       composable(route = NavRoutes.Orders.route) {
+           val viewModel = OrdersViewModel()
+           OrdersScreen(navController, viewModel)
+       }
+        composable("addOrder") {
             val viewModel = OrdersViewModel()
-            OrdersScreen(navController, viewModel)
+            AddOrderScreen(navController, viewModel)
         }
         composable(route = "settings",
             enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
@@ -130,5 +135,8 @@ fun TicketoNavHost(
             }
             EventDetailsScreen(navController, viewModel)
         }
+
     }
 }
+
+
