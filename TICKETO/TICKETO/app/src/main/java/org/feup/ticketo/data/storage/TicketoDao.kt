@@ -9,9 +9,17 @@ import androidx.room.Transaction
 @Dao
 interface TicketoDao {
 
-    // Get customer tickets for an event
+    // Get all customer tickets for an event
     @Query("SELECT * FROM TICKET, EVENT WHERE TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId)")
-    suspend fun getCustomerEventTickets(customerId: String, eventId: Int): EventTickets?
+    suspend fun getCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
+
+    // Get unused customer tickets for an event
+    @Query("SELECT * FROM TICKET, EVENT WHERE USED = 0 AND TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId) ")
+    suspend fun getUnusedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
+
+    // Get used customer tickets for an event
+    @Query("SELECT * FROM TICKET, EVENT WHERE TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId) AND TICKET.USED = true")
+    suspend fun getUsedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
 
     // Get customer tickets for an event
     @Query("SELECT * FROM EVENT WHERE EVENT_ID = :eventId")
@@ -103,5 +111,11 @@ interface TicketoDao {
     @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId")
     suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers>
 
+    // Get customer details
+    @Query("SELECT * FROM CUSTOMER WHERE CUSTOMER_ID = :customerId")
+    suspend fun getCustomer(customerId: String): Customer
 
+    // Set ticket as used
+    @Query("UPDATE TICKET SET USED = 1 WHERE TICKET_ID = :ticketId")
+    suspend fun setTicketAsUsed(ticketId: String)
 }
