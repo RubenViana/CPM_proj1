@@ -1,13 +1,20 @@
 package org.feup.ticketo.ui.screens.eventTickets
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.data.serverMessages.ServerValidationState
+import org.feup.ticketo.data.serverMessages.ticketValidationMessage
+import org.feup.ticketo.data.storage.Customer
+import org.feup.ticketo.data.storage.EventTickets
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
+import org.feup.ticketo.utils.generateQRCode
 
 class EventTicketsViewModel(
     private val eventId: Int,
@@ -15,40 +22,70 @@ class EventTicketsViewModel(
     private val ticketoStorage: TicketoStorage
 ) : ViewModel() {
 
-    private var eventTickets: EventTickets? = null
+    val fetchTicketsFromDatabaseState = mutableStateOf<ServerValidationState?>(null)
+    val qrCodeGenerationState = mutableStateOf<ServerValidationState?>(null)
 
-    init {
+    val eventTickets = mutableStateOf<EventTickets?>(null)
+    val selectedTickets = mutableStateOf<List<Ticket>>(emptyList())
+    val qrCode = mutableStateOf<Bitmap?>(null)
+
+    fun getEventTickets() {
+        fetchTicketsFromDatabaseState.value =
+            ServerValidationState.Loading("Loading event tickets...")
         viewModelScope.launch {
-            val event = getEvent()
-            eventTickets = EventTickets(
-                event?.name.orEmpty(),
-                event?.date.orEmpty(),
-                event?.picture?: ByteArray(0),
-                getTickets()?: null
+            eventTickets.value = ticketoStorage.getUnusedCustomerTicketsForEvent(
+                eventId = eventId,
+                customerId = getUserIdInSharedPreferences(context)
             )
-
+            Log.i("EventTicketsViewModel", eventTickets.value?.tickets?.size.toString())
         }
     }
 
-    fun getEventTickets(): EventTickets? {
-        return eventTickets
+    fun handleTicketOnCheckedChange(ticket: Ticket) {
+        if (selectedTickets.value.size < 4 && !selectedTickets.value.contains(ticket)) {
+            val temp = selectedTickets.value.toMutableList()
+            temp.add(ticket)
+            selectedTickets.value = temp
+        } else {
+            val temp = selectedTickets.value.toMutableList()
+            temp.remove(ticket)
+            selectedTickets.value = temp
+        }
     }
 
-    private suspend fun getEvent(): Event? {
-        return ticketoStorage.getEvent(eventId)
-    }
-
-    private suspend fun getTickets(): List<Ticket>? {
-        return ticketoStorage.getCustomerTicketsForEvent(
-            eventId = eventId,
-            customerId = getUserIdInSharedPreferences(context)
+    fun validateTickets() {
+        qrCodeGenerationState.value = ServerValidationState.Loading("Generation QR Code...")
+        // create ticket validation message
+        var tvm = ticketValidationMessage(
+            Customer(getUserIdInSharedPreferences(context)),
+            selectedTickets.value,
+            null
         )
-    }
-}
 
-data class EventTickets(
-    val eventName: String?,
-    val eventDate: String?,
-    val eventImage: ByteArray?,
-    val tickets: List<Ticket>?
-)
+        try {
+            // generate QR code
+            qrCode.value = generateQRCode(tvm)
+
+            if (qrCode.value != null) {
+                selectedTickets.value.forEach { ticket ->
+                    viewModelScope.launch {
+                        ticketoStorage.setTicketAsUsed(ticket.ticket_id)
+                    }
+                }
+                // remove tickets from selectedTickets
+                selectedTickets.value = emptyList()
+                qrCodeGenerationState.value =
+                    ServerValidationState.Success(null, "QR code generated successfully!")
+            } else {
+                qrCodeGenerationState.value =
+                    ServerValidationState.Failure(null, "Error generating QR code")
+            }
+
+        } catch (e: Exception) {
+            qrCodeGenerationState.value =
+                ServerValidationState.Failure(null, "Error generating QR code")
+        }
+
+    }
+
+}

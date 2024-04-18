@@ -19,7 +19,6 @@ class TicketsViewModel(private val context: Context, private val ticketoStorage:
 
     fun fetchTickets() {
         serverValidationState.value = ServerValidationState.Loading("Loading tickets...")
-//        getTicketsFromServer(getUserIdInSharedPreferences(context))
         getTicketsFromLocalStorage()
     }
 
@@ -31,42 +30,5 @@ class TicketsViewModel(private val context: Context, private val ticketoStorage:
             }
         }
     }
-
-//    @OptIn(ExperimentalStdlibApi::class)
-//    private fun getTicketsFromServer(customerId: String) {
-//        val url = serverUrl + "tickets?customer_id=$customerId"
-//        val request = JsonObjectRequest(
-//            Request.Method.GET, url, null,
-//            { response ->
-//                val ticketsList = mutableListOf<TicketsByEvent>()
-//                val ticketsArray = response.getJSONArray("tickets")
-//                for (i in 0 until ticketsArray.length()) {
-//                    val ticket = ticketsArray.getJSONObject(i)
-//                    val eventDate = SimpleDateFormat(
-//                        "yyyy-MM-dd HH:mm:ss",
-//                        Locale.getDefault()
-//                    ).parse(ticket.getString("DATE"))
-//                    val formattedEventDate =
-//                        SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(eventDate)
-//                    val ticketsByEvent = TicketsByEvent(
-//                        eventId = ticket.getInt("EVENT_ID"),
-//                        eventName = ticket.getString("NAME"),
-//                        numberTickets = ticket.getInt("nr_of_tickets"),
-//                        eventDate = formattedEventDate,
-//                        picture = ticket.getString("PICTURE").hexToByteArray()
-//                    )
-//                    ticketsList.add(ticketsByEvent)
-//                }
-//                ticketsByEventList.value = ticketsList
-//                serverValidationState.value = ServerValidationState.Success(response)
-//            },
-//            { error ->
-//                serverValidationState.value = ServerValidationState.Failure(error)
-//                showServerErrorToast.value = true
-//            }
-//        )
-
-//        Volley.newRequestQueue(context).add(request)
-//    }
 }
 

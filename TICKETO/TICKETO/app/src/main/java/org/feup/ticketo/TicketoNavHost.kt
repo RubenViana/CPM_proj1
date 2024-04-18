@@ -3,12 +3,14 @@ package org.feup.ticketo
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.BookOnline
 import androidx.compose.material.icons.filled.MobileFriendly
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.BookOnline
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -33,19 +35,17 @@ import org.feup.ticketo.ui.screens.settings.SettingsScreen
 import org.feup.ticketo.ui.screens.settings.SettingsViewModel
 import org.feup.ticketo.ui.screens.tickets.TicketsScreen
 import org.feup.ticketo.ui.screens.tickets.TicketsViewModel
-import org.feup.ticketo.ui.theme.SetSystemBarsColors
-import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
-import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 
 sealed class NavRoutes(val route: String, val icon: ImageVector?) {
     data object Home : NavRoutes("home", Icons.Default.Search)
-    data object Tickets : NavRoutes("tickets", Icons.Default.MobileFriendly)
+    data object Tickets : NavRoutes("tickets", Icons.Outlined.BookOnline)
     data object Orders : NavRoutes("orders", Icons.Default.AccessTime)
 }
 
 @Composable
 fun TicketoNavHost(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
     startDestination: String,
     snackbarHostState: SnackbarHostState
@@ -66,23 +66,17 @@ fun TicketoNavHost(
             RegisterScreen(navController, viewModel, snackbarHostState)
         }
         composable(route = NavRoutes.Home.route) {
-            SetSystemBarsColors(
-                md_theme_light_primary.toArgb(),
-                md_theme_light_onPrimary.toArgb(),
-                statusTheme = false,
-                navigationTheme = true
-            )
-            val viewModel = remember { HomeViewModel(context, ticketoStorage)}
-            HomeScreen(navController, context, viewModel)
+            val viewModel = remember { HomeViewModel(context, ticketoStorage) }
+            HomeScreen(navController, context, viewModel, modifier)
         }
         composable(route = NavRoutes.Tickets.route) {
             val viewModel = remember { TicketsViewModel(context, ticketoStorage) }
-            TicketsScreen(navController, viewModel)
+            TicketsScreen(navController, viewModel, modifier)
         }
-       composable(route = NavRoutes.Orders.route) {
-           val viewModel = OrdersViewModel()
-           OrdersScreen(navController, viewModel)
-       }
+        composable(route = NavRoutes.Orders.route) {
+            val viewModel = OrdersViewModel()
+            OrdersScreen(navController, viewModel, modifier)
+        }
         composable("addOrder") {
             val viewModel = OrdersViewModel()
             AddOrderScreen(navController, viewModel)
@@ -116,11 +110,7 @@ fun TicketoNavHost(
                         ticketoStorage
                     )
                 }
-            if (viewModel.getEventTickets() != null && viewModel.getEventTickets()?.tickets != null) {
-                EventTicketsScreen(navController, viewModel)
-            } else {
-                navController.navigate(NavRoutes.Tickets.route)
-            }
+            EventTicketsScreen(navController, viewModel)
         }
         composable(
             route = "event/{eventId}",

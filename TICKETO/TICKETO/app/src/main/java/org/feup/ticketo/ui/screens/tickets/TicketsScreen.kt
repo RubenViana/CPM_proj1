@@ -37,14 +37,15 @@ import org.feup.ticketo.ui.components.serverErrorToast
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @Composable
-fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel) {
+fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel, modifier: Modifier) {
     // Fetch tickets from server whenever the screen is launched
     LaunchedEffect(viewModel) {
         viewModel.fetchTickets()
     }
 
     Surface(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
     ) {
         when (viewModel.serverValidationState.value) {
             is ServerValidationState.Loading -> {

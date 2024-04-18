@@ -1,19 +1,21 @@
 package org.feup.ticketo.ui.screens.eventDetails
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,6 +23,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -30,6 +34,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -38,19 +43,32 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.android.volley.VolleyError
 import org.feup.ticketo.data.serverMessages.ServerValidationState
+import org.feup.ticketo.ui.screens.home.formatDate
+import org.feup.ticketo.ui.theme.md_theme_dark_inversePrimary
+import org.feup.ticketo.ui.theme.md_theme_dark_primary
 import org.feup.ticketo.ui.theme.md_theme_light_background
+import org.feup.ticketo.ui.theme.md_theme_light_onBackground
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
+import org.feup.ticketo.ui.theme.md_theme_light_primaryContainer
+import org.feup.ticketo.ui.theme.md_theme_light_secondary
+import org.feup.ticketo.ui.theme.md_theme_light_secondaryContainer
+import org.feup.ticketo.ui.theme.md_theme_light_shadow
+import org.feup.ticketo.ui.theme.md_theme_light_tertiary
 import org.feup.ticketo.utils.getServerResponseErrorMessage
 
 @Composable
@@ -110,56 +128,19 @@ fun EventDetailsScreen(navController: NavHostController, viewModel: EventDetails
 @Composable
 fun LoadingEventDetailsText(message: String, navController: NavHostController) {
     Column(
-        Modifier
-            .fillMaxSize()
-            .background(color = md_theme_light_background),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        CenterAlignedTopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = {
-                Text("Event Details")
-            },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null
-                    )
-                }
-            }
+        CircularProgressIndicator(
+            modifier = Modifier.size(50.dp),
+            color = md_theme_light_primary
         )
-
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(50.dp),
-                color = Color.Blue
-            )
-            Spacer(modifier = Modifier.width(20.dp))
-            Text(
-                text = message,
-                style = TextStyle(
-                    color = md_theme_light_primary,
-                    fontSize = 22.sp
-                )
-            )
-        }
-
     }
 }
 
 @Composable
-fun LoadingEventDetailsFailedDialog(error: VolleyError, viewModel: EventDetailsViewModel) {
+fun LoadingEventDetailsFailedDialog(error: VolleyError?, viewModel: EventDetailsViewModel) {
     AlertDialog(
         icon = {
             Icon(Icons.Default.Close, contentDescription = "Failed to load event details")
@@ -194,148 +175,301 @@ fun LoadingEventDetailsFailedDialog(error: VolleyError, viewModel: EventDetailsV
 
 }
 
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun EventDetails(
     viewModel: EventDetailsViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    color_bg: Color = md_theme_light_background
 ) {
-    Column(
+    Surface(
         Modifier
-            .fillMaxSize()
-            .background(color = md_theme_light_background),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .fillMaxSize(),
+        color = color_bg
     ) {
-        CenterAlignedTopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = {
-                Text(viewModel.event.name.orEmpty())
-            },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null
+        Column(
+            Modifier
+                .fillMaxSize(),
+        ) {
+            Box() {
+                Box(modifier = Modifier.height(500.dp)) {
+                    viewModel.event.picture?.let {
+                        BitmapFactory.decodeByteArray(
+                            viewModel.event.picture,
+                            0,
+                            it.size
+                        ).asImageBitmap()
+                    }
+                        ?.let {
+                            Image(
+                                contentDescription = "Event picture",
+                                bitmap = it,
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        color_bg
+                                    ),
+                                    startY = 800f,
+                                )
+                            )
                     )
                 }
-            }
-        )
-        viewModel.event.picture?.let { BitmapFactory.decodeByteArray(viewModel.event.picture, 0, it.size).asImageBitmap() }
-            ?.let {
-                Image(
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(400.dp)
-                        .fillMaxWidth(),
-                    bitmap = it
+                CenterAlignedTopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        actionIconContentColor = md_theme_light_onPrimary,
+                        navigationIconContentColor = md_theme_light_onPrimary,
+                        titleContentColor = md_theme_light_onPrimary,
+                        scrolledContainerColor = Color.Transparent
+                    ),
+                    title = {
+                        Text("")
+                    },
+                    modifier = Modifier.statusBarsPadding(),
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
+                    }
                 )
             }
-        Text(viewModel.event.name.orEmpty())
-        Text(viewModel.event.date.orEmpty())
-        Text(viewModel.event.price.toString())
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { viewModel.decreaseTickets() },
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 0.dp)
+                    .navigationBarsPadding(),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.Remove,
-                    contentDescription = null
-                )
-            }
-            Text(viewModel.numberTickets.toString())
-            IconButton(
-                onClick = { viewModel.increaseTickets() },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(text = viewModel.event.name!!, style = TextStyle(fontSize = 40.sp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Row(
+                        Modifier
+                            .padding(vertical = 5.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Date",
+                            style = TextStyle(fontSize = 20.sp),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(viewModel.event.date!!)
+                    }
+                    Row(
+                        Modifier
+                            .padding(vertical = 5.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Price",
+                            style = TextStyle(fontSize = 20.sp),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(viewModel.event.price.toString() + "€")
+                    }
+                    Column(
+                        modifier = Modifier
+                            .padding(vertical = 5.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                "Tickets",
+                                style = TextStyle(fontSize = 20.sp),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Row {
+                                Text(text = "${viewModel.numberTickets} ")
+                                Icon(
+                                    Icons.Default.ConfirmationNumber,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.decreaseTickets() },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Remove,
+                                    contentDescription = null
+                                )
+                            }
+                            IconButton(
+                                onClick = { viewModel.increaseTickets() },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    }
+                }
+                when {
+                    viewModel.numberTickets > 0 -> {
+                        Button(
+                            onClick = { viewModel.openPurchaseConfirmationDialog = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Buy")
+                        }
+                    }
+                }
             }
         }
         when {
-            viewModel.numberTickets > 0 -> {
-                Button(
-                    onClick = { viewModel.checkout() }
-                ) {
-                    Text("Buy")
-                }
+            viewModel.openPurchaseConfirmationDialog -> {
+                PurchaseConfirmationDialog(
+                    viewModel.numberTickets,
+                    viewModel.event.name!!,
+                    viewModel
+                )
             }
         }
     }
+}
+
+@Composable
+fun PurchaseConfirmationDialog(
+    numberTickets: Int,
+    eventName: String,
+    viewModel: EventDetailsViewModel
+) {
+    AlertDialog(
+        icon = {
+            Icon(Icons.Default.ConfirmationNumber, contentDescription = null)
+        },
+        title = {
+            Text(text = "Buy selected tickets?", textAlign = TextAlign.Center)
+        },
+        text = { Text("$numberTickets tickets for $eventName will be bought.") },
+        onDismissRequest = {},
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.openPurchaseConfirmationDialog = false
+                }
+            ) {
+                Text("Cancel")
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    viewModel.checkout()
+                }
+            ) {
+                Text("Confirm")
+            }
+        }
+    )
+
 }
 
 @Composable
 fun PurchaseFailedDialog(
-    error: VolleyError,
+    error: VolleyError?,
     purchaseTicketsInServerState: MutableState<ServerValidationState?>
 ) {
-    val errorMessage = getServerResponseErrorMessage(error)
-    if (errorMessage != null) {
-        Log.i("error", errorMessage)
-    }
-    AlertDialog(
-        icon = {
-            Icon(Icons.Default.Close, contentDescription = "Purchase Failed")
-        },
-        title = {
-            Text(text = "Failed to buy tickets", textAlign = TextAlign.Center)
-        },
-        text = {
+//    val errorMessage = getServerResponseErrorMessage(error)
+//    if (errorMessage != null) {
+//        Log.i("error", errorMessage)
+//    }
+    Dialog(
+        onDismissRequest = { purchaseTicketsInServerState.value = null },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Something went wrong", textAlign = TextAlign.Center)
-                if (errorMessage != null) {
-                    Text(text = errorMessage, textAlign = TextAlign.Center)
-                }
-            }
-        },
-        onDismissRequest = {},
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    purchaseTicketsInServerState.value = null
-                }
-            ) {
-                Text("Confirm")
+                Icon(
+                    Icons.Default.Error,
+                    contentDescription = "Purchase Failed",
+                    tint = Color.Red,
+                    modifier = Modifier.size(50.dp)
+                )
+                Text(
+                    text = "Tickets Purchase Failed",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
-    )
+    }
 }
 
 @Composable
 fun PurchaseSuccessfulDialog(purchaseTicketsInServerState: MutableState<ServerValidationState?>) {
-    AlertDialog(
-        icon = {
-            Icon(Icons.Default.CheckCircle, contentDescription = "Purchase Completed")
-        },
-        title = {
-            Text(text = "Tickets Purchase Successfully", textAlign = TextAlign.Center)
-        },
-        text = {},
-        onDismissRequest = {},
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    purchaseTicketsInServerState.value = null
-                }
+    Dialog(
+        onDismissRequest = { purchaseTicketsInServerState.value = null },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Confirm")
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Purchase Completed",
+                    tint = Color.Green,
+                    modifier = Modifier.size(50.dp)
+                )
+                Text(
+                    text = "Tickets Purchase Successfully",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -344,18 +478,22 @@ fun LoadingPurchaseDialog() {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .padding(16.dp),
+                .height(150.dp)
+                .padding(10.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Row (
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(50.dp),
-                    color = Color.Blue
+                    modifier = Modifier
+                        .size(50.dp)
+                        .size(50.dp),
+                    color = md_theme_light_primary,
                 )
                 Text(
                     text = "Purchasing tickets...",
@@ -367,5 +505,4 @@ fun LoadingPurchaseDialog() {
             }
         }
     }
-
 }

@@ -32,8 +32,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             // This app is only ever in dark mode, so hard code detectDarkMode to true.
-            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { false },
-            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { false }
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { true },
+            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         )
         setContent {
             TicketoApp()
@@ -64,22 +64,19 @@ fun TicketoApp() {
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { innerPadding ->
-            Column(
-                modifier = Modifier.padding(innerPadding)
+            val customer_id = getUserIdInSharedPreferences(context = LocalContext.current)
+            val startDestination: String
+            if (customer_id.isNotEmpty())
+                startDestination = "home"
+            else
+                startDestination = "register"
+            TicketoNavHost(
+                modifier = Modifier.padding(innerPadding),
+                navController = navController,
+                startDestination = startDestination,
+                snackbarHostState
             )
-            {
-                val customer_id = getUserIdInSharedPreferences(context = LocalContext.current)
-                val startDestination: String
-                if (customer_id.isNotEmpty())
-                    startDestination = "home"
-                else
-                    startDestination = "register"
-                TicketoNavHost(
-                    navController = navController,
-                    startDestination = startDestination,
-                    snackbarHostState
-                )
-            }
+
         }
 
     }

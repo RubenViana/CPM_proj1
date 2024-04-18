@@ -25,7 +25,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrdersScreen(navController: NavHostController, viewModel: OrdersViewModel) {
+fun OrdersScreen(navController: NavHostController, viewModel: OrdersViewModel, modifier: Modifier) {
     // Composable content that uses the callback
 
     /*val productItems = viewModel.getProductItems()
@@ -34,7 +34,7 @@ fun OrdersScreen(navController: NavHostController, viewModel: OrdersViewModel) {
     val selectedItems = remember { mutableStateListOf<ProductItem>() }
 
    /* Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
     ) {
         CenterAlignedTopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(

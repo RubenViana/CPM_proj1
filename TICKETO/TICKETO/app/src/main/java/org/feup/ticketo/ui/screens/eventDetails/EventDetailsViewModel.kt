@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,11 +20,10 @@ import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.Voucher
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
+import org.feup.ticketo.utils.formatDate
 import org.feup.ticketo.utils.objectToJson
 import org.feup.ticketo.utils.serverUrl
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class EventDetailsViewModel(
     private val eventId: Int,
@@ -38,6 +38,8 @@ class EventDetailsViewModel(
 
     var numberTickets by mutableIntStateOf(0)
 
+    var openPurchaseConfirmationDialog by mutableStateOf(false)
+
     @OptIn(ExperimentalStdlibApi::class)
     fun fetchEvent() {
         // get event from server
@@ -45,12 +47,11 @@ class EventDetailsViewModel(
         val request = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
-                val eventDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(response.getJSONObject("event").getString("DATE"))
-                val formattedEventDate = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(eventDate)
+
                 event = Event(
                     event_id = response.getJSONObject("event").getInt("EVENT_ID"),
                     name = response.getJSONObject("event").getString("NAME"),
-                    date = formattedEventDate,
+                    date = formatDate(response.getJSONObject("event").getString("DATE")),
                     price = response.getJSONObject("event").getDouble("PRICE").toFloat(),
                     picture = response.getJSONObject("event").getString("PICTURE").hexToByteArray()
                 )
@@ -77,6 +78,7 @@ class EventDetailsViewModel(
     }
 
     fun checkout() {
+        openPurchaseConfirmationDialog = false
         purchaseTicketsInServerState.value = ServerValidationState.Loading("Purchasing tickets...")
         // Send order to server
         val endpoint = "buy_ticket"
@@ -121,7 +123,7 @@ class EventDetailsViewModel(
                         ticket_id = ticket.getString("ticket_id"),
                         purchase_id = ticket.getInt("purchase_id"),
                         event_id = ticket.getInt("event_id"),
-                        purchase_date = ticket.getString("purchase_date"),
+                        purchase_date = formatDate(ticket.getString("purchase_date")),
                         used = ticket.getInt("used") != 0,
                         place = ticket.getInt("place").toString()
                     )
@@ -154,7 +156,7 @@ class EventDetailsViewModel(
                     purchase_id = purchase!!.getInt("purchase_id"),
                     customer_id = purchase.getString("customer_id"),
                     total_price = purchase.getDouble("total_price").toFloat(),
-                    date = purchase.getString("date")
+                    date = formatDate(purchase.getString("date"))
                 )
             )
         }

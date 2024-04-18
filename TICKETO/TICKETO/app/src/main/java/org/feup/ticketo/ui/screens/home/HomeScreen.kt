@@ -5,11 +5,14 @@ import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedCard
@@ -29,8 +33,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,21 +45,24 @@ import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.ui.components.serverErrorToast
 import org.feup.ticketo.ui.theme.md_theme_light_primary
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
-fun HomeScreen(navController: NavHostController, context: Context, viewModel: HomeViewModel) {
+fun HomeScreen(navController: NavHostController, context: Context, viewModel: HomeViewModel, modifier: Modifier) {
     // Fetch events from server whenever the screen is launched
     LaunchedEffect(viewModel) {
         viewModel.fetchEvents()
     }
 
     Surface(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
 
         when (viewModel.serverValidationState.value) {
             is ServerValidationState.Loading -> {
-                LoadingEvents((viewModel.serverValidationState.value as ServerValidationState.Loading)?.message ?: "Loading events...")
+                LoadingEvents((viewModel.serverValidationState.value as ServerValidationState.Loading)?.message ?: "Loading Events")
             }
 
             is ServerValidationState.Failure -> {
@@ -86,22 +95,14 @@ fun HomeScreen(navController: NavHostController, context: Context, viewModel: Ho
 
 @Composable
 fun LoadingEvents(s: String) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(50.dp),
-            color = Color.Blue
-        )
-        Spacer(modifier = Modifier.width(20.dp))
-        Text(
-            text = s,
-            style = TextStyle(
-                color = md_theme_light_primary,
-                fontSize = 22.sp
-            )
+            color = md_theme_light_primary
         )
     }
 }
@@ -139,60 +140,49 @@ fun EventCard(
     event: Event,
     navController: NavHostController
 ) {
-    OutlinedCard(
+    ElevatedCard(
         onClick = { navController.navigate("event/${event.event_id}") },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White,
-            contentColor = Color.Black
-        ),
-        modifier = Modifier
-            .padding(10.dp)
-            .width(180.dp)
+        shape = RoundedCornerShape(4.dp),
+        modifier = Modifier.padding(10.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-        ) {
+        Box(modifier = Modifier.height(250.dp)){
             event.picture?.let { BitmapFactory.decodeByteArray(event.picture, 0, it.size).asImageBitmap() }
                 ?.let {
                     Image(
-//                        painter = ColorPainter(Color.Gray),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(180.dp)
-                            .fillMaxWidth(),
-                        bitmap = it
+                        contentDescription = "Event picture",
+                        bitmap = it,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
-            Row(modifier = Modifier.padding(top = 20.dp)) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = event.name.toString(),
-                        style = TextStyle(
-                            color = md_theme_light_primary,
-                            fontSize = 16.sp
-                        )
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black
+                        ),
+                        startY = 300f,
                     )
-                    Text(
-                        text = event.price.toString() + "€",
-                        style = TextStyle(
-                            color = md_theme_light_primary,
-                            fontSize = 16.sp
-                        )
-                    )
-                }
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier.background(
-                        color = md_theme_light_primary,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                ) {
-                    Icon(Icons.Default.Add, tint = Color.White, contentDescription = null)
-                }
+                )
+            )
+            Box(modifier = Modifier.fillMaxSize().padding(12.dp), contentAlignment = Alignment.TopEnd){
+                Text(text = formatDate(event.date!!), style = TextStyle(color = Color.White, fontSize = 16.sp), modifier = Modifier.background(Color.Black.copy(alpha = 0.2f), shape = RoundedCornerShape(4.dp)))
+            }
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp), contentAlignment = Alignment.BottomStart){
+                Text(text = event.name!!, style = TextStyle(color = Color.White, fontSize = 16.sp))
             }
         }
     }
+}
+
+fun formatDate(input: String): String {
+    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm", Locale.ENGLISH)
+    val dateTime = LocalDateTime.parse(input, formatter)
+    val dayOfMonth = dateTime.dayOfMonth
+    val month = dateTime.month.toString().substring(0, 3)
+    return "$dayOfMonth $month"
 }

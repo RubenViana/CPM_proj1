@@ -9,9 +9,17 @@ import androidx.room.Transaction
 @Dao
 interface TicketoDao {
 
-    // Get customer tickets for an event
-    @Query("SELECT * FROM TICKET WHERE EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId)")
-    suspend fun getCustomerTicketsForEvent(customerId: String, eventId: Int): List<Ticket>?
+    // Get all customer tickets for an event
+    @Query("SELECT * FROM TICKET, EVENT WHERE TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId)")
+    suspend fun getCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
+
+    // Get unused customer tickets for an event
+    @Query("SELECT * FROM TICKET, EVENT WHERE USED = 0 AND TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId) ")
+    suspend fun getUnusedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
+
+    // Get used customer tickets for an event
+    @Query("SELECT * FROM TICKET, EVENT WHERE TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId) AND TICKET.USED = true")
+    suspend fun getUsedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
 
     // Get customer tickets for an event
     @Query("SELECT * FROM EVENT WHERE EVENT_ID = :eventId")
@@ -23,14 +31,16 @@ interface TicketoDao {
     // val currentDate = LocalDate.now().toString() // Current date in string format
 
     // Get events for which a customer has purchased tickets along with the count of tickets bought for each event
-    @Query("""
+    @Query(
+        """
         SELECT e.*, COUNT(t.TICKET_ID) AS tickets_count
         FROM EVENT e 
         INNER JOIN TICKET t ON e.EVENT_ID = t.EVENT_ID 
         INNER JOIN PURCHASE p ON t.PURCHASE_ID = p.PURCHASE_ID 
         WHERE p.CUSTOMER_ID = :customerId 
         GROUP BY e.EVENT_ID
-    """)
+    """
+    )
     suspend fun getEventsWithTicketCount(customerId: String): List<EventWithTicketsCount>?
 
     @Insert
@@ -105,5 +115,11 @@ interface TicketoDao {
     @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId")
     suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers>
 
+    // Get customer details
+    @Query("SELECT * FROM CUSTOMER WHERE CUSTOMER_ID = :customerId")
+    suspend fun getCustomer(customerId: String): Customer
 
+    // Set ticket as used
+    @Query("UPDATE TICKET SET USED = 1 WHERE TICKET_ID = :ticketId")
+    suspend fun setTicketAsUsed(ticketId: String)
 }
