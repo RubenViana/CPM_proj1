@@ -1,5 +1,6 @@
 package org.feup.ticketo.ui.screens.eventDetails
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -72,10 +73,18 @@ import kotlinx.coroutines.delay
 import org.feup.ticketo.R
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.ui.screens.home.formatDate
+import org.feup.ticketo.ui.theme.md_theme_dark_inversePrimary
+import org.feup.ticketo.ui.theme.md_theme_dark_primary
 import org.feup.ticketo.ui.theme.md_theme_light_background
+import org.feup.ticketo.ui.theme.md_theme_light_onBackground
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_onSecondaryContainer
 import org.feup.ticketo.ui.theme.md_theme_light_primary
+import org.feup.ticketo.ui.theme.md_theme_light_primaryContainer
+import org.feup.ticketo.ui.theme.md_theme_light_secondary
+import org.feup.ticketo.ui.theme.md_theme_light_secondaryContainer
+import org.feup.ticketo.ui.theme.md_theme_light_shadow
+import org.feup.ticketo.ui.theme.md_theme_light_tertiary
 import org.feup.ticketo.utils.getServerResponseErrorMessage
 
 @Composable
@@ -182,16 +191,18 @@ fun LoadingEventDetailsFailedDialog(error: VolleyError, viewModel: EventDetailsV
 
 }
 
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun EventDetails(
     viewModel: EventDetailsViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    color_bg: Color = md_theme_light_background
 ) {
     Surface(
         Modifier
             .fillMaxSize(),
-        color = md_theme_light_onPrimary
+        color = color_bg
     ) {
         Column(
             Modifier
@@ -221,7 +232,7 @@ private fun EventDetails(
                                 Brush.verticalGradient(
                                     colors = listOf(
                                         Color.Transparent,
-                                        md_theme_light_onPrimary
+                                        color_bg
                                     ),
                                     startY = 800f,
                                 )
