@@ -90,8 +90,15 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
         return ticketoDao.getAllProducts()
     }
 
-    suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers> {
-        return ticketoDao.getOrdersWithProductsAndVouchersForClient(customerId)
+    suspend fun getUnpickedUpOrdersForClient(customerId: String): List<Order> {
+        return ticketoDao.getUnpickedUpOrdersForClient(customerId)
+    }
+
+    suspend fun getOrderWithProductsAndVouchersForClient(
+        customerId: String,
+        orderId: Int
+    ): OrderWithProductsAndQuantityAndVouchers {
+        return ticketoDao.getOrderWithProductsAndVouchersForClient(customerId, orderId)
     }
 
     suspend fun getCustomer(customerId: String): Customer {

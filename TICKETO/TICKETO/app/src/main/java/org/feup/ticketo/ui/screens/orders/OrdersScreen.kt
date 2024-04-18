@@ -1,103 +1,195 @@
 package org.feup.ticketo.ui.screens.orders
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Euro
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import org.feup.ticketo.ui.screens.orders.OrdersViewModel
-import org.feup.ticketo.ui.screens.orders.ProductItem
-import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
+import androidx.navigation.compose.rememberNavController
+import org.feup.ticketo.data.serverMessages.ServerValidationState
+import org.feup.ticketo.data.storage.Order
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrdersScreen(navController: NavHostController, viewModel: OrdersViewModel, modifier: Modifier) {
-    // Composable content that uses the callback
 
-    /*val productItems = viewModel.getProductItems()
+    LaunchedEffect(viewModel) {
+        viewModel.fetchOrders()
+    }
 
-    // MutableState for keeping track of selected items
-    val selectedItems = remember { mutableStateListOf<ProductItem>() }
+    viewModel.orders.value = listOf(
+        Order(
+            order_id = 1,
+            date = "25-03-2024",
+            total_price = 100.00f
+        )
+    )
 
-   /* Column(
-        modifier = modifier.fillMaxSize(),
+    Surface(
+        modifier = modifier
+            .fillMaxSize()
     ) {
-        CenterAlignedTopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = md_theme_light_primary,
-                actionIconContentColor = md_theme_light_onPrimary,
-                navigationIconContentColor = md_theme_light_onPrimary,
-                titleContentColor = md_theme_light_onPrimary,
-                scrolledContainerColor = md_theme_light_primary
-            ),
-            title = { Text("Cafeteria Menu") },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go back")
-                }
-            },
-            actions = {
-                IconButton(onClick = { navController.navigate("newOrder") }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add New Order")
-                }
+        when (viewModel.fetchOrdersFromDatabaseState.value) {
+            is ServerValidationState.Loading -> {
+                LoadingOrders(
+                    (viewModel.fetchOrdersFromDatabaseState.value as ServerValidationState.Loading).message
+                        ?: "Loading orders..."
+                )
             }
-        )*/
 
-        // Display menu items with checkboxes
-        LazyColumn {
-            items(productItems) { productItem ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = selectedItems.contains(productItem),
-                        onCheckedChange = { isChecked ->
-                            if (isChecked) {
-                                selectedItems.add(productItem)
-                            } else {
-                                selectedItems.remove(productItem)
-                            }
-                        }
-                    )
-                    Text(
-                        text = productItem.name ?: "",
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+            is ServerValidationState.Failure -> {
+                EmptyList()
+            }
+
+
+            is ServerValidationState.Success -> {
+                if (viewModel.orders.value.isEmpty()) {
+//                    EmptyList()
+                    OrdersList(viewModel.orders, navController)
+                } else {
+                    OrdersList(viewModel.orders, navController)
                 }
             }
         }
+    }
 
-        // Display total price
-        val totalPrice = selectedItems.sumOf { it.price?.toDouble() ?: 0.0 }
-        Text(
-            text = "Total Price: $totalPrice",
-            modifier = Modifier.padding(16.dp)
-        )
+}
 
-        // "Confirm Order" button
-        Button(
-            onClick = {
-                // TODO: Implement order confirmation logic
-                navController.popBackStack()
-            },
-            modifier = Modifier.padding(16.dp)
+@Composable
+fun OrdersList(
+    orders: MutableState<List<Order>>,
+    navController: NavHostController
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        items(orders.value.size) { index ->
+            OrderCard(order = orders.value[index], navController = navController)
+        }
+    }
+}
+
+@Composable
+fun OrderCard(order: Order, navController: NavHostController) {
+    ElevatedCard(
+        modifier = Modifier.padding(10.dp),
+        onClick = { navController.navigate("order/${order.order_id}") }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Confirm Order")
-        }*/
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 5.dp)
+            ) {
+                Text(
+                    text = "Order ID: ${order.order_id}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Date: ${order.date}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${order.total_price}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 20.sp
+
+                )
+                Icon(imageVector = Icons.Default.Euro, contentDescription = null)
+            }
+
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewOrderCard() {
+    OrderCard(
+        order = Order(
+            order_id = 1,
+            date = "25-03-2024",
+            total_price = 100.00f
+        ),
+        navController = rememberNavController()
+    )
+}
+
+@Composable
+fun LoadingOrders(message: String) {
+    Row(
+        modifier = Modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(50.dp),
+            color = Color.Blue
+        )
+        Spacer(modifier = Modifier.width(20.dp))
+        Text(
+            text = message,
+            style = TextStyle(
+                color = md_theme_light_primary,
+                fontSize = 22.sp
+            )
+        )
+    }
+}
+
+@Composable
+fun EmptyList() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "No orders available!",
+            style = TextStyle(
+                color = md_theme_light_primary,
+                fontSize = 22.sp
+            )
+        )
+    }
 }
 
 

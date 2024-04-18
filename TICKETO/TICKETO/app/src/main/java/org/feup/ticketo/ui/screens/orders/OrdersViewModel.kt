@@ -1,50 +1,44 @@
 package org.feup.ticketo.ui.screens.orders
 
+import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.room.ColumnInfo
-import org.feup.ticketo.data.storage.Product
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import org.feup.ticketo.data.serverMessages.ServerValidationState
+import org.feup.ticketo.data.storage.Order
+import org.feup.ticketo.data.storage.Products.products
+import org.feup.ticketo.data.storage.TicketoStorage
+import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 
-class OrdersViewModel(
-    //private val productId: Int,
-    //private val context: Context
-) : ViewModel() {
-   // private val db = TicketoDatabase.getDatabase(context = context)
 
-    fun getProductItems(): List<ProductItem> {
-        //val products = db.ticketDao().getAllProducts()
-        /*return products.map { product ->
-            ProductItem(
-                product.name,
-                product.description,
-                product.price
-            )
-        }*/
-        return listOf(
-            ProductItem(
-                1,
-                "Coca Cola",
-                "Drink",
-                2.5f
-            )
-        )
+class OrdersViewModel(private val context: Context, private val ticketoStorage: TicketoStorage) :
+    ViewModel() {
+
+    val fetchOrdersFromDatabaseState = mutableStateOf<ServerValidationState?>(null)
+
+    val orders = mutableStateOf<List<Order>>(emptyList())
+
+    init {
+        // Insert products in database
+        viewModelScope.launch {
+            products.forEach {
+                ticketoStorage.insertProduct(it)
+            }
+        }
     }
 
-   /* private fun getProduct(): Product? {
-        return db.ticketDao().getProduct(productId)
-    }*/
-
-
-    fun checkout() {
-        // checkout orders
-        // communication with server
-        //Orders Validation Message
+    fun fetchOrders() {
+        fetchOrdersFromDatabaseState.value = ServerValidationState.Loading("Loading orders...")
+        fetchOrdersFromDatabase()
     }
 
+    private fun fetchOrdersFromDatabase() {
+        viewModelScope.launch {
+            orders.value = ticketoStorage.getUnpickedUpOrdersForClient(
+                getUserIdInSharedPreferences(context)
+            )
+            fetchOrdersFromDatabaseState.value = ServerValidationState.Success(null, null)
+        }
+    }
 }
-
-data class ProductItem(
-    val product_id: Int?,
-    val name: String?,
-    val description: String?,
-    val price: Float?
-)

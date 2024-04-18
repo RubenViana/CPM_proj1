@@ -111,9 +111,15 @@ interface TicketoDao {
     @Query("SELECT * FROM PRODUCT WHERE PRODUCT_ID = :productId")
     fun getProduct(productId: Int): Product?
 
+    @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId AND PICKED_UP = FALSE")
+    suspend fun getUnpickedUpOrdersForClient(customerId: String): List<Order>
+
     @Transaction
-    @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId")
-    suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers>
+    @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId AND ORDER_ID = :orderId")
+    suspend fun getOrderWithProductsAndVouchersForClient(
+        customerId: String,
+        orderId: Int
+    ): OrderWithProductsAndQuantityAndVouchers
 
     // Get customer details
     @Query("SELECT * FROM CUSTOMER WHERE CUSTOMER_ID = :customerId")
@@ -122,4 +128,6 @@ interface TicketoDao {
     // Set ticket as used
     @Query("UPDATE TICKET SET USED = 1 WHERE TICKET_ID = :ticketId")
     suspend fun setTicketAsUsed(ticketId: String)
+
+
 }
