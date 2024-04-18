@@ -59,8 +59,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.android.volley.VolleyError
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.delay
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.ui.screens.home.formatDate
 import org.feup.ticketo.ui.theme.md_theme_light_background
@@ -328,11 +332,7 @@ private fun EventDetails(
                     viewModel.numberTickets > 0 -> {
                         Button(
                             onClick = { viewModel.openPurchaseConfirmationDialog = true},
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = md_theme_light_onSecondaryContainer,
-                                contentColor = md_theme_light_onPrimary
-                            )
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Buy")
                         }
@@ -393,63 +393,62 @@ fun PurchaseFailedDialog(
     error: VolleyError,
     purchaseTicketsInServerState: MutableState<ServerValidationState?>
 ) {
-    val errorMessage = getServerResponseErrorMessage(error)
-    if (errorMessage != null) {
-        Log.i("error", errorMessage)
-    }
-    AlertDialog(
-        icon = {
-            Icon(Icons.Default.Error, contentDescription = "Purchase Failed", tint = Color.Red)
-        },
-        title = {
-            Text(text = "Failed to buy tickets", textAlign = TextAlign.Center)
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
+//    val errorMessage = getServerResponseErrorMessage(error)
+//    if (errorMessage != null) {
+//        Log.i("error", errorMessage)
+//    }
+    Dialog(onDismissRequest = { purchaseTicketsInServerState.value = null }, properties = DialogProperties(dismissOnClickOutside = true)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column (
+                modifier = Modifier.padding(16.dp).fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Something went wrong", textAlign = TextAlign.Center)
-                if (errorMessage != null) {
-                    Text(text = errorMessage, textAlign = TextAlign.Center)
-                }
-            }
-        },
-        onDismissRequest = {},
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    purchaseTicketsInServerState.value = null
-                }
-            ) {
-                Text("OK")
+                Icon(Icons.Default.Error, contentDescription = "Purchase Failed", tint = Color.Red, modifier = Modifier.size(50.dp))
+                Text(
+                    text = "Tickets Purchase Failed",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
-    )
+    }
 }
 
 @Composable
 fun PurchaseSuccessfulDialog(purchaseTicketsInServerState: MutableState<ServerValidationState?>) {
-    AlertDialog(
-        icon = {
-            Icon(Icons.Default.CheckCircle, contentDescription = "Purchase Completed", tint = Color.Green)
-        },
-        title = {
-            Text(text = "Tickets Purchase Successfully", textAlign = TextAlign.Center)
-        },
-        text = {},
-        onDismissRequest = {},
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    purchaseTicketsInServerState.value = null
-                }
+    Dialog(onDismissRequest = { purchaseTicketsInServerState.value = null }, properties = DialogProperties(dismissOnClickOutside = true)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column (
+                modifier = Modifier.padding(16.dp).fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("OK")
+                Icon(Icons.Default.CheckCircle, contentDescription = "Purchase Completed", tint = Color.Green, modifier = Modifier.size(50.dp))
+                Text(
+                    text = "Tickets Purchase Successfully",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -458,18 +457,18 @@ fun LoadingPurchaseDialog() {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .padding(16.dp),
+                .height(150.dp)
+                .padding(10.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Row (
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
+            Column (
+                modifier = Modifier.padding(16.dp).fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(50.dp),
-                    color = Color.Blue
+                    modifier = Modifier.size(50.dp).size(50.dp),
+                    color = md_theme_light_primary,
                 )
                 Text(
                     text = "Purchasing tickets...",
@@ -481,5 +480,4 @@ fun LoadingPurchaseDialog() {
             }
         }
     }
-
 }
