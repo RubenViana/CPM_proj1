@@ -3,8 +3,10 @@ package org.feup.ticketo
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.BookOnline
 import androidx.compose.material.icons.filled.MobileFriendly
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.BookOnline
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -36,7 +38,7 @@ import org.feup.ticketo.ui.screens.tickets.TicketsViewModel
 
 sealed class NavRoutes(val route: String, val icon: ImageVector?) {
     data object Home : NavRoutes("home", Icons.Default.Search)
-    data object Tickets : NavRoutes("tickets", Icons.Default.MobileFriendly)
+    data object Tickets : NavRoutes("tickets", Icons.Outlined.BookOnline)
     data object Orders : NavRoutes("orders", Icons.Default.AccessTime)
 }
 

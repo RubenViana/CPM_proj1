@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.PanoramaVertical
 import androidx.compose.material.icons.filled.Remove
@@ -52,7 +53,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,11 +63,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.graphics.drawable.toDrawable
 import androidx.navigation.NavHostController
 import com.android.volley.VolleyError
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
+import org.feup.ticketo.R
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.ui.screens.home.formatDate
 import org.feup.ticketo.ui.theme.md_theme_light_background
@@ -300,7 +305,7 @@ private fun EventDetails(
                             Row {
                                 Text(text = "${viewModel.numberTickets} ")
                                 Icon(
-                                    imageVector = Icons.Default.PanoramaVertical,
+                                    Icons.Default.ConfirmationNumber,
                                     contentDescription = null
                                 )
                             }
@@ -360,7 +365,7 @@ fun PurchaseConfirmationDialog(
 ){
     AlertDialog(
         icon = {
-            Icon(Icons.Default.PanoramaVertical, contentDescription = null)
+            Icon(Icons.Default.ConfirmationNumber, contentDescription = null)
         },
         title = {
             Text(text = "Buy selected tickets?", textAlign = TextAlign.Center)
@@ -406,7 +411,9 @@ fun PurchaseFailedDialog(
             shape = RoundedCornerShape(16.dp),
         ) {
             Column (
-                modifier = Modifier.padding(16.dp).fillMaxSize(),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -434,7 +441,9 @@ fun PurchaseSuccessfulDialog(purchaseTicketsInServerState: MutableState<ServerVa
             shape = RoundedCornerShape(16.dp),
         ) {
             Column (
-                modifier = Modifier.padding(16.dp).fillMaxSize(),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -462,12 +471,16 @@ fun LoadingPurchaseDialog() {
             shape = RoundedCornerShape(16.dp),
         ) {
             Column (
-                modifier = Modifier.padding(16.dp).fillMaxSize(),
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(50.dp).size(50.dp),
+                    modifier = Modifier
+                        .size(50.dp)
+                        .size(50.dp),
                     color = md_theme_light_primary,
                 )
                 Text(
