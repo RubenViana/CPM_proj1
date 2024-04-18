@@ -1,10 +1,12 @@
 package org.feup.ticketo.ui.screens.eventTickets
 
 import android.content.Context
+import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.feup.ticketo.data.storage.Event
+import org.feup.ticketo.data.storage.EventTickets
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
@@ -15,40 +17,33 @@ class EventTicketsViewModel(
     private val ticketoStorage: TicketoStorage
 ) : ViewModel() {
 
-    private var eventTickets: EventTickets? = null
+    val eventTickets = mutableStateOf<EventTickets?>(null)
+    val selectedTickets = mutableStateOf<List<Ticket>>(emptyList())
 
-    init {
+    fun getEventTickets() {
         viewModelScope.launch {
-            val event = getEvent()
-            eventTickets = EventTickets(
-                event?.name.orEmpty(),
-                event?.date.orEmpty(),
-                event?.picture?: ByteArray(0),
-                getTickets()?: null
+            eventTickets.value = ticketoStorage.getCustomerTicketsForEvent(
+                eventId = eventId,
+                customerId = getUserIdInSharedPreferences(context)
             )
-
         }
     }
 
-    fun getEventTickets(): EventTickets? {
-        return eventTickets
+    fun handleTicketOnCheckedChange(ticket: Ticket) {
+        if (selectedTickets.value.size < 4 && !selectedTickets.value.contains(ticket)) {
+            val temp = selectedTickets.value.toMutableList()
+            temp.add(ticket)
+            selectedTickets.value = temp
+        } else {
+            val temp = selectedTickets.value.toMutableList()
+            temp.remove(ticket)
+            selectedTickets.value = temp
+        }
+        Log.i("selectedTickets", selectedTickets.value.size.toString())
     }
 
-    private suspend fun getEvent(): Event? {
-        return ticketoStorage.getEvent(eventId)
+    fun validateTickets() {
+        // validate tickets in server
     }
 
-    private suspend fun getTickets(): List<Ticket>? {
-        return ticketoStorage.getCustomerTicketsForEvent(
-            eventId = eventId,
-            customerId = getUserIdInSharedPreferences(context)
-        )
-    }
 }
-
-data class EventTickets(
-    val eventName: String?,
-    val eventDate: String?,
-    val eventImage: ByteArray?,
-    val tickets: List<Ticket>?
-)

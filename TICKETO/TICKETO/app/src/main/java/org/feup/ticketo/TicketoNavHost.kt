@@ -1,6 +1,5 @@
 package org.feup.ticketo
 
-import android.graphics.Color
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -10,7 +9,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -34,9 +32,6 @@ import org.feup.ticketo.ui.screens.settings.SettingsScreen
 import org.feup.ticketo.ui.screens.settings.SettingsViewModel
 import org.feup.ticketo.ui.screens.tickets.TicketsScreen
 import org.feup.ticketo.ui.screens.tickets.TicketsViewModel
-import org.feup.ticketo.ui.theme.SetSystemBarsColors
-import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
-import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 
 sealed class NavRoutes(val route: String, val icon: ImageVector?) {
@@ -68,7 +63,7 @@ fun TicketoNavHost(
             RegisterScreen(navController, viewModel, snackbarHostState)
         }
         composable(route = NavRoutes.Home.route) {
-            val viewModel = remember { HomeViewModel(context, ticketoStorage)}
+            val viewModel = remember { HomeViewModel(context, ticketoStorage) }
             HomeScreen(navController, context, viewModel, modifier)
         }
         composable(route = NavRoutes.Tickets.route) {
@@ -108,11 +103,7 @@ fun TicketoNavHost(
                         ticketoStorage
                     )
                 }
-            if (viewModel.getEventTickets() != null && viewModel.getEventTickets()?.tickets != null) {
-                EventTicketsScreen(navController, viewModel)
-            } else {
-                navController.navigate(NavRoutes.Tickets.route)
-            }
+            EventTicketsScreen(navController, viewModel)
         }
         composable(
             route = "event/{eventId}",

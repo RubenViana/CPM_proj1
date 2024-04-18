@@ -254,7 +254,6 @@ data class EventWithTicketsCount(
     val tickets_count: Int
 )
 
-
 data class PurchaseWithTicketsAndEvents(
     @Embedded val purchase: Purchase,
     @Relation(
@@ -289,10 +288,11 @@ data class OrderWithProductsAndQuantityAndVouchers(
     val vouchers: List<Voucher>
 )
 
-data class TicketsByEvent(
-    val eventId: Int,
-    val eventName: String,
-    val numberTickets: Int,
-    val picture : ByteArray? = null,
-    val eventDate: String
+data class EventTickets(
+    @Embedded val event: Event? = null,
+    @Relation(
+        parentColumn = "EVENT_ID",
+        entityColumn = "EVENT_ID"
+    )
+    val tickets: List<Ticket>? = null
 )
