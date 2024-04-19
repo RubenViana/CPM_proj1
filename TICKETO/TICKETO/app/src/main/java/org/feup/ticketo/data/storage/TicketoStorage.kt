@@ -3,7 +3,15 @@ package org.feup.ticketo.data.storage
 class TicketoStorage(private val ticketoDao: TicketoDao) {
 
     suspend fun getCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets? {
-        return ticketoDao.getCustomerEventTickets(customerId, eventId)
+        return ticketoDao.getCustomerTicketsForEvent(customerId, eventId)
+    }
+
+    suspend fun getUnusedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets? {
+        return ticketoDao.getUnusedCustomerTicketsForEvent(customerId, eventId)
+    }
+
+    suspend fun getUsedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets? {
+        return ticketoDao.getUsedCustomerTicketsForEvent(customerId, eventId)
     }
 
     suspend fun getEvent(eventId: Int): Event? {
@@ -84,5 +92,13 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
 
     suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers> {
         return ticketoDao.getOrdersWithProductsAndVouchersForClient(customerId)
+    }
+
+    suspend fun getCustomer(customerId: String): Customer {
+        return ticketoDao.getCustomer(customerId)
+    }
+
+    suspend fun setTicketAsUsed(ticketId: String) {
+        ticketoDao.setTicketAsUsed(ticketId)
     }
 }

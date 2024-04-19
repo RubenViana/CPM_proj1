@@ -2,7 +2,6 @@ package org.feup.ticketo.ui.screens.eventDetails
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,9 +16,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -28,24 +25,19 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.PanoramaVertical
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -54,9 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -64,13 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.graphics.drawable.toDrawable
 import androidx.navigation.NavHostController
 import com.android.volley.VolleyError
-import kotlinx.coroutines.Delay
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.delay
-import org.feup.ticketo.R
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.ui.screens.home.formatDate
 import org.feup.ticketo.ui.theme.md_theme_dark_inversePrimary
@@ -78,7 +63,6 @@ import org.feup.ticketo.ui.theme.md_theme_dark_primary
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onBackground
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
-import org.feup.ticketo.ui.theme.md_theme_light_onSecondaryContainer
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.ui.theme.md_theme_light_primaryContainer
 import org.feup.ticketo.ui.theme.md_theme_light_secondary
@@ -156,7 +140,7 @@ fun LoadingEventDetailsText(message: String, navController: NavHostController) {
 }
 
 @Composable
-fun LoadingEventDetailsFailedDialog(error: VolleyError, viewModel: EventDetailsViewModel) {
+fun LoadingEventDetailsFailedDialog(error: VolleyError?, viewModel: EventDetailsViewModel) {
     AlertDialog(
         icon = {
             Icon(Icons.Default.Close, contentDescription = "Failed to load event details")
@@ -347,7 +331,7 @@ private fun EventDetails(
                 when {
                     viewModel.numberTickets > 0 -> {
                         Button(
-                            onClick = { viewModel.openPurchaseConfirmationDialog = true},
+                            onClick = { viewModel.openPurchaseConfirmationDialog = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Buy")
@@ -356,7 +340,7 @@ private fun EventDetails(
                 }
             }
         }
-        when{
+        when {
             viewModel.openPurchaseConfirmationDialog -> {
                 PurchaseConfirmationDialog(
                     viewModel.numberTickets,
@@ -373,7 +357,7 @@ fun PurchaseConfirmationDialog(
     numberTickets: Int,
     eventName: String,
     viewModel: EventDetailsViewModel
-){
+) {
     AlertDialog(
         icon = {
             Icon(Icons.Default.ConfirmationNumber, contentDescription = null)
@@ -381,7 +365,7 @@ fun PurchaseConfirmationDialog(
         title = {
             Text(text = "Buy selected tickets?", textAlign = TextAlign.Center)
         },
-        text = { Text( "$numberTickets tickets for $eventName will be bought.") },
+        text = { Text("$numberTickets tickets for $eventName will be bought.") },
         onDismissRequest = {},
         dismissButton = {
             TextButton(
@@ -404,16 +388,20 @@ fun PurchaseConfirmationDialog(
     )
 
 }
+
 @Composable
 fun PurchaseFailedDialog(
-    error: VolleyError,
+    error: VolleyError?,
     purchaseTicketsInServerState: MutableState<ServerValidationState?>
 ) {
 //    val errorMessage = getServerResponseErrorMessage(error)
 //    if (errorMessage != null) {
 //        Log.i("error", errorMessage)
 //    }
-    Dialog(onDismissRequest = { purchaseTicketsInServerState.value = null }, properties = DialogProperties(dismissOnClickOutside = true)) {
+    Dialog(
+        onDismissRequest = { purchaseTicketsInServerState.value = null },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -421,14 +409,19 @@ fun PurchaseFailedDialog(
                 .padding(10.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Column (
+            Column(
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(Icons.Default.Error, contentDescription = "Purchase Failed", tint = Color.Red, modifier = Modifier.size(50.dp))
+                Icon(
+                    Icons.Default.Error,
+                    contentDescription = "Purchase Failed",
+                    tint = Color.Red,
+                    modifier = Modifier.size(50.dp)
+                )
                 Text(
                     text = "Tickets Purchase Failed",
                     modifier = Modifier
@@ -443,7 +436,10 @@ fun PurchaseFailedDialog(
 
 @Composable
 fun PurchaseSuccessfulDialog(purchaseTicketsInServerState: MutableState<ServerValidationState?>) {
-    Dialog(onDismissRequest = { purchaseTicketsInServerState.value = null }, properties = DialogProperties(dismissOnClickOutside = true)) {
+    Dialog(
+        onDismissRequest = { purchaseTicketsInServerState.value = null },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -451,14 +447,19 @@ fun PurchaseSuccessfulDialog(purchaseTicketsInServerState: MutableState<ServerVa
                 .padding(10.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Column (
+            Column(
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(Icons.Default.CheckCircle, contentDescription = "Purchase Completed", tint = Color.Green, modifier = Modifier.size(50.dp))
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Purchase Completed",
+                    tint = Color.Green,
+                    modifier = Modifier.size(50.dp)
+                )
                 Text(
                     text = "Tickets Purchase Successfully",
                     modifier = Modifier
@@ -481,7 +482,7 @@ fun LoadingPurchaseDialog() {
                 .padding(10.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            Column (
+            Column(
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxSize(),
