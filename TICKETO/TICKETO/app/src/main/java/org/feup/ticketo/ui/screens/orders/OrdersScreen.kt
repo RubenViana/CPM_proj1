@@ -25,11 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Order
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -40,14 +38,6 @@ fun OrdersScreen(navController: NavHostController, viewModel: OrdersViewModel, m
     LaunchedEffect(viewModel) {
         viewModel.fetchOrders()
     }
-
-    viewModel.orders.value = listOf(
-        Order(
-            order_id = 1,
-            date = "25-03-2024",
-            total_price = 100.00f
-        )
-    )
 
     Surface(
         modifier = modifier
@@ -68,8 +58,7 @@ fun OrdersScreen(navController: NavHostController, viewModel: OrdersViewModel, m
 
             is ServerValidationState.Success -> {
                 if (viewModel.orders.value.isEmpty()) {
-//                    EmptyList()
-                    OrdersList(viewModel.orders, navController)
+                    EmptyList()
                 } else {
                     OrdersList(viewModel.orders, navController)
                 }
@@ -140,18 +129,6 @@ fun OrderCard(order: Order, navController: NavHostController) {
     }
 }
 
-@Preview
-@Composable
-fun PreviewOrderCard() {
-    OrderCard(
-        order = Order(
-            order_id = 1,
-            date = "25-03-2024",
-            total_price = 100.00f
-        ),
-        navController = rememberNavController()
-    )
-}
 
 @Composable
 fun LoadingOrders(message: String) {

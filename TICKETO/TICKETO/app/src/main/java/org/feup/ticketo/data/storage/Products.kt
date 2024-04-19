@@ -14,7 +14,7 @@ object Products {
             4,
             true,
             "Sandwich",
-            "A sandwich (ham and cheese, chicken, vegetarian, etc.)",
+            "A sandwich (ham and cheese, chicken, etc.)",
             5.00f
         )
     )

@@ -28,7 +28,6 @@ interface TicketoDao {
     // Get all future events
     @Query("SELECT * FROM EVENT WHERE DATE >= :date")
     suspend fun getAllFutureEvents(date: String): List<Event>?
-    // val currentDate = LocalDate.now().toString() // Current date in string format
 
     // Get events for which a customer has purchased tickets along with the count of tickets bought for each event
     @Query(
@@ -78,10 +77,6 @@ interface TicketoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVoucher(voucher: Voucher)
 
-    // Get all vouchers for a client
-    @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId")
-    suspend fun getVouchersForClient(customerId: String): List<Voucher>
-
     // Delete all purchases, tickets, and events associated with a client
     @Query("DELETE FROM PURCHASE WHERE CUSTOMER_ID = :customerId")
     suspend fun deletePurchasesForClient(customerId: String)
@@ -100,8 +95,8 @@ interface TicketoDao {
     suspend fun getPurchasesWithTicketsAndEventsForClient(customerId: String): List<PurchaseWithTicketsAndEvents>
 
     // Get all vouchers for a specific customer
-    @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId")
-    suspend fun getVouchersForCustomer(customerId: String): List<Voucher>
+    @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId AND ORDER_ID IS NULL")
+    suspend fun getUnusedVouchersForCustomer(customerId: String): List<Voucher>
 
     // Get all products
     @Query("SELECT * FROM PRODUCT")
@@ -128,6 +123,10 @@ interface TicketoDao {
     // Set ticket as used
     @Query("UPDATE TICKET SET USED = 1 WHERE TICKET_ID = :ticketId")
     suspend fun setTicketAsUsed(ticketId: String)
+
+    // Get max order id
+    @Query("SELECT MAX(ORDER_ID) FROM `ORDER`")
+    suspend fun getMaxOrderId(): Int?
 
 
 }

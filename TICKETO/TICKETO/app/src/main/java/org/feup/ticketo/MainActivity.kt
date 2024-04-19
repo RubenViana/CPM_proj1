@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +48,8 @@ fun TicketoApp() {
     TICKETOTheme {
 
         val navController = rememberNavController()
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+        val scrollBehavior =
+            TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
         val snackbarHostState = remember { SnackbarHostState() }
 
         Scaffold(
@@ -67,7 +67,7 @@ fun TicketoApp() {
             val customer_id = getUserIdInSharedPreferences(context = LocalContext.current)
             val startDestination: String
             if (customer_id.isNotEmpty())
-                startDestination = "home"
+                startDestination = "orders"
             else
                 startDestination = "register"
             TicketoNavHost(

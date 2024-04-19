@@ -84,8 +84,8 @@ fun TicketoNavHost(
             val viewModel = remember { OrdersViewModel(context, ticketoStorage) }
             OrdersScreen(navController, viewModel, modifier)
         }
-        composable(NavRoutes.AddOrder.route) {
-            val viewModel = AddOrderViewModel()
+        composable(route = NavRoutes.AddOrder.route) {
+            val viewModel = AddOrderViewModel(context, ticketoStorage)
             AddOrderScreen(navController, viewModel)
         }
         composable(route = NavRoutes.Settings.route,
