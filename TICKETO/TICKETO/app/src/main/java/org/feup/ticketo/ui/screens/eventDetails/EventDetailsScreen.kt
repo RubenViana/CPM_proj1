@@ -95,7 +95,7 @@ fun EventDetailsScreen(navController: NavHostController, viewModel: EventDetails
     }
     when {
         viewModel.fetchEventFromServerState.value is ServerValidationState.Loading -> {
-            LoadingEventDetailsText(
+            LoadingEventDetails(
                 (viewModel.fetchEventFromServerState.value as ServerValidationState.Loading).message,
                 navController
             )
@@ -126,7 +126,7 @@ fun EventDetailsScreen(navController: NavHostController, viewModel: EventDetails
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoadingEventDetailsText(message: String, navController: NavHostController) {
+fun LoadingEventDetails(message: String, navController: NavHostController) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
