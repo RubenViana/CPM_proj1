@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.PanoramaVertical
+import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -141,7 +143,7 @@ fun TicketCard(eventWithTickets: EventWithTicketsCount, navController: NavHostCo
                     text = "${eventWithTickets.tickets_count}x",
                     style = MaterialTheme.typography.bodySmall
                 )
-                Icon(imageVector = Icons.Default.PanoramaVertical, contentDescription = null)
+                Icon(imageVector = Icons.Outlined.ConfirmationNumber, contentDescription = null)
             }
 
         }
