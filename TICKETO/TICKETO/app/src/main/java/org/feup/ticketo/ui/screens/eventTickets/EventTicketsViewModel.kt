@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.serverMessages.ticketValidationMessage
@@ -24,20 +25,19 @@ class EventTicketsViewModel(
 
     val fetchTicketsFromDatabaseState = mutableStateOf<ServerValidationState?>(null)
     val qrCodeGenerationState = mutableStateOf<ServerValidationState?>(null)
+    val selectTicketsToQRCodeState = mutableStateOf(false)
 
     val eventTickets = mutableStateOf<EventTickets?>(null)
     val selectedTickets = mutableStateOf<List<Ticket>>(emptyList())
     val qrCode = mutableStateOf<Bitmap?>(null)
 
     fun getEventTickets() {
-        fetchTicketsFromDatabaseState.value =
-            ServerValidationState.Loading("Loading event tickets...")
         viewModelScope.launch {
             eventTickets.value = ticketoStorage.getUnusedCustomerTicketsForEvent(
                 eventId = eventId,
                 customerId = getUserIdInSharedPreferences(context)
             )
-            Log.i("EventTicketsViewModel", eventTickets.value?.tickets?.size.toString())
+            fetchTicketsFromDatabaseState.value = ServerValidationState.Success(null, "Tickets loaded")
         }
     }
 

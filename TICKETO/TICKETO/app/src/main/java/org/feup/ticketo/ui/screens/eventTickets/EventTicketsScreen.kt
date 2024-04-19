@@ -20,14 +20,18 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCode2
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +64,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.rotationMatrix
 import androidx.navigation.NavHostController
+import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.ui.theme.md_theme_light_background
@@ -71,9 +76,39 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 fun EventTicketsScreen(navController: NavHostController, viewModel: EventTicketsViewModel) {
 
     LaunchedEffect(viewModel) {
+        viewModel.fetchTicketsFromDatabaseState.value = ServerValidationState.Loading("Loading event tickets...")
         viewModel.getEventTickets()
     }
 
+    when {
+        viewModel.fetchTicketsFromDatabaseState.value is ServerValidationState.Loading -> {
+            LoadingEventTickets()
+        }
+    }
+
+    when {
+        viewModel.fetchTicketsFromDatabaseState.value is ServerValidationState.Success -> {
+            EventTickets(viewModel, navController)
+        }
+    }
+}
+
+@Composable
+fun LoadingEventTickets() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(50.dp),
+            color = md_theme_light_primary
+        )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EventTickets(viewModel: EventTicketsViewModel, navController: NavHostController){
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -102,8 +137,18 @@ fun EventTicketsScreen(navController: NavHostController, viewModel: EventTickets
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(imageVector = Icons.Default.QrCode, contentDescription = null)
+                    IconButton(onClick = {
+                        viewModel.selectTicketsToQRCodeState.value = !viewModel.selectTicketsToQRCodeState.value;
+                        if (!viewModel.selectTicketsToQRCodeState.value) {
+                            viewModel.selectedTickets.value = emptyList()
+                        }
+                    }
+                    ) {
+                        if (viewModel.selectTicketsToQRCodeState.value) {
+                            Icon(imageVector = Icons.Default.Cancel, contentDescription = null)
+                        } else {
+                            Icon(imageVector = Icons.Default.SelectAll, contentDescription = null)
+                        }
                     }
                 }
             )
@@ -145,6 +190,18 @@ fun EventTicketsScreen(navController: NavHostController, viewModel: EventTickets
                         verticalArrangement = Arrangement.Top
                     )
                     {
+                        if (viewModel.selectTicketsToQRCodeState.value) {
+                            FloatingActionButton(
+                                onClick = {
+                                    viewModel.validateTickets()
+                                },
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.QrCode, contentDescription = null)
+                            }
+
+                        }
                         LazyColumn(
                         ) {
                             viewModel.eventTickets.value?.tickets?.let {
@@ -152,7 +209,8 @@ fun EventTicketsScreen(navController: NavHostController, viewModel: EventTickets
                                     viewModel.eventTickets.value?.event?.let { it1 ->
                                         TicketCard(
                                             ticket = it[item],
-                                            event = it1
+                                            event = it1,
+                                            viewModel
                                         )
                                     }
                                 }
@@ -166,7 +224,7 @@ fun EventTicketsScreen(navController: NavHostController, viewModel: EventTickets
 }
 
 @Composable
-fun TicketCard(ticket: Ticket, event: Event) {
+fun TicketCard(ticket: Ticket, event: Event, viewModel: EventTicketsViewModel) {
     ElevatedCard(
         shape = TicketShape(circleRadius = 14.dp, cornerSize = CornerSize(8.dp)),
         colors = CardDefaults.elevatedCardColors(
@@ -206,31 +264,25 @@ fun TicketCard(ticket: Ticket, event: Event) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "QR Code", fontWeight = FontWeight.Bold)
-                IconButton(
-                    onClick = { /*TODO*/ }
-                ) {
-                    Icon(imageVector = Icons.Default.QrCode2, contentDescription = null)
+                if (viewModel.selectTicketsToQRCodeState.value == false){
+                    IconButton(
+                        onClick = { /*TODO*/ }
+                    ) {
+                        Icon(imageVector = Icons.Default.QrCode2, contentDescription = null)
+                    }
+                }
+                else {
+                    Checkbox(
+                        checked = viewModel.selectedTickets.value.contains(ticket),
+                        onCheckedChange = { viewModel.handleTicketOnCheckedChange(ticket) }
+                    )
                 }
             }
         }
     }
 }
 
-@Composable
-fun QRCodeCard(ticket: Ticket, event: Event, viewModel: EventTicketsViewModel) {
-    OutlinedCard(
-//        modifier = Modifier.padding(50.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = md_theme_light_onPrimary
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(25.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
-        ) {
+
 //            val qrcode = generateQRCode(ticket)
 //            qrcode?.let { BitmapPainter(it.asImageBitmap()) }?.let {
 //                Image(
@@ -239,53 +291,6 @@ fun QRCodeCard(ticket: Ticket, event: Event, viewModel: EventTicketsViewModel) {
 //                    modifier = Modifier.size(300.dp)
 //                )
 //            }
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Row {
-                        Text(text = "Ticket:  ")
-                    }
-                    Row {
-                        Text(text = "Date:  ")
-                    }
-                    Row {
-                        Text(text = "Seat:  ")
-                    }
-                }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row {
-                        Text(text = ticket.ticket_id.orEmpty(), fontWeight = FontWeight.Bold)
-                    }
-                    Row {
-                        Text(text = event.date!!, fontWeight = FontWeight.Bold)
-                    }
-                    Row {
-                        Text(text = ticket.place.orEmpty(), fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-            checkBox(ticket = ticket, viewModel = viewModel)
-        }
-    }
-}
-
-@Composable
-fun checkBox(ticket: Ticket, viewModel: EventTicketsViewModel) {
-    Checkbox(
-        checked = viewModel.selectedTickets.value.contains(ticket),
-        onCheckedChange = {
-            viewModel.handleTicketOnCheckedChange(ticket)
-        }
-    )
-}
 
 class TicketShape(
     private val circleRadius: Dp,
