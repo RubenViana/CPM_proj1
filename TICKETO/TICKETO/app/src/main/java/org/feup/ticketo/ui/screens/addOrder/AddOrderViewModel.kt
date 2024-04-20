@@ -29,17 +29,61 @@ class AddOrderViewModel(
     val orderProducts = MutableStateFlow<List<OrderProduct>>(emptyList())
     val vouchers = mutableStateOf<List<Voucher>>(emptyList())
     val orderVouchers = mutableStateOf<List<Voucher>>(emptyList())
-    val total_price = mutableFloatStateOf(0f)
+    val totalPrice = mutableFloatStateOf(0f)
+    val subTotalPrice = mutableFloatStateOf(0f)
 
-    init {
-        viewModelScope.launch {
-            orderProducts.collect {
-                total_price.value = orderProducts.value.sumOf { orderProduct: OrderProduct ->
-                    val product = menu.value.find { it.product_id == orderProduct.product_id }
-                    product?.price?.times(orderProduct.quantity ?: 0)?.toDouble()
-                        ?: 0f.toDouble()
-                }.toFloat()
+//    init {
+//        viewModelScope.launch {
+//            orderProducts.collect {
+//                calculateTotalPrice()
+//            }
+//        }
+//        viewModelScope.launch {
+//            orderVouchers.collect {
+//                calculateTotalPrice()
+//            }
+//        }
+//    }
+
+    private fun calculateTotalPrice() {
+        var total = orderProducts.value.sumOf { orderProduct ->
+            val product = menu.value.find { it.product_id == orderProduct.product_id }
+            product?.price?.times(orderProduct.quantity ?: 0)?.toDouble() ?: 0.0
+        }
+
+        subTotalPrice.value = total.toFloat()
+
+        // Adjust total price based on vouchers
+        orderVouchers.value.filterNot { it.description == "Discount of 5% for the next purchase" }.forEach { voucher ->
+            total = applyVoucherDiscount(voucher, total)
+        }
+
+        orderVouchers.value.firstOrNull { it.description == "Discount of 5% for the next purchase" }?.let { voucher ->
+            total = applyVoucherDiscount(voucher, total)
+        }
+
+        totalPrice.value = total.toFloat()
+    }
+
+    private fun applyVoucherDiscount(voucher: Voucher, total: Double): Double {
+        return when (voucher.description) {
+            "Free Coffee for buying a ticket" -> {
+                // Adjust totalPrice accordingly
+                // For example:
+                // If buying a coffee costs 2.5 €, reduce totalPrice by 2.5 €
+                total - 2.5
             }
+            "Free Popcorn for buying a ticket" -> {
+                // Adjust totalPrice accordingly
+                // For example:
+                // If buying a popcorn costs 3 €, reduce totalPrice by 3 €
+                total - 3.0
+            }
+            "Discount of 5% for the next purchase" -> {
+                // Adjust totalPrice by applying a 5% discount
+                total * 0.95
+            }
+            else -> total // No voucher discount applied
         }
     }
 
@@ -56,22 +100,17 @@ class AddOrderViewModel(
     }
 
     fun fetchVouchers() {
-        fetchMenuFromStorageState.value = ServerValidationState.Loading("Loading vouchers...")
+        fetchVouchersFromStorageState.value = ServerValidationState.Loading("Loading vouchers...")
         fetchVouchersFromStorage()
     }
 
     private fun fetchVouchersFromStorage() {
-        try {
-            viewModelScope.launch {
-                vouchers.value =
-                    ticketoStorage.getUnusedVouchersForCustomer(getUserIdInSharedPreferences(context))
-            }
-            fetchVouchersFromStorageState.value =
-                ServerValidationState.Success(null, "Vouchers loaded")
-        } catch (e: Exception) {
-            fetchVouchersFromStorageState.value =
-                ServerValidationState.Failure(null, "Failed to load vouchers")
+        viewModelScope.launch {
+            vouchers.value =
+                ticketoStorage.getUnusedVouchersForCustomer(getUserIdInSharedPreferences(context))
         }
+        fetchVouchersFromStorageState.value =
+            ServerValidationState.Success(null, "Vouchers loaded")
     }
 
     fun increaseProductQuantity(product: Product) {
@@ -126,7 +165,7 @@ class AddOrderViewModel(
                     date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date()),
                     paid = false,
                     picked_up = false,
-                    total_price = total_price.value
+                    total_price = totalPrice.value
                 )
                 ticketoStorage.insertOrder(order)
                 orderProducts.value.forEach { orderProduct ->
@@ -146,11 +185,4 @@ class AddOrderViewModel(
                 ServerValidationState.Failure(null, "Failed to create order")
         }
     }
-
-    fun productQuantity(product: Product): String {
-        return orderProducts.value.find { it.product_id == product.product_id }?.quantity?.toString()
-            ?: "0"
-    }
-
-
 }

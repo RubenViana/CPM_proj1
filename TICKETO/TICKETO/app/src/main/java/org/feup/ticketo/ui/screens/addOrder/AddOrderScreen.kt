@@ -1,6 +1,5 @@
 package org.feup.ticketo.ui.screens.addOrder
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,10 +27,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -45,13 +45,14 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddOrderScreen(navController: NavHostController, viewModel: AddOrderViewModel) {
+    var viewModel = remember {
+        viewModel
+    }
+
     LaunchedEffect(viewModel) {
-        Log.i("hello", "E")
         viewModel.fetchMenu()
         viewModel.fetchVouchers()
     }
-
-
 
     Surface(
         modifier = Modifier
@@ -80,7 +81,6 @@ fun AddOrderScreen(navController: NavHostController, viewModel: AddOrderViewMode
                         )
                     }
                 },
-
             )
             when (viewModel.fetchMenuFromStorageState.value) {
                 is ServerValidationState.Loading -> {
@@ -95,7 +95,6 @@ fun AddOrderScreen(navController: NavHostController, viewModel: AddOrderViewMode
                 }
 
                 is ServerValidationState.Success -> {
-                    Log.i("success", "succes")
                     if (viewModel.menu.value.isEmpty()) {
                         EmptyMenu()
                     } else {
@@ -113,7 +112,7 @@ fun AddOrderScreen(navController: NavHostController, viewModel: AddOrderViewMode
                             }
 
                             is ServerValidationState.Success -> {
-                                if (viewModel.menu.value.isEmpty()) {
+                                if (viewModel.vouchers.value.isEmpty()) {
                                     EmptyVouchersList()
                                 } else {
                                     VouchersList(viewModel, navController)
@@ -131,19 +130,32 @@ fun AddOrderScreen(navController: NavHostController, viewModel: AddOrderViewMode
 @Composable
 fun TotalPriceAndCheckoutButton(viewModel: AddOrderViewModel) {
     Column {
-        Row(
-            Modifier
-                .padding(vertical = 5.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                "Price",
-                style = TextStyle(fontSize = 20.sp),
-                fontWeight = FontWeight.Bold
-            )
-            Text(viewModel.total_price.value.toString() + " €")
-        }
+//        Row(
+//            Modifier
+//                .padding(vertical = 5.dp)
+//                .fillMaxWidth(),
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ) {
+//            Text(
+//                "Sub Total",
+//                style = TextStyle(fontSize = 20.sp),
+//                fontWeight = FontWeight.Bold
+//            )
+//            Text(viewModel.subTotalPrice.value.toString() + " €")
+//        }
+//        Row(
+//            Modifier
+//                .padding(vertical = 5.dp)
+//                .fillMaxWidth(),
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ) {
+//            Text(
+//                "Total",
+//                style = TextStyle(fontSize = 20.sp),
+//                fontWeight = FontWeight.Bold
+//            )
+//            Text(viewModel.totalPrice.value.toString() + " €")
+//        }
 
         Button(
             onClick = { viewModel.checkout() },
@@ -221,14 +233,19 @@ fun LoadingVouchers(s: String) {
 @Composable
 fun LoadingMenu(s: String) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(50.dp),
-            color = md_theme_light_primary
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(50.dp),
+                color = md_theme_light_primary
+            )
+            Text(text = s)
+        }
     }
 }
 
@@ -260,12 +277,20 @@ fun MenuList(viewModel: AddOrderViewModel, navController: NavHostController) {
 
 @Composable
 fun Product(product: Product, viewModel: AddOrderViewModel) {
+    val quantityState = remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(viewModel.orderProducts) {
+        viewModel.orderProducts.collect { orderProducts ->
+            val orderProduct = orderProducts.find { it.product_id == product.product_id }
+            quantityState.value = orderProduct?.quantity ?: 0
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
             .height(70.dp)
-
     ) {
         Row(
             modifier = Modifier
@@ -291,7 +316,7 @@ fun Product(product: Product, viewModel: AddOrderViewModel) {
                         )
                     }
 
-                    Text(text = viewModel.productQuantity(product))
+                    Text(text = quantityState.value.toString())
 
                     IconButton(
                         onClick = { viewModel.increaseProductQuantity(product) },
@@ -304,6 +329,5 @@ fun Product(product: Product, viewModel: AddOrderViewModel) {
                 }
             }
         }
-
     }
 }
