@@ -2,6 +2,7 @@ package org.feup.cafeteriaorderterminal
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -150,7 +151,7 @@ fun validateOrdersInServer(
     serverValidationState: MutableState<ServerValidationState?>,
     openValidationDialog: MutableState<Boolean>
 ) {
-    val url = "http://10.0.2.2:5000/validate_orders"
+    val url = "http://10.0.2.2:5000/validate_order"
     val json = objectToJson(ordersToValidate)
     val jsonObjectRequest = JsonObjectRequest(
         Request.Method.POST, url, json,
