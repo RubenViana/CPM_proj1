@@ -1,9 +1,9 @@
 package org.feup.ticketo.data.storage
 
 import androidx.room.ColumnInfo
+import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import io.reactivex.annotations.NonNull
@@ -272,21 +272,26 @@ data class OrderWithProductsAndQuantityAndVouchers(
     @Embedded val order: Order,
     @Relation(
         parentColumn = "ORDER_ID",
-        entityColumn = "ORDER_ID",
-        associateBy = Junction(OrderProduct::class)
+        entityColumn = "ORDER_ID"
     )
-    val products: List<OrderProduct>,
-    @Relation(
-        parentColumn = "ORDER_ID",
-        entityColumn = "PRODUCT_ID"
-    )
-    val orderProducts: List<Product>,
+    val orderProducts: List<OrderProductWithProduct>,
     @Relation(
         parentColumn = "ORDER_ID",
         entityColumn = "ORDER_ID"
     )
     val vouchers: List<Voucher>
 )
+
+@DatabaseView("SELECT * FROM ORDER_PRODUCT, PRODUCT WHERE ORDER_PRODUCT.PRODUCT_ID = PRODUCT.PRODUCT_ID")
+data class OrderProductWithProduct(
+    @Embedded val orderProduct: OrderProduct,
+    @Relation(
+        parentColumn = "PRODUCT_ID",
+        entityColumn = "PRODUCT_ID"
+    )
+    val product: Product
+)
+
 
 data class EventTickets(
     @Embedded val event: Event? = null,

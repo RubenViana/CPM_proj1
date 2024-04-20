@@ -111,7 +111,7 @@ interface TicketoDao {
 
     @Transaction
     @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId AND ORDER_ID = :orderId")
-    suspend fun getOrderWithProductsAndVouchersForClient(
+    suspend fun getOrderDetails(
         customerId: String,
         orderId: Int
     ): OrderWithProductsAndQuantityAndVouchers
@@ -127,6 +127,14 @@ interface TicketoDao {
     // Get max order id
     @Query("SELECT MAX(ORDER_ID) FROM `ORDER`")
     suspend fun getMaxOrderId(): Int?
+
+    // Delete customer vouchers
+    @Query("DELETE FROM VOUCHER WHERE CUSTOMER_ID = :customerId")
+    suspend fun deleteCustomerVouchers(customerId: String)
+
+    // Set order as picked up
+    @Query("UPDATE `ORDER` SET PICKED_UP = 1 WHERE ORDER_ID = :orderId")
+    suspend fun setOrderAsPickedUp(orderId: Int)
 
 
 }

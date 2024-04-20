@@ -82,11 +82,11 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
         return ticketoDao.getUnpickedUpOrdersForClient(customerId)
     }
 
-    suspend fun getOrderWithProductsAndVouchersForClient(
+    suspend fun getOrderDetails(
         customerId: String,
         orderId: Int
     ): OrderWithProductsAndQuantityAndVouchers {
-        return ticketoDao.getOrderWithProductsAndVouchersForClient(customerId, orderId)
+        return ticketoDao.getOrderDetails(customerId, orderId)
     }
 
     suspend fun getCustomer(customerId: String): Customer {
@@ -99,5 +99,13 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
 
     suspend fun getMaxOrderId(): Int? {
         return ticketoDao.getMaxOrderId()
+    }
+
+    suspend fun deleteCustomerVouchers(customerId: String) {
+        ticketoDao.deleteCustomerVouchers(customerId)
+    }
+
+    suspend fun setOrderAsPickedUp(orderId: Int) {
+        ticketoDao.setOrderAsPickedUp(orderId)
     }
 }

@@ -46,7 +46,7 @@ sealed class NavRoutes(val route: String, val icon: ImageVector?) {
     data object Tickets : NavRoutes("tickets", Icons.Outlined.BookOnline)
     data object EventTickets : NavRoutes("tickets/{eventId}", null)
     data object Orders : NavRoutes("orders", Icons.Default.AccessTime)
-    data object OrderDetails : NavRoutes("orders/{orderId}", Icons.Default.AccessTime)
+    data object OrderDetails : NavRoutes("order/{orderId}", Icons.Default.AccessTime)
     data object AddOrder : NavRoutes("addOrder", null)
 }
 
