@@ -1,16 +1,26 @@
 package org.feup.ticketo.ui.screens.orderDetails
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -21,15 +31,24 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.OrderProductWithProduct
@@ -62,7 +81,7 @@ fun OrderDetailsScreen(navController: NavController, viewModel: OrderDetailsView
                     scrolledContainerColor = md_theme_light_primary
                 ),
                 title = {
-                    Text("Order details")
+                    Text("Order ${viewModel.orderId} details")
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -91,13 +110,223 @@ fun OrderDetailsScreen(navController: NavController, viewModel: OrderDetailsView
                         EmptyOrder()
                     } else {
                         OrderDetails(viewModel)
+                        OrderValidationButton(viewModel.openOrderValidationConfirmationDialog)
+
                     }
                 }
             }
+
+            when (viewModel.qrCodeGenerationState.value) {
+                is ServerValidationState.Loading -> {
+                    LoadingQRCodeDialog(
+                        (viewModel.qrCodeGenerationState.value as ServerValidationState.Failure).message
+                            ?: "Generating QR code..."
+                    )
+                }
+
+                is ServerValidationState.Failure -> {
+                    QRCodeGenerationErrorDialog(
+                        viewModel.qrCodeGenerationState,
+                        (viewModel.qrCodeGenerationState.value as ServerValidationState.Failure).message
+                            ?: "Error generating QR code"
+                    )
+                }
+
+                is ServerValidationState.Success -> {
+                    QRCodeGeneratedDialog(
+                        viewModel,
+                        navController
+                    )
+
+                }
+            }
+            when (viewModel.openOrderValidationConfirmationDialog.value) {
+                true -> {
+                    OrderValidationConfirmationDialog(viewModel)
+                }
+
+                false -> {}
+            }
+
         }
     }
+}
+
+@Composable
+fun OrderValidationButton(openOrderValidationConfirmationDialog: MutableState<Boolean>) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Button(onClick = { openOrderValidationConfirmationDialog.value = true }) {
+            Text(text = "Validate Order")
+        }
+    }
+}
 
 
+@Composable
+fun OrderValidationConfirmationDialog(
+    viewModel: OrderDetailsViewModel
+) {
+    AlertDialog(
+        icon = {
+            Icon(Icons.Default.ConfirmationNumber, contentDescription = null)
+        },
+        title = {
+            Text(text = "Validate order?", textAlign = TextAlign.Center)
+        },
+        text = { Text("Are you sure you want to validate this order? After doing so, you will be credited in you account!") },
+        onDismissRequest = {
+
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.openOrderValidationConfirmationDialog.value = false
+                }
+            ) {
+                Text("Cancel")
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    viewModel.openOrderValidationConfirmationDialog.value = false
+                    viewModel.validateOrder()
+                }
+            ) {
+                Text("Confirm")
+            }
+        }
+    )
+}
+
+@Composable
+fun QRCodeGeneratedDialog(viewModel: OrderDetailsViewModel, navController: NavController) {
+    Dialog(
+        onDismissRequest = {
+            viewModel.qrCodeGenerationState.value = null; navController.popBackStack()
+        },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceAround,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Order Completed",
+                    tint = Color.Green,
+                    modifier = Modifier.size(50.dp)
+                )
+                Text(
+                    text = "Present this code at the Cafeteria Terminal",
+                    modifier = Modifier
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+                viewModel.qrCode.value?.let { BitmapPainter(it.asImageBitmap()) }?.let {
+                    Image(
+                        painter = it,
+                        contentDescription = "Order Validation QR Code",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.height(250.dp)
+                    )
+                }
+
+
+            }
+        }
+    }
+}
+
+@Composable
+fun QRCodeGenerationErrorDialog(
+    qrCodeGenerationState: MutableState<ServerValidationState?>,
+    s: String
+) {
+    Dialog(
+        onDismissRequest = { qrCodeGenerationState.value = null },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.Error,
+                    contentDescription = "Error generating QR code",
+                    tint = Color.Red,
+                    modifier = Modifier.size(50.dp)
+                )
+                Text(
+                    text = s,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadingQRCodeDialog(s: String) {
+    Dialog(onDismissRequest = { /*TODO*/ }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .size(50.dp),
+                    color = md_theme_light_primary,
+                )
+                Text(
+                    text = s,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -109,11 +338,20 @@ fun OrderDetails(viewModel: OrderDetailsViewModel) {
 @Composable
 fun ProductsList(products: List<OrderProductWithProduct>, viewModel: OrderDetailsViewModel) {
     Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(text = "Products")
+        Text(
+            text = "Products",
+            style = TextStyle(fontSize = 20.sp),
+            fontWeight = FontWeight.Bold
+        )
     }
-    LazyColumn {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth()
+    ) {
         items(products.size) { i ->
             ProductItem(products[i], viewModel)
         }
@@ -127,8 +365,8 @@ fun ProductItem(orderProduct: OrderProductWithProduct, viewModel: OrderDetailsVi
             containerColor = md_theme_light_onPrimary
         ),
         modifier = Modifier
-            .size(350.dp, 100.dp)
-            .padding(10.dp),
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, bottom = 15.dp),
     ) {
         Row(
             modifier = Modifier
@@ -170,10 +408,18 @@ fun ProductItem(orderProduct: OrderProductWithProduct, viewModel: OrderDetailsVi
 
 @Composable
 fun VouchersList(vouchers: List<Voucher>) {
-    Row(
-        horizontalArrangement = Arrangement.Center
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Vouchers")
+        Text(
+            text = "Vouchers",
+            style = TextStyle(fontSize = 20.sp),
+            fontWeight = FontWeight.Bold
+        )
+        if (vouchers.isEmpty()) Text(text = "No vouchers applied to this order.")
     }
     LazyColumn {
         items(vouchers.size) { i ->

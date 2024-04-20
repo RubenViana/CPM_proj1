@@ -2,7 +2,6 @@ package org.feup.ticketo.ui.screens.orderDetails
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,7 +15,7 @@ import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 import org.feup.ticketo.utils.generateQRCode
 
 class OrderDetailsViewModel(
-    private val orderId: Int,
+    val orderId: Int,
     private val context: Context,
     private val ticketoStorage: TicketoStorage
 ) : ViewModel() {
@@ -24,7 +23,7 @@ class OrderDetailsViewModel(
 
     val fetchOrderFromDatabaseState = mutableStateOf<ServerValidationState?>(null)
     val qrCodeGenerationState = mutableStateOf<ServerValidationState?>(null)
-
+    val openOrderValidationConfirmationDialog = mutableStateOf(false)
     val order = mutableStateOf<OrderWithProductsAndQuantityAndVouchers?>(null)
     val qrCode = mutableStateOf<Bitmap?>(null)
     fun fetchOrder() {
@@ -39,11 +38,11 @@ class OrderDetailsViewModel(
                 orderId
             )
         }
-        Log.i("order", order.value.toString())
         fetchOrderFromDatabaseState.value = ServerValidationState.Success(null, "Order Loaded!")
     }
 
     fun validateOrder() {
+        qrCodeGenerationState.value = ServerValidationState.Loading("Generating QR Code...")
         val ovm = orderValidationMessage(
             Customer(getUserIdInSharedPreferences(context)),
             order.value!!.orderProducts,
@@ -51,26 +50,18 @@ class OrderDetailsViewModel(
             null
         )
 
-        try {
-
-            qrCode.value = generateQRCode(ovm)
-
-            if (qrCode.value != null) {
-                // Update order
-                viewModelScope.launch {
-                    ticketoStorage.deleteCustomerVouchers(getUserIdInSharedPreferences(context))
-                }
-                viewModelScope.launch {
-                    ticketoStorage.setOrderAsPickedUp(orderId)
-                }
-                qrCodeGenerationState.value =
-                    ServerValidationState.Success(null, "QR code generated successfully!")
-            } else {
-                qrCodeGenerationState.value =
-                    ServerValidationState.Failure(null, "Error generating QR code")
+        qrCode.value = generateQRCode(ovm)
+        if (qrCode.value != null) {
+            // Update order
+            viewModelScope.launch {
+                ticketoStorage.deleteCustomerVouchers(getUserIdInSharedPreferences(context))
             }
-
-        } catch (e: Exception) {
+            viewModelScope.launch {
+                ticketoStorage.setOrderAsPickedUp(orderId)
+            }
+            qrCodeGenerationState.value =
+                ServerValidationState.Success(null, "QR code generated successfully!")
+        } else {
             qrCodeGenerationState.value =
                 ServerValidationState.Failure(null, "Error generating QR code")
         }

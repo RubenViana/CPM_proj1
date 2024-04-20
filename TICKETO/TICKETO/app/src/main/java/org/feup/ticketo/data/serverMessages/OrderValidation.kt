@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import org.feup.ticketo.data.storage.Customer
 import org.feup.ticketo.data.storage.OrderProductWithProduct
 import org.feup.ticketo.data.storage.Voucher
+import org.feup.ticketo.utils.signMessageWithPrivateKey
 
 @Serializable
 data class OrderValidationMessage(
@@ -29,7 +30,7 @@ fun orderValidationMessage(
     vouchers: List<Voucher>,
     signature: String?
 ): OrderValidationMessage {
-    return OrderValidationMessage(
+    var ovm = OrderValidationMessage(
         customer_id = customer.customer_id,
         products = products.map {
             mutableMapOf(
@@ -43,6 +44,7 @@ fun orderValidationMessage(
                 "product_id" to it.product_id.toString()
             )
         },
-        signature = signature
+        signature = null
     )
+    return signMessageWithPrivateKey(ovm)
 }
