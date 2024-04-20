@@ -31,6 +31,7 @@ class AddOrderViewModel(
     val orderVouchers = mutableStateOf<List<Voucher>>(emptyList())
     val totalPrice = mutableFloatStateOf(0f)
     val subTotalPrice = mutableFloatStateOf(0f)
+    val openOrderConfirmationDialog = mutableStateOf(false)
 
 //    init {
 //        viewModelScope.launch {
@@ -179,7 +180,7 @@ class AddOrderViewModel(
 
             }
 
-            orderCheckoutStatus.value = ServerValidationState.Success(null, "Order placed")
+            orderCheckoutStatus.value = ServerValidationState.Success(null, "Order placed successfully!")
         } catch (e: Exception) {
             orderCheckoutStatus.value =
                 ServerValidationState.Failure(null, "Failed to create order")
