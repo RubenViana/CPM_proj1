@@ -28,65 +28,70 @@ class AddOrderViewModel(
     val menu = mutableStateOf<List<Product>>(emptyList())
     val orderProducts = MutableStateFlow<List<OrderProduct>>(emptyList())
     val vouchers = mutableStateOf<List<Voucher>>(emptyList())
-    val orderVouchers = mutableStateOf<List<Voucher>>(emptyList())
+    val orderVouchers = MutableStateFlow<List<Voucher>>(emptyList())
     val totalPrice = mutableFloatStateOf(0f)
     val subTotalPrice = mutableFloatStateOf(0f)
     val openOrderConfirmationDialog = mutableStateOf(false)
 
-//    init {
-//        viewModelScope.launch {
-//            orderProducts.collect {
-//                calculateTotalPrice()
-//            }
-//        }
-//        viewModelScope.launch {
-//            orderVouchers.collect {
-//                calculateTotalPrice()
-//            }
-//        }
-//    }
+    init {
+        viewModelScope.launch {
+            orderProducts.collect {
+                calculateTotalPrice()
+            }
+        }
+        viewModelScope.launch {
+            orderVouchers.collect {
+                calculateTotalPrice()
+            }
+        }
+    }
 
     private fun calculateTotalPrice() {
         var total = orderProducts.value.sumOf { orderProduct ->
             val product = menu.value.find { it.product_id == orderProduct.product_id }
             product?.price?.times(orderProduct.quantity ?: 0)?.toDouble() ?: 0.0
         }
-
         subTotalPrice.value = total.toFloat()
 
-        // Adjust total price based on vouchers
-        orderVouchers.value.filterNot { it.description == "Discount of 5% for the next purchase" }.forEach { voucher ->
-            total = applyVoucherDiscount(voucher, total)
-        }
-
-        orderVouchers.value.firstOrNull { it.description == "Discount of 5% for the next purchase" }?.let { voucher ->
-            total = applyVoucherDiscount(voucher, total)
-        }
-
-        totalPrice.value = total.toFloat()
+//        val productQuantities = orderProducts.value.groupBy { it.product_id }
+//            .mapValues { it.value.sumBy { orderProduct -> orderProduct.quantity ?: 0 } }
+//
+//        val productPrices = menu.value.associateBy({ it.product_id }, { it.price })
+//
+//        val appliedVouchers = mutableMapOf<Int, Int>() // Map to track applied vouchers per product
+//
+//        // Apply vouchers
+//        orderVouchers.value.forEach { voucher ->
+//            val maxApplicableQuantity = minOf(productQuantities.getOrDefault(voucher.product_id, 0), orderVouchers.value.count { it.voucher_id == voucher.voucher_id })
+//            if (maxApplicableQuantity > 0) {
+//                val remainingQuantity = maxApplicableQuantity - (appliedVouchers[voucher.product_id] ?: 0)
+//                if (remainingQuantity > 0) {
+//                    total = applyVoucherDiscount(voucher, total, remainingQuantity, productPrices[voucher.product_id]!!)
+//                    appliedVouchers.replace(voucher.product_id!!, maxApplicableQuantity)
+//                }
+//            }
+//        }
+//
+//        totalPrice.value = total.toFloat()
     }
 
-    private fun applyVoucherDiscount(voucher: Voucher, total: Double): Double {
-        return when (voucher.description) {
-            "Free Coffee for buying a ticket" -> {
-                // Adjust totalPrice accordingly
-                // For example:
-                // If buying a coffee costs 2.5 €, reduce totalPrice by 2.5 €
-                total - 2.5
-            }
-            "Free Popcorn for buying a ticket" -> {
-                // Adjust totalPrice accordingly
-                // For example:
-                // If buying a popcorn costs 3 €, reduce totalPrice by 3 €
-                total - 3.0
-            }
-            "Discount of 5% for the next purchase" -> {
-                // Adjust totalPrice by applying a 5% discount
-                total * 0.95
-            }
-            else -> total // No voucher discount applied
-        }
-    }
+
+//    private fun applyVoucherDiscount(voucher: Voucher, total: Double, quantity: Int, productPrice: Float): Double {
+//        return when (voucher.description) {
+//            "Free Coffee for buying a ticket" -> {
+//                val discountAmount = quantity * productPrice
+//                total - discountAmount
+//            }
+//            "Free Popcorn for buying a ticket" -> {
+//                val discountAmount = quantity * productPrice
+//                total - discountAmount
+//            }
+//            "Discount of 5% for the next purchase" -> {
+//                total * 0.95 // 5% discount
+//            }
+//            else -> total // No voucher discount applied
+//        }.coerceAtLeast(0.0) // Ensure total price doesn't become negative
+//    }
 
     fun fetchMenu() {
         fetchMenuFromStorageState.value = ServerValidationState.Loading("Loading menu...")
@@ -147,6 +152,13 @@ class AddOrderViewModel(
     fun handleVoucherOnCheckedChange(voucher: Voucher) {
         if (orderVouchers.value.contains(voucher)) {
             orderVouchers.value = orderVouchers.value.filter { it != voucher }
+        } else if (voucher.description == "Discount of 5% for the next purchase") {
+            if (orderVouchers.value.any { it.description == "Discount of 5% for the next purchase" }) {
+                // If there is already a discount voucher, do not add another one
+                return
+            } else if (orderVouchers.value.size < 2) {
+                orderVouchers.value += voucher
+            }
         } else if (orderVouchers.value.size < 2) {
             orderVouchers.value += voucher
         }
@@ -180,7 +192,8 @@ class AddOrderViewModel(
 
             }
 
-            orderCheckoutStatus.value = ServerValidationState.Success(null, "Order placed successfully!")
+            orderCheckoutStatus.value =
+                ServerValidationState.Success(null, "Order placed successfully!")
         } catch (e: Exception) {
             orderCheckoutStatus.value =
                 ServerValidationState.Failure(null, "Failed to create order")
