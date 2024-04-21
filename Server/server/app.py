@@ -939,7 +939,7 @@ def validate_order():
         signature = data.get('signature')
 
         # Check if all required fields are present
-        if not customer_id or not products or not vouchers or not signature:
+        if not customer_id or not products or not signature:
             return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if there are more than 2 vouchers
@@ -1031,8 +1031,9 @@ def validate_order():
         # Calculate the total price of the order
         for p in prods:
             cursor.execute('SELECT PRICE FROM PRODUCT WHERE PRODUCT_ID = ?', (p['product_id'],))
-            price = cursor.fetchone()['PRICE']
-            total_price += price * p['quantity']
+            price = float(cursor.fetchone()['PRICE'])
+            total_price += price * int(p['quantity'])
+
 
         # Apply discount if there are discount vouchers
         if discount_vouchers>0:
