@@ -67,7 +67,7 @@ fun TicketoApp() {
             val customer_id = getUserIdInSharedPreferences(context = LocalContext.current)
             val startDestination: String
             if (customer_id.isNotEmpty())
-                startDestination = "orders"
+                startDestination = "home"
             else
                 startDestination = "register"
             TicketoNavHost(
