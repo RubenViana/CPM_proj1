@@ -101,8 +101,8 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
         ticketoDao.setTicketAsUsed(ticketId)
     }
 
-    suspend fun getMinOrderId(): Int? {
-        return ticketoDao.getMinOrderId()
+    suspend fun getMaxOrderId(): Int? {
+        return ticketoDao.getMaxOrderId()
     }
 
     suspend fun deleteCustomerVouchers(customerId: String) {

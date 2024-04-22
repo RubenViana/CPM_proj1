@@ -130,8 +130,8 @@ interface TicketoDao {
     suspend fun setTicketAsUsed(ticketId: String)
 
     // Get max order id
-    @Query("SELECT MIN(ORDER_ID) FROM `ORDER`")
-    suspend fun getMinOrderId(): Int?
+    @Query("SELECT MAX(ORDER_ID) FROM `ORDER`")
+    suspend fun getMaxOrderId(): Int?
 
     // Delete customer vouchers
     @Query("DELETE FROM VOUCHER WHERE CUSTOMER_ID = :customerId")

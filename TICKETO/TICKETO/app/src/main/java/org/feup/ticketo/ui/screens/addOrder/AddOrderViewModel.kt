@@ -171,7 +171,7 @@ class AddOrderViewModel(
             // create order in local database
             viewModelScope.launch {
                 // Create order
-                val order_id = ticketoStorage.getMinOrderId()?.minus(1) ?: -1
+                val order_id = ticketoStorage.getMaxOrderId()?.plus(1) ?: 1
                 val order = Order(
                     order_id = order_id,
                     customer_id = getUserIdInSharedPreferences(context),
