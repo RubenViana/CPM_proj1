@@ -14,16 +14,8 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
         return ticketoDao.getUsedCustomerTicketsForEvent(customerId, eventId)
     }
 
-    suspend fun getEvent(eventId: Int): Event? {
-        return ticketoDao.getEvent(eventId)
-    }
-
-    suspend fun getAllFutureEvents(date: String): List<Event>? {
-        return ticketoDao.getAllFutureEvents(date)
-    }
-
-    suspend fun getEventsWithTicketCount(customerId: String): List<EventWithTicketsCount>? {
-        return ticketoDao.getEventsWithTicketCount(customerId)
+    suspend fun getEventsWithUnusedTicketCount(customerId: String): List<EventWithTicketsCount>? {
+        return ticketoDao.getEventsWithUnusedTicketCount(customerId)
     }
 
     suspend fun insertCustomer(customer: Customer) {
@@ -62,10 +54,6 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
         ticketoDao.insertVoucher(voucher)
     }
 
-    suspend fun getVouchersForClient(customerId: String): List<Voucher> {
-        return ticketoDao.getVouchersForClient(customerId)
-    }
-
     suspend fun deletePurchasesForClient(customerId: String) {
         ticketoDao.deletePurchasesForClient(customerId)
     }
@@ -78,20 +66,27 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
         ticketoDao.deleteEventsForClient(customerId)
     }
 
-    suspend fun getPurchasesWithTicketsAndEventsForClient(customerId: String): List<PurchaseWithTicketsAndEvents> {
-        return ticketoDao.getPurchasesWithTicketsAndEventsForClient(customerId)
+    suspend fun getPurchasesWithTicketsAndEventsAndVouchersForClient(customerId: String): List<PurchaseWithTicketsAndEventsAndVouchers> {
+        return ticketoDao.getPurchasesWithTicketsAndEventsAndVouchersForClient(customerId)
     }
 
-    suspend fun getVouchersForCustomer(customerId: String): List<Voucher> {
-        return ticketoDao.getVouchersForCustomer(customerId)
+    suspend fun getUnusedVouchersForCustomer(customerId: String): List<Voucher> {
+        return ticketoDao.getUnusedVouchersForCustomer(customerId)
     }
 
     suspend fun getAllProducts(): List<Product> {
         return ticketoDao.getAllProducts()
     }
 
-    suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers> {
-        return ticketoDao.getOrdersWithProductsAndVouchersForClient(customerId)
+    suspend fun getUnpickedUpOrdersForClient(customerId: String): List<Order> {
+        return ticketoDao.getUnpickedUpOrdersForClient(customerId)
+    }
+
+    suspend fun getOrderDetails(
+        customerId: String,
+        orderId: Int
+    ): OrderWithProductsAndQuantityAndVouchers {
+        return ticketoDao.getOrderDetails(customerId, orderId)
     }
 
     suspend fun getCustomer(customerId: String): Customer {
@@ -100,5 +95,29 @@ class TicketoStorage(private val ticketoDao: TicketoDao) {
 
     suspend fun setTicketAsUsed(ticketId: String) {
         ticketoDao.setTicketAsUsed(ticketId)
+    }
+
+    suspend fun getMinOrderId(): Int? {
+        return ticketoDao.getMinOrderId()
+    }
+
+    suspend fun deleteCustomerVouchers(customerId: String) {
+        ticketoDao.deleteCustomerVouchers(customerId)
+    }
+
+    suspend fun setOrderAsPickedUp(orderId: Int) {
+        ticketoDao.setOrderAsPickedUp(orderId)
+    }
+
+    suspend fun deleteUsedTicketsForCustomer(customerId: String){
+        ticketoDao.deleteUsedTicketsForCustomer(customerId)
+    }
+
+    suspend fun getVoucherById(voucherId : String): Voucher? {
+        return ticketoDao.getVoucherById(voucherId)
+    }
+
+    suspend fun deleteVoucherById(voucherId: String) {
+        ticketoDao.deleteVoucherById(voucherId)
     }
 }

@@ -1,27 +1,17 @@
 package org.feup.ticketo.ui.components
 
-import android.content.res.Resources.Theme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,7 +22,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @ExperimentalMaterial3Api
 @Composable
-fun TopNavBar (
+fun TopNavBar(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
@@ -72,6 +62,7 @@ fun TopNavBar (
                 scrollBehavior = scrollBehavior
             )
         }
+
         "tickets" -> {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -82,7 +73,8 @@ fun TopNavBar (
                     scrolledContainerColor = md_theme_light_primary
                 ),
                 title = {
-                    Text("Tickets"
+                    Text(
+                        "Tickets"
                     )
                 },
                 actions = {
@@ -97,6 +89,7 @@ fun TopNavBar (
 
             )
         }
+
         "orders" -> {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -110,13 +103,13 @@ fun TopNavBar (
                     Text("Orders")
                 },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null
-                        )
-                    }
-                    IconButton(onClick = { /* do something */ }) {
+//                    IconButton(onClick = {  }) {
+//                        Icon(
+//                            imageVector = Icons.Default.Search,
+//                            contentDescription = null
+//                        )
+//                    }
+                    IconButton(onClick = { navController.navigate("addOrder") }) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null

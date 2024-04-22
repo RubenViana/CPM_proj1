@@ -1,9 +1,9 @@
 package org.feup.ticketo.data.storage
 
 import androidx.room.ColumnInfo
+import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import io.reactivex.annotations.NonNull
@@ -236,6 +236,8 @@ data class Voucher(
     val voucher_id: String,
     @ColumnInfo(name = "CUSTOMER_ID")
     val customer_id: String? = null,
+    @ColumnInfo(name = "PURCHASE_ID")
+    val purchase_id: Int? = null,
     @ColumnInfo(name = "PRODUCT_ID")
     val product_id: Int? = null,
     @ColumnInfo(name = "ORDER_ID")
@@ -254,7 +256,7 @@ data class EventWithTicketsCount(
     val tickets_count: Int
 )
 
-data class PurchaseWithTicketsAndEvents(
+data class PurchaseWithTicketsAndEventsAndVouchers(
     @Embedded val purchase: Purchase,
     @Relation(
         parentColumn = "PURCHASE_ID",
@@ -265,28 +267,38 @@ data class PurchaseWithTicketsAndEvents(
         parentColumn = "PURCHASE_ID",
         entityColumn = "EVENT_ID"
     )
-    val events: List<Event>
+    val event: Event,
+    @Relation(
+        parentColumn = "PURCHASE_ID",
+        entityColumn = "PURCHASE_ID"
+    )
+    val vouchers: List<Voucher>
 )
 
 data class OrderWithProductsAndQuantityAndVouchers(
     @Embedded val order: Order,
     @Relation(
         parentColumn = "ORDER_ID",
-        entityColumn = "ORDER_ID",
-        associateBy = Junction(OrderProduct::class)
+        entityColumn = "ORDER_ID"
     )
-    val products: List<OrderProduct>,
-    @Relation(
-        parentColumn = "ORDER_ID",
-        entityColumn = "PRODUCT_ID"
-    )
-    val orderProducts: List<Product>,
+    val orderProducts: List<OrderProductWithProduct>,
     @Relation(
         parentColumn = "ORDER_ID",
         entityColumn = "ORDER_ID"
     )
     val vouchers: List<Voucher>
 )
+
+@DatabaseView("SELECT * FROM ORDER_PRODUCT, PRODUCT WHERE ORDER_PRODUCT.PRODUCT_ID = PRODUCT.PRODUCT_ID")
+data class OrderProductWithProduct(
+    @Embedded val orderProduct: OrderProduct,
+    @Relation(
+        parentColumn = "PRODUCT_ID",
+        entityColumn = "PRODUCT_ID"
+    )
+    val product: Product
+)
+
 
 data class EventTickets(
     @Embedded val event: Event? = null,

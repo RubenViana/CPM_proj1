@@ -128,6 +128,7 @@ create table if not exists VOUCHER
 (
     VOUCHER_ID                     varchar(128)                   not null,
     CUSTOMER_ID                    varchar(128)                   not null,
+    PURCHASE_ID                    integer,
     PRODUCT_ID                     integer,
     ORDER_ID                       integer,
     TYPE                           varchar(1024),
@@ -135,6 +136,7 @@ create table if not exists VOUCHER
     REDEEMED                       bool,
     primary key (VOUCHER_ID),
     foreign key (CUSTOMER_ID) references CUSTOMER (CUSTOMER_ID) on delete cascade on update cascade,
+    foreign key (PURCHASE_ID) references PURCHASE (PURCHASE_ID) on delete cascade on update cascade,
     foreign key (ORDER_ID) references "ORDER" (ORDER_ID) on delete cascade on update cascade,
     foreign key (PRODUCT_ID) references PRODUCT (PRODUCT_ID) on delete cascade on update cascade
 );

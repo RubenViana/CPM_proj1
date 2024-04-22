@@ -278,7 +278,7 @@ def get_event():
         if not event:
             return jsonify({'message': f'Event {event_id} not found'}), 404
 
-        return jsonify({"event" : dict(event)}), 200
+        return jsonify({"event": dict(event)}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting event: {}'.format(e)}), 500
     finally:
@@ -324,7 +324,7 @@ def get_tickets():
             cursor.execute('')
         tickets = cursor.fetchall()
 
-        return jsonify({"tickets" : [dict(ticket) for ticket in tickets]}), 200
+        return jsonify({"tickets": [dict(ticket) for ticket in tickets]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting tickets: {}'.format(e)}), 500
     finally:
@@ -455,7 +455,7 @@ def buy_ticket():
             ### Insert new vouchers
 
             # Get products info
-            cursor.execute('SELECT PRODUCT_ID, NAME FROM PRODUCT WHERE NAME LIKE ? OR ?', ("Coffee", "Popcorn"))
+            cursor.execute('SELECT PRODUCT_ID, NAME FROM PRODUCT WHERE NAME IN (?, ?)', ("Coffee", "Popcorn",))
             products = cursor.fetchall()
             if not products:
                 return jsonify({'message': 'Products not found'}), 404
@@ -469,6 +469,7 @@ def buy_ticket():
             created_vouchers.append({
                 'voucher_id': str(uuid.uuid4()),
                 'customer_id': customer_id,
+                'purchase_id': purchase_id,
                 'product_id': product_id,
                 'type': 'Free Product',
                 'description': 'Free {} for buying a ticket'.format(
@@ -477,10 +478,11 @@ def buy_ticket():
             })
 
             # Insert voucher into database
-            cursor.execute('INSERT INTO VOUCHER (VOUCHER_ID, CUSTOMER_ID, PRODUCT_ID, TYPE, DESCRIPTION, REDEEMED) '
-                           'VALUES (?, ?, ?, ?, ?, ?)',
-                           (created_vouchers[-1]['voucher_id'], customer_id, product_id, 'Free Product',
-                            created_vouchers[-1]['description'], 0))
+            cursor.execute(
+                'INSERT INTO VOUCHER (VOUCHER_ID, CUSTOMER_ID, PURCHASE_ID, PRODUCT_ID, TYPE, DESCRIPTION, REDEEMED) '
+                'VALUES (?, ?, ?, ?, ?, ?, ?)',
+                (created_vouchers[-1]['voucher_id'], customer_id, purchase_id, product_id, 'Free Product',
+                 created_vouchers[-1]['description'], 0))
 
         # Calculate the number of new vouchers to emit
         threshold = 200
@@ -498,9 +500,9 @@ def buy_ticket():
             })
 
             # Insert voucher into database
-            cursor.execute('INSERT INTO VOUCHER (VOUCHER_ID, CUSTOMER_ID, PRODUCT_ID, TYPE, DESCRIPTION, REDEEMED) '
-                           'VALUES (?, ?, ?, ?, ?, ?)',
-                           (created_vouchers[-1]['voucher_id'], customer_id, None, 'Discount',
+            cursor.execute('INSERT INTO VOUCHER (VOUCHER_ID, CUSTOMER_ID, PURCHASE_ID, PRODUCT_ID, TYPE, DESCRIPTION, REDEEMED) '
+                           'VALUES (?, ?, ?, ?, ?, ?, ?)',
+                           (created_vouchers[-1]['voucher_id'], customer_id, purchase_id, None, 'Discount',
                             created_vouchers[-1]['description'], 0))
 
         conn.commit()
@@ -667,7 +669,7 @@ def vouchers():
         conn, cursor = get_db()
         cursor.execute('SELECT * FROM VOUCHER WHERE CUSTOMER_ID = ?', (customer_id,))
         vouchers = cursor.fetchall()
-        return jsonify({"vouchers" : [dict(voucher) for voucher in vouchers]}), 200
+        return jsonify({"vouchers": [dict(voucher) for voucher in vouchers]}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting vouchers: {}'.format(e)}), 500
     finally:
@@ -698,7 +700,7 @@ def purchases():
 
         # Get customer purchases
         conn, cursor = get_db()
-        cursor.execute('SELECT * FROM PURCHASE WHERE CUSTOMER_ID = ?', (customer_id,))
+        cursor.execute('SELECT * FROM PURCHASE WHERE CUSTOMER_ID = ? ORDER BY DATE DESC', (customer_id,))
         purchases = cursor.fetchall()
 
         # Convert purchases to dictionary
@@ -709,13 +711,16 @@ def purchases():
             cursor.execute('SELECT * FROM TICKET WHERE PURCHASE_ID = ?', (p['PURCHASE_ID'],))
             tickets = cursor.fetchall()
             p['tickets'] = [dict(ticket) for ticket in tickets]
-            # Get event details for each ticket in the purchase and append the details to the corresponding entry
-            for t in p['tickets']:
-                cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (t['EVENT_ID'],))
-                event = cursor.fetchone()
-                t['event_details'] = [dict(detail) for detail in event]
+            # Get event details
+            cursor.execute('SELECT * FROM EVENT WHERE EVENT_ID = ?', (p['tickets'][0]['EVENT_ID'],))
+            event = cursor.fetchone()
+            p['event_details'] = dict(event)
+            # Get generated vouchers
+            cursor.execute('SELECT * FROM VOUCHER WHERE PURCHASE_ID = ?', (p['PURCHASE_ID'],))
+            vouchers = cursor.fetchall()
+            p['vouchers'] = [dict(voucher) for voucher in vouchers]
 
-        return jsonify({"purchases" : purchases}), 200
+        return jsonify({"purchases": purchases}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting purchases: {}'.format(e)}), 500
     finally:
@@ -761,7 +766,7 @@ def purchase_receipt():
         tickets = cursor.fetchall()
         purchase['tickets'] = [dict(ticket) for ticket in tickets]
 
-        return jsonify({"purchase" : purchase}), 200
+        return jsonify({"purchase": purchase}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting purchase receipt: {}'.format(e)}), 500
     finally:
@@ -792,7 +797,7 @@ def orders():
 
         # Get customer orders
         conn, cursor = get_db()
-        cursor.execute('SELECT * FROM "ORDER" WHERE CUSTOMER_ID = ?', (customer_id,))
+        cursor.execute('SELECT * FROM "ORDER" WHERE CUSTOMER_ID = ? ORDER BY DATE DESC', (customer_id,))
         orders = cursor.fetchall()
 
         # Convert orders to dictionary
@@ -800,27 +805,15 @@ def orders():
 
         # Get products associated with the orders
         for o in orders:
-            cursor.execute('SELECT PRODUCT_ID, QUANTITY FROM ORDER_PRODUCT WHERE ORDER_ID = ?', (o['ORDER_ID'],))
+            cursor.execute('SELECT * FROM ORDER_PRODUCT OP, PRODUCT P WHERE OP.PRODUCT_ID = P.PRODUCT_ID AND ORDER_ID = ?', (o['ORDER_ID'],))
             products = cursor.fetchall()
-
-            if not products:
-                raise Exception(f"Products for order {o['ORDER_ID']} not found")
-
             o['products'] = [dict(product) for product in products]
+            # Get vouchers associated with the order
+            cursor.execute('SELECT * FROM VOUCHER WHERE ORDER_ID = ?', (o['ORDER_ID'],))
+            vouchers = cursor.fetchall()
+            o['vouchers'] = [dict(voucher) for voucher in vouchers]
 
-            # Get product details for each product in the order and append the details to the corresponding entry
-            for p in o['products']:
-                cursor.execute('SELECT NAME, DESCRIPTION, PRICE FROM PRODUCT WHERE PRODUCT_ID = ?', (p['PRODUCT_ID'],))
-                product = cursor.fetchone()
-                if not product:
-                    p['found'] = False
-                    continue
-                p['found'] = True
-                p['name'] = product['NAME']
-                p['description'] = product['DESCRIPTION']
-                p['price'] = product['PRICE']
-
-        return jsonify({"orders" : orders}), 200
+        return jsonify({"orders": orders}), 200
     except Exception as e:
         return jsonify({'message': 'Error getting orders: {}'.format(e)}), 500
     finally:
@@ -939,7 +932,7 @@ def validate_order():
         signature = data.get('signature')
 
         # Check if all required fields are present
-        if not customer_id or not products or not vouchers or not signature:
+        if not customer_id or not products or not signature:
             return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if there are more than 2 vouchers
@@ -986,6 +979,7 @@ def validate_order():
             voucher = cursor.fetchone()
             v['type'] = voucher['TYPE']
             v['description'] = voucher['DESCRIPTION']
+            v['accepted'] = True
             # Check if voucher exists
             if not voucher:
                 v['accepted'] = False
@@ -1008,7 +1002,6 @@ def validate_order():
             if voucher['PRODUCT_ID'] != v['product_id'] and voucher['TYPE'] == 'Free Product':
                 v['accepted'] = False
                 v['message'] = f"Voucher {v['voucher_id']} is not for product {v['product_id']}"
-            v['accepted'] = True
             v['applied_to_order'] = False
 
         conn.commit()
@@ -1019,10 +1012,10 @@ def validate_order():
         prods = products.copy()
         # Decrease the quantity of the products to a minimum of 0 by the number of products that have a accepted 'Free Product' voucher
         for v in vouchers:
-            if v['accepted'] and v['applied_to_order'] and v['type'] == 'Free Product':
+            if v['accepted'] and not v['applied_to_order'] and v['type'] == 'Free Product':
                 for p in prods:
                     if p['product_id'] == v['product_id']:
-                        p['quantity'] -= 1
+                        p['quantity'] = int(p['quantity']) - 1
                         v['applied_to_order'] = True
                         if p['quantity'] < 0:
                             p['quantity'] = 0
@@ -1031,11 +1024,12 @@ def validate_order():
         # Calculate the total price of the order
         for p in prods:
             cursor.execute('SELECT PRICE FROM PRODUCT WHERE PRODUCT_ID = ?', (p['product_id'],))
-            price = cursor.fetchone()['PRICE']
-            total_price += price * p['quantity']
+            price = float(cursor.fetchone()['PRICE'])
+            total_price += price * int(p['quantity'])
+
 
         # Apply discount if there are discount vouchers
-        if discount_vouchers>0:
+        if discount_vouchers > 0:
             total_price *= 0.95
 
         # Calculate total price of past purchases for the customer
@@ -1059,19 +1053,19 @@ def validate_order():
                             'Discount of 5% for the next purchase', 0))
 
         # Insert new order into the database
-        cursor.execute('INSERT INTO "ORDER" (CUSTOMER_ID, DATE, TOTAL_PRICE) VALUES (?, datetime(), ?)',
+        cursor.execute('INSERT INTO "ORDER" (CUSTOMER_ID, DATE,  PICKED_UP, TOTAL_PRICE) VALUES (?, datetime(), TRUE, ?)',
                        (customer_id, total_price))
         order_id = cursor.lastrowid
 
         # Insert products into the order
-        for p in prods:
+        for p in products:
             cursor.execute('INSERT INTO ORDER_PRODUCT (ORDER_ID, PRODUCT_ID, QUANTITY) VALUES (?, ?, ?)',
                            (order_id, p['product_id'], p['quantity']))
 
         # Update vouchers to associate them with the order
         for v in vouchers:
             if v['applied_to_order']:
-                cursor.execute('UPDATE VOUCHER SET ORDER_ID = ? WHERE VOUCHER_ID = ?', (order_id, v['voucher_id'],))
+                cursor.execute('UPDATE VOUCHER SET ORDER_ID = ?, REDEEMED = 1 WHERE VOUCHER_ID = ?', (order_id, v['voucher_id'],))
 
         conn.commit()
 

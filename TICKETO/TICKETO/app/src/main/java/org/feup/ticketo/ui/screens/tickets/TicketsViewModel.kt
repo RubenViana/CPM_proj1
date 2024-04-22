@@ -24,7 +24,7 @@ class TicketsViewModel(private val context: Context, private val ticketoStorage:
 
     private fun getTicketsFromLocalStorage() {
         viewModelScope.launch {
-            ticketoStorage.getEventsWithTicketCount(getUserIdInSharedPreferences(context))?.let {
+            ticketoStorage.getEventsWithUnusedTicketCount(getUserIdInSharedPreferences(context))?.let {
                 eventsWithTicketsCount.value = it
                 serverValidationState.value = ServerValidationState.Success(null)
             }

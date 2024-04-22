@@ -140,6 +140,7 @@ class EventDetailsViewModel(
                         voucher_id = voucher.getString("voucher_id"),
                         customer_id = voucher.getString("customer_id"),
                         product_id = voucher.optInt("product_id"),
+                        purchase_id = voucher.optInt("purchase_id"),
                         order_id = null,
                         type = voucher.getString("type"),
                         description = voucher.getString("description"),

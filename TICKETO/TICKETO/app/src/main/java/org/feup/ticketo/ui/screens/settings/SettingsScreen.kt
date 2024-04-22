@@ -1,6 +1,7 @@
 package org.feup.ticketo.ui.screens.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,19 +29,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.feup.ticketo.NavRoutes
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
-    Column (
-        Modifier.fillMaxSize().background(color = md_theme_light_background),
+fun SettingsScreen(navController: NavController) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(color = md_theme_light_background),
         horizontalAlignment = Alignment.CenterHorizontally,
-    ){
+    ) {
         CenterAlignedTopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = md_theme_light_primary,
@@ -54,11 +60,14 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null
+                    )
                 }
             }
         )
-        
+
         // List of Settings Options
         ListItem(
             colors = ListItemDefaults.colors(
@@ -72,7 +81,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             trailingContent = {
                 IconButton(
                     onClick = { /*TODO*/ }
-                ){
+                ) {
                     Icon(Icons.AutoMirrored.Default.ArrowRight, null)
                 }
             }
@@ -82,47 +91,38 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             colors = ListItemDefaults.colors(
                 containerColor = md_theme_light_onPrimary
             ),
-            headlineContent = { Text("Profile") },
-            supportingContent = { Text("Edit profile information") },
+            headlineContent = { Text("Past Purchases") },
+            supportingContent = { Text("Consult all tickets you've bought") },
             leadingContent = {
                 Icon(Icons.Default.AccountCircle, null)
             },
             trailingContent = {
                 IconButton(
-                    onClick = { /*TODO*/ }
-                ){
+                    onClick = { navController.navigate(NavRoutes.Purchases.route) }
+                ) {
                     Icon(Icons.AutoMirrored.Default.ArrowRight, null)
                 }
-            }
+            },
+            modifier = Modifier.clickable { navController.navigate(NavRoutes.Purchases.route) }
         )
         HorizontalDivider(Modifier.padding(horizontal = 20.dp))
         ListItem(
             colors = ListItemDefaults.colors(
                 containerColor = md_theme_light_onPrimary
             ),
-            headlineContent = { Text("Profile") },
-            supportingContent = { Text("Edit profile information") },
+            headlineContent = { Text("Past Orders") },
+            supportingContent = { Text("Consult all orders you've validated") },
             leadingContent = {
                 Icon(Icons.Default.AccountCircle, null)
             },
             trailingContent = {
-                var checked1 by remember { mutableStateOf(true) }
-                Switch(
-                    checked = checked1,
-                    onCheckedChange = {checked1 = it},
-                    thumbContent = if (checked1) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize)
-                            )
-                        }
-                        } else{
-                            null
-                    }
-                )
-            }
+                IconButton(
+                    onClick = { navController.navigate(NavRoutes.PastOrders.route) }
+                ) {
+                    Icon(Icons.AutoMirrored.Default.ArrowRight, null)
+                }
+            },
+            modifier = Modifier.clickable { navController.navigate(NavRoutes.PastOrders.route) }
         )
         HorizontalDivider(Modifier.padding(horizontal = 20.dp))
         ListItem(
@@ -138,7 +138,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                 var checked2 by remember { mutableStateOf(true) }
                 Switch(
                     checked = checked2,
-                    onCheckedChange = {checked2 = it},
+                    onCheckedChange = { checked2 = it },
                     thumbContent = if (checked2) {
                         {
                             Icon(
@@ -147,7 +147,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                                 modifier = Modifier.size(SwitchDefaults.IconSize)
                             )
                         }
-                    } else{
+                    } else {
                         null
                     }
                 )
@@ -166,7 +166,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             trailingContent = {
                 IconButton(
                     onClick = { /*TODO*/ }
-                ){
+                ) {
                     Icon(Icons.AutoMirrored.Default.ArrowRight, null)
                 }
             }
@@ -175,4 +175,10 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
 
     }
 
+}
+
+@Preview
+@Composable
+fun PreviewSettingsScreen() {
+    SettingsScreen(navController = rememberNavController())
 }

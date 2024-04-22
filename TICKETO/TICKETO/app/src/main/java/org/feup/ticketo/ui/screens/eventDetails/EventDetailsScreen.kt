@@ -1,6 +1,5 @@
 package org.feup.ticketo.ui.screens.eventDetails
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -57,18 +56,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.android.volley.VolleyError
 import org.feup.ticketo.data.serverMessages.ServerValidationState
-import org.feup.ticketo.ui.screens.home.formatDate
-import org.feup.ticketo.ui.theme.md_theme_dark_inversePrimary
-import org.feup.ticketo.ui.theme.md_theme_dark_primary
 import org.feup.ticketo.ui.theme.md_theme_light_background
-import org.feup.ticketo.ui.theme.md_theme_light_onBackground
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
-import org.feup.ticketo.ui.theme.md_theme_light_primaryContainer
-import org.feup.ticketo.ui.theme.md_theme_light_secondary
-import org.feup.ticketo.ui.theme.md_theme_light_secondaryContainer
-import org.feup.ticketo.ui.theme.md_theme_light_shadow
-import org.feup.ticketo.ui.theme.md_theme_light_tertiary
 import org.feup.ticketo.utils.getServerResponseErrorMessage
 
 @Composable

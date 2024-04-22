@@ -28,7 +28,6 @@ interface TicketoDao {
     // Get all future events
     @Query("SELECT * FROM EVENT WHERE DATE >= :date")
     suspend fun getAllFutureEvents(date: String): List<Event>?
-    // val currentDate = LocalDate.now().toString() // Current date in string format
 
     // Get events for which a customer has purchased tickets along with the count of tickets bought for each event
     @Query(
@@ -38,10 +37,11 @@ interface TicketoDao {
         INNER JOIN TICKET t ON e.EVENT_ID = t.EVENT_ID 
         INNER JOIN PURCHASE p ON t.PURCHASE_ID = p.PURCHASE_ID 
         WHERE p.CUSTOMER_ID = :customerId 
+        AND t.USED = FALSE
         GROUP BY e.EVENT_ID
     """
     )
-    suspend fun getEventsWithTicketCount(customerId: String): List<EventWithTicketsCount>?
+    suspend fun getEventsWithUnusedTicketCount(customerId: String): List<EventWithTicketsCount>?
 
     @Insert
     suspend fun insertCustomer(customer: Customer)
@@ -78,10 +78,6 @@ interface TicketoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVoucher(voucher: Voucher)
 
-    // Get all vouchers for a client
-    @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId")
-    suspend fun getVouchersForClient(customerId: String): List<Voucher>
-
     // Delete all purchases, tickets, and events associated with a client
     @Query("DELETE FROM PURCHASE WHERE CUSTOMER_ID = :customerId")
     suspend fun deletePurchasesForClient(customerId: String)
@@ -97,19 +93,29 @@ interface TicketoDao {
     // Get all purchases along with their associated tickets and events for a client
     @Transaction
     @Query("SELECT * FROM PURCHASE WHERE CUSTOMER_ID = :customerId")
-    suspend fun getPurchasesWithTicketsAndEventsForClient(customerId: String): List<PurchaseWithTicketsAndEvents>
+    suspend fun getPurchasesWithTicketsAndEventsAndVouchersForClient(customerId: String): List<PurchaseWithTicketsAndEventsAndVouchers>
 
     // Get all vouchers for a specific customer
-    @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId")
-    suspend fun getVouchersForCustomer(customerId: String): List<Voucher>
+    @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId AND ORDER_ID IS NULL")
+    suspend fun getUnusedVouchersForCustomer(customerId: String): List<Voucher>
 
     // Get all products
     @Query("SELECT * FROM PRODUCT")
     suspend fun getAllProducts(): List<Product>
 
+    // Get one product
+    @Query("SELECT * FROM PRODUCT WHERE PRODUCT_ID = :productId")
+    fun getProduct(productId: Int): Product?
+
+    @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId AND PICKED_UP = FALSE")
+    suspend fun getUnpickedUpOrdersForClient(customerId: String): List<Order>
+
     @Transaction
-    @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId")
-    suspend fun getOrdersWithProductsAndVouchersForClient(customerId: String): List<OrderWithProductsAndQuantityAndVouchers>
+    @Query("SELECT * FROM 'ORDER' WHERE CUSTOMER_ID = :customerId AND ORDER_ID = :orderId")
+    suspend fun getOrderDetails(
+        customerId: String,
+        orderId: Int
+    ): OrderWithProductsAndQuantityAndVouchers
 
     // Get customer details
     @Query("SELECT * FROM CUSTOMER WHERE CUSTOMER_ID = :customerId")
@@ -118,4 +124,31 @@ interface TicketoDao {
     // Set ticket as used
     @Query("UPDATE TICKET SET USED = 1 WHERE TICKET_ID = :ticketId")
     suspend fun setTicketAsUsed(ticketId: String)
+
+    // Get max order id
+    @Query("SELECT MIN(ORDER_ID) FROM `ORDER`")
+    suspend fun getMinOrderId(): Int?
+
+    // Delete customer vouchers
+    @Query("DELETE FROM VOUCHER WHERE CUSTOMER_ID = :customerId")
+    suspend fun deleteCustomerVouchers(customerId: String)
+
+    // Set order as picked up
+    @Query("UPDATE `ORDER` SET PICKED_UP = 1 WHERE ORDER_ID = :orderId")
+    suspend fun setOrderAsPickedUp(orderId: Int)
+
+    // Delete customer used tickets
+    @Query("DELETE FROM TICKET WHERE USED = TRUE AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId)")
+    suspend fun deleteUsedTicketsForCustomer(customerId: String)
+
+    // Get voucher by id
+    @Query("SELECT * FROM VOUCHER WHERE VOUCHER_ID = :voucherId")
+    suspend fun getVoucherById(voucherId: String): Voucher?
+
+    // Delete voucher by id
+    @Query("DELETE FROM VOUCHER WHERE VOUCHER_ID = :voucherId")
+    suspend fun deleteVoucherById(voucherId: String)
+
+
+
 }
