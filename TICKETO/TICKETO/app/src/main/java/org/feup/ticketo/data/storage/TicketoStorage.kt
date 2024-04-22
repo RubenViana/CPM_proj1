@@ -2,11 +2,15 @@ package org.feup.ticketo.data.storage
 
 class TicketoStorage(private val ticketoDao: TicketoDao) {
 
+    suspend fun getEventById(eventId: Int): Event? {
+        return ticketoDao.getEvent(eventId)
+    }
+
     suspend fun getCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets? {
         return ticketoDao.getCustomerTicketsForEvent(customerId, eventId)
     }
 
-    suspend fun getUnusedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets? {
+    suspend fun getUnusedCustomerTicketsForEvent(customerId: String, eventId: Int): List<Ticket>? {
         return ticketoDao.getUnusedCustomerTicketsForEvent(customerId, eventId)
     }
 

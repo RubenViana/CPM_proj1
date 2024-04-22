@@ -485,13 +485,6 @@ fun LoadingPurchaseDialog() {
                         .size(50.dp),
                     color = md_theme_light_primary,
                 )
-                Text(
-                    text = "Purchasing tickets...",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                )
             }
         }
     }

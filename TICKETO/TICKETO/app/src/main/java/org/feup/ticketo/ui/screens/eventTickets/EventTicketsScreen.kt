@@ -1,5 +1,6 @@
 package org.feup.ticketo.ui.screens.eventTickets
 
+
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,17 +16,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
@@ -42,6 +48,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -51,20 +58,26 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.rotationMatrix
 import androidx.navigation.NavHostController
+import com.android.volley.VolleyError
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.data.storage.Ticket
@@ -90,6 +103,24 @@ fun EventTicketsScreen(navController: NavHostController, viewModel: EventTickets
     when {
         viewModel.fetchTicketsFromDatabaseState.value is ServerValidationState.Success -> {
             EventTickets(viewModel, navController)
+        }
+    }
+
+    when {
+        viewModel.qrCodeGenerationState.value is ServerValidationState.Loading -> {
+            QRCodeGenerationLoadingDialog()
+        }
+    }
+
+    when {
+        viewModel.qrCodeGenerationState.value is ServerValidationState.Success -> {
+            QRCodeGenerationSuccessfulDialog(viewModel.qrCodeGenerationState, viewModel, navController)
+        }
+    }
+
+    when {
+        viewModel.qrCodeGenerationState.value is ServerValidationState.Failure -> {
+            QRCodeGenerationFailedDialog(viewModel.qrCodeGenerationState)
         }
     }
 }
@@ -154,7 +185,9 @@ fun EventTickets(viewModel: EventTicketsViewModel, navController: NavHostControl
                     if (viewModel.selectTicketsToQRCodeState.value) {
                         IconButton(
                             onClick = {
-                                viewModel.validateTickets()
+                                if (viewModel.selectedTickets.value.isNotEmpty()) {
+                                    viewModel.validateTickets()
+                                }
                             }
                         ) {
                             Icon(imageVector = Icons.Default.QrCode, contentDescription = null)
@@ -262,9 +295,9 @@ fun TicketCard(ticket: Ticket, event: Event, viewModel: EventTicketsViewModel) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(text = "QR Code", fontWeight = FontWeight.Bold)
-                if (viewModel.selectTicketsToQRCodeState.value == false){
+                if (!viewModel.selectTicketsToQRCodeState.value){
                     IconButton(
-                        onClick = { /*TODO*/ }
+                        onClick = { viewModel.selectedTickets.value = listOf(ticket) ; viewModel.validateTickets() }
                     ) {
                         Icon(imageVector = Icons.Default.QrCode2, contentDescription = null)
                     }
@@ -280,15 +313,124 @@ fun TicketCard(ticket: Ticket, event: Event, viewModel: EventTicketsViewModel) {
     }
 }
 
+@Composable
+fun QRCodeGenerationFailedDialog(
+    qrCodeGenerationState: MutableState<ServerValidationState?>
+) {
+    Dialog(
+        onDismissRequest = { qrCodeGenerationState.value = null },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.Error,
+                    contentDescription = "QR Code Generation Failed",
+                    tint = Color.Red,
+                    modifier = Modifier.size(50.dp)
+                )
+                Text(
+                    text = "QR Code Generation Failed",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+}
 
-//            val qrcode = generateQRCode(ticket)
-//            qrcode?.let { BitmapPainter(it.asImageBitmap()) }?.let {
-//                Image(
-//                    painter = it,
-//                    contentDescription = null,
-//                    modifier = Modifier.size(300.dp)
-//                )
-//            }
+@Composable
+fun QRCodeGenerationSuccessfulDialog(
+    qrCodeGenerationState: MutableState<ServerValidationState?>,
+    viewModel: EventTicketsViewModel,
+    navController: NavHostController
+) {
+    Dialog(
+        onDismissRequest = { qrCodeGenerationState.value = null; navController.popBackStack() },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "QR Code Generated Successfully",
+                    tint = Color.Green,
+                    modifier = Modifier.size(50.dp)
+                )
+                viewModel.qrCode.value?.let { BitmapPainter(it.asImageBitmap()) }?.let {
+                    Image(
+                        painter = it,
+                        contentDescription = "Ticket Validation QR Code",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.height(250.dp)
+                    )
+                }
+                Text(
+                    text = "QR Code Generated Successfully!",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun QRCodeGenerationLoadingDialog() {
+    Dialog(onDismissRequest = { /*TODO*/ }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .size(50.dp),
+                    color = md_theme_light_primary,
+                )
+            }
+        }
+    }
+}
+
 
 class TicketShape(
     private val circleRadius: Dp,

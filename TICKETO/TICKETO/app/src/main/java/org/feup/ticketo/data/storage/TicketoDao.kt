@@ -9,13 +9,17 @@ import androidx.room.Transaction
 @Dao
 interface TicketoDao {
 
+    // Get event by id
+    @Query("SELECT * FROM EVENT WHERE EVENT_ID = :eventId")
+    suspend fun getEventById(eventId: Int): Event?
+
     // Get all customer tickets for an event
     @Query("SELECT * FROM TICKET, EVENT WHERE TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId)")
     suspend fun getCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
 
     // Get unused customer tickets for an event
     @Query("SELECT * FROM TICKET, EVENT WHERE USED = 0 AND TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId) ")
-    suspend fun getUnusedCustomerTicketsForEvent(customerId: String, eventId: Int): EventTickets?
+    suspend fun getUnusedCustomerTicketsForEvent(customerId: String, eventId: Int): List<Ticket>?
 
     // Get used customer tickets for an event
     @Query("SELECT * FROM TICKET, EVENT WHERE TICKET.EVENT_ID = EVENT.EVENT_ID AND EVENT.EVENT_ID = :eventId AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId) AND TICKET.USED = true")

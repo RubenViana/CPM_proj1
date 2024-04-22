@@ -12,6 +12,7 @@ import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.serverMessages.ticketValidationMessage
 import org.feup.ticketo.data.storage.Customer
 import org.feup.ticketo.data.storage.EventTickets
+import org.feup.ticketo.data.storage.EventWithTicketsCount
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
@@ -33,10 +34,12 @@ class EventTicketsViewModel(
 
     fun getEventTickets() {
         viewModelScope.launch {
-            eventTickets.value = ticketoStorage.getUnusedCustomerTicketsForEvent(
+            val event = ticketoStorage.getEventById(eventId)
+            val tickets = ticketoStorage.getUnusedCustomerTicketsForEvent(
                 eventId = eventId,
                 customerId = getUserIdInSharedPreferences(context)
             )
+            eventTickets.value = EventTickets(event, tickets)
             fetchTicketsFromDatabaseState.value = ServerValidationState.Success(null, "Tickets loaded")
         }
     }
