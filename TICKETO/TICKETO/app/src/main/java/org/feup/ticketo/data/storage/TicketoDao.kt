@@ -37,10 +37,11 @@ interface TicketoDao {
         INNER JOIN TICKET t ON e.EVENT_ID = t.EVENT_ID 
         INNER JOIN PURCHASE p ON t.PURCHASE_ID = p.PURCHASE_ID 
         WHERE p.CUSTOMER_ID = :customerId 
+        AND t.USED = FALSE
         GROUP BY e.EVENT_ID
     """
     )
-    suspend fun getEventsWithTicketCount(customerId: String): List<EventWithTicketsCount>?
+    suspend fun getEventsWithUnusedTicketCount(customerId: String): List<EventWithTicketsCount>?
 
     @Insert
     suspend fun insertCustomer(customer: Customer)
@@ -92,7 +93,7 @@ interface TicketoDao {
     // Get all purchases along with their associated tickets and events for a client
     @Transaction
     @Query("SELECT * FROM PURCHASE WHERE CUSTOMER_ID = :customerId")
-    suspend fun getPurchasesWithTicketsAndEventsForClient(customerId: String): List<PurchaseWithTicketsAndEvents>
+    suspend fun getPurchasesWithTicketsAndEventsAndVouchersForClient(customerId: String): List<PurchaseWithTicketsAndEventsAndVouchers>
 
     // Get all vouchers for a specific customer
     @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId AND ORDER_ID IS NULL")
@@ -135,6 +136,19 @@ interface TicketoDao {
     // Set order as picked up
     @Query("UPDATE `ORDER` SET PICKED_UP = 1 WHERE ORDER_ID = :orderId")
     suspend fun setOrderAsPickedUp(orderId: Int)
+
+    // Delete customer used tickets
+    @Query("DELETE FROM TICKET WHERE USED = TRUE AND PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId)")
+    suspend fun deleteUsedTicketsForCustomer(customerId: String)
+
+    // Get voucher by id
+    @Query("SELECT * FROM VOUCHER WHERE VOUCHER_ID = :voucherId")
+    suspend fun getVoucherById(voucherId: String): Voucher?
+
+    // Delete voucher by id
+    @Query("DELETE FROM VOUCHER WHERE VOUCHER_ID = :voucherId")
+    suspend fun deleteVoucherById(voucherId: String)
+
 
 
 }

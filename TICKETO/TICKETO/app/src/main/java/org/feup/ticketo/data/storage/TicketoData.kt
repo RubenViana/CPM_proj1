@@ -236,6 +236,8 @@ data class Voucher(
     val voucher_id: String,
     @ColumnInfo(name = "CUSTOMER_ID")
     val customer_id: String? = null,
+    @ColumnInfo(name = "PURCHASE_ID")
+    val purchase_id: Int? = null,
     @ColumnInfo(name = "PRODUCT_ID")
     val product_id: Int? = null,
     @ColumnInfo(name = "ORDER_ID")
@@ -254,7 +256,7 @@ data class EventWithTicketsCount(
     val tickets_count: Int
 )
 
-data class PurchaseWithTicketsAndEvents(
+data class PurchaseWithTicketsAndEventsAndVouchers(
     @Embedded val purchase: Purchase,
     @Relation(
         parentColumn = "PURCHASE_ID",
@@ -265,7 +267,12 @@ data class PurchaseWithTicketsAndEvents(
         parentColumn = "PURCHASE_ID",
         entityColumn = "EVENT_ID"
     )
-    val events: List<Event>
+    val event: Event,
+    @Relation(
+        parentColumn = "PURCHASE_ID",
+        entityColumn = "PURCHASE_ID"
+    )
+    val vouchers: List<Voucher>
 )
 
 data class OrderWithProductsAndQuantityAndVouchers(

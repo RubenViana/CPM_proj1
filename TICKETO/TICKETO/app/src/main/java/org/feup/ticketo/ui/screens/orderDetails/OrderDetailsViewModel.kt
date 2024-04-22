@@ -53,8 +53,10 @@ class OrderDetailsViewModel(
         qrCode.value = generateQRCode(ovm)
         if (qrCode.value != null) {
             // Update order
-            viewModelScope.launch {
-                ticketoStorage.deleteCustomerVouchers(getUserIdInSharedPreferences(context))
+            order.value!!.vouchers.forEach {
+                viewModelScope.launch {
+                    ticketoStorage.deleteVoucherById(it.voucher_id)
+                }
             }
             viewModelScope.launch {
                 ticketoStorage.setOrderAsPickedUp(orderId)
