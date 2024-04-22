@@ -1,6 +1,7 @@
 package org.feup.ticketo.ui.screens.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -39,7 +40,7 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
+fun SettingsScreen(navController: NavController) {
     Column(
         Modifier
             .fillMaxSize()
@@ -101,7 +102,8 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                 ) {
                     Icon(Icons.AutoMirrored.Default.ArrowRight, null)
                 }
-            }
+            },
+            modifier = Modifier.clickable { navController.navigate(NavRoutes.Purchases.route) }
         )
         HorizontalDivider(Modifier.padding(horizontal = 20.dp))
         ListItem(
@@ -119,7 +121,8 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                 ) {
                     Icon(Icons.AutoMirrored.Default.ArrowRight, null)
                 }
-            }
+            },
+            modifier = Modifier.clickable { navController.navigate(NavRoutes.PastOrders.route) }
         )
         HorizontalDivider(Modifier.padding(horizontal = 20.dp))
         ListItem(
@@ -177,7 +180,5 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
 @Preview
 @Composable
 fun PreviewSettingsScreen() {
-    SettingsScreen(navController = rememberNavController(), viewModel = remember {
-        SettingsViewModel()
-    })
+    SettingsScreen(navController = rememberNavController())
 }

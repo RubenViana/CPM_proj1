@@ -109,7 +109,7 @@ fun TicketoNavHost(
             }
         ) {
             val viewModel = SettingsViewModel()
-            SettingsScreen(navController, viewModel)
+            SettingsScreen(navController)
         }
         composable(
             route = NavRoutes.EventTickets.route,
@@ -153,7 +153,7 @@ fun TicketoNavHost(
         }
         composable(route = NavRoutes.Purchases.route) {
             val viewModel = remember { PurchasesViewModel(context, ticketoStorage) }
-            PurchasesScreen(navController, viewModel, context)
+            PurchasesScreen(navController, viewModel)
         }
         composable(route = NavRoutes.PastOrders.route) {
             val viewModel = remember { PastOrdersViewModel(context, ticketoStorage) }
