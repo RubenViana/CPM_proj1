@@ -25,11 +25,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,6 +47,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -81,6 +84,7 @@ import com.android.volley.VolleyError
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.data.storage.Ticket
+import org.feup.ticketo.ui.screens.orderDetails.OrderDetailsViewModel
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -121,6 +125,12 @@ fun EventTicketsScreen(navController: NavHostController, viewModel: EventTickets
     when {
         viewModel.qrCodeGenerationState.value is ServerValidationState.Failure -> {
             QRCodeGenerationFailedDialog(viewModel.qrCodeGenerationState)
+        }
+    }
+
+    when {
+        viewModel.openQRCodeGenerationConfirmationDialog.value -> {
+            QRCodeGenerationConfirmationDialog(viewModel)
         }
     }
 }
@@ -186,7 +196,7 @@ fun EventTickets(viewModel: EventTicketsViewModel, navController: NavHostControl
                         IconButton(
                             onClick = {
                                 if (viewModel.selectedTickets.value.isNotEmpty()) {
-                                    viewModel.validateTickets()
+                                    viewModel.openQRCodeGenerationConfirmationDialog.value = true
                                 }
                             }
                         ) {
@@ -297,7 +307,7 @@ fun TicketCard(ticket: Ticket, event: Event, viewModel: EventTicketsViewModel) {
                 Text(text = "QR Code", fontWeight = FontWeight.Bold)
                 if (!viewModel.selectTicketsToQRCodeState.value){
                     IconButton(
-                        onClick = { viewModel.selectedTickets.value = listOf(ticket) ; viewModel.validateTickets() }
+                        onClick = { viewModel.selectedTickets.value = listOf(ticket); viewModel.openQRCodeGenerationConfirmationDialog.value = true}
                     ) {
                         Icon(imageVector = Icons.Default.QrCode2, contentDescription = null)
                     }
@@ -311,6 +321,44 @@ fun TicketCard(ticket: Ticket, event: Event, viewModel: EventTicketsViewModel) {
             }
         }
     }
+}
+
+@Composable
+fun QRCodeGenerationConfirmationDialog(
+    viewModel: EventTicketsViewModel,
+) {
+    AlertDialog(
+        icon = {
+            Icon(Icons.Default.QrCode2, contentDescription = null)
+        },
+        title = {
+            Text(text = "QR Code generation?", textAlign = TextAlign.Center)
+        },
+        text = { Text("Are you sure you want to generate the QR code for this ticket(s)? After doing so, your ticket(s) will be set as used!") },
+        onDismissRequest = {
+
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.openQRCodeGenerationConfirmationDialog.value = false
+                    viewModel.selectedTickets.value = emptyList()
+                }
+            ) {
+                Text("Cancel")
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    viewModel.openQRCodeGenerationConfirmationDialog.value = false
+                    viewModel.validateTickets()
+                }
+            ) {
+                Text("Confirm")
+            }
+        }
+    )
 }
 
 @Composable

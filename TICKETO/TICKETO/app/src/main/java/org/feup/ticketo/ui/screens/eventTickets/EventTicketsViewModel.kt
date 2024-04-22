@@ -27,6 +27,7 @@ class EventTicketsViewModel(
     val fetchTicketsFromDatabaseState = mutableStateOf<ServerValidationState?>(null)
     val qrCodeGenerationState = mutableStateOf<ServerValidationState?>(null)
     val selectTicketsToQRCodeState = mutableStateOf(false)
+    val openQRCodeGenerationConfirmationDialog = mutableStateOf(false)
 
     val eventTickets = mutableStateOf<EventTickets?>(null)
     val selectedTickets = mutableStateOf<List<Ticket>>(emptyList())
