@@ -30,6 +30,8 @@ import org.feup.ticketo.ui.screens.orderDetails.OrderDetailsScreen
 import org.feup.ticketo.ui.screens.orderDetails.OrderDetailsViewModel
 import org.feup.ticketo.ui.screens.orders.OrdersScreen
 import org.feup.ticketo.ui.screens.orders.OrdersViewModel
+import org.feup.ticketo.ui.screens.pastOrders.PastOrdersScreen
+import org.feup.ticketo.ui.screens.pastOrders.PastOrdersViewModel
 import org.feup.ticketo.ui.screens.purchases.PurchasesScreen
 import org.feup.ticketo.ui.screens.purchases.PurchasesViewModel
 import org.feup.ticketo.ui.screens.register.RegisterScreen
@@ -51,6 +53,7 @@ sealed class NavRoutes(val route: String, val icon: ImageVector?) {
     data object OrderDetails : NavRoutes("order/{orderId}", Icons.Default.AccessTime)
     data object AddOrder : NavRoutes("addOrder", null)
     data object Purchases : NavRoutes("purchases", null)
+    data object PastOrders : NavRoutes("pastOrders", null)
 }
 
 @Composable
@@ -152,6 +155,11 @@ fun TicketoNavHost(
             val viewModel = remember { PurchasesViewModel(context, ticketoStorage) }
             PurchasesScreen(navController, viewModel, context)
         }
+        composable(route = NavRoutes.PastOrders.route) {
+            val viewModel = remember { PastOrdersViewModel(context, ticketoStorage) }
+            PastOrdersScreen(navController, viewModel, context)
+        }
+
     }
 }
 

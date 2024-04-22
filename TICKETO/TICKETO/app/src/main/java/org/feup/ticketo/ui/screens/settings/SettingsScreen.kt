@@ -108,28 +108,17 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             colors = ListItemDefaults.colors(
                 containerColor = md_theme_light_onPrimary
             ),
-            headlineContent = { Text("Profile") },
-            supportingContent = { Text("Edit profile information") },
+            headlineContent = { Text("Past Orders") },
+            supportingContent = { Text("Consult all orders you've validated") },
             leadingContent = {
                 Icon(Icons.Default.AccountCircle, null)
             },
             trailingContent = {
-                var checked1 by remember { mutableStateOf(true) }
-                Switch(
-                    checked = checked1,
-                    onCheckedChange = { checked1 = it },
-                    thumbContent = if (checked1) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize)
-                            )
-                        }
-                    } else {
-                        null
-                    }
-                )
+                IconButton(
+                    onClick = { navController.navigate(NavRoutes.PastOrders.route) }
+                ) {
+                    Icon(Icons.AutoMirrored.Default.ArrowRight, null)
+                }
             }
         )
         HorizontalDivider(Modifier.padding(horizontal = 20.dp))

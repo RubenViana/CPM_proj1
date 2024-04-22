@@ -16,8 +16,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.LocalDrink
+import androidx.compose.material.icons.filled.LunchDining
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -360,6 +365,14 @@ fun ProductsList(products: List<OrderProductWithProduct>, viewModel: OrderDetail
 
 @Composable
 fun ProductItem(orderProduct: OrderProductWithProduct, viewModel: OrderDetailsViewModel) {
+    var icon = Icons.Default.ChevronRight
+    when {
+        orderProduct.product.name.toString().contains("Coffee") -> icon = Icons.Default.Coffee
+        orderProduct.product.name.toString().contains("Popcorn") -> icon = Icons.Default.Fastfood
+        orderProduct.product.name.toString().contains("Soda") -> icon = Icons.Default.LocalDrink
+        orderProduct.product.name.toString().contains("Sandwich") -> icon =
+            Icons.Default.LunchDining
+    }
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(
             containerColor = md_theme_light_onPrimary
@@ -373,7 +386,9 @@ fun ProductItem(orderProduct: OrderProductWithProduct, viewModel: OrderDetailsVi
                 .fillMaxSize()
                 .padding(20.dp, 5.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(imageVector = icon, contentDescription = "Product Icon")
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.weight(1f)
