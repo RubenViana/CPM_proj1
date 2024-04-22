@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -145,9 +146,18 @@ fun EventTickets(viewModel: EventTicketsViewModel, navController: NavHostControl
                     }
                     ) {
                         if (viewModel.selectTicketsToQRCodeState.value) {
-                            Icon(imageVector = Icons.Default.Cancel, contentDescription = null)
+                            Icon(imageVector = Icons.Outlined.Cancel, contentDescription = null)
                         } else {
                             Icon(imageVector = Icons.Default.SelectAll, contentDescription = null)
+                        }
+                    }
+                    if (viewModel.selectTicketsToQRCodeState.value) {
+                        IconButton(
+                            onClick = {
+                                viewModel.validateTickets()
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Default.QrCode, contentDescription = null)
                         }
                     }
                 }
@@ -190,18 +200,6 @@ fun EventTickets(viewModel: EventTicketsViewModel, navController: NavHostControl
                         verticalArrangement = Arrangement.Top
                     )
                     {
-                        if (viewModel.selectTicketsToQRCodeState.value) {
-                            FloatingActionButton(
-                                onClick = {
-                                    viewModel.validateTickets()
-                                },
-                                modifier = Modifier
-                                    .padding(16.dp)
-                            ) {
-                                Icon(imageVector = Icons.Default.QrCode, contentDescription = null)
-                            }
-
-                        }
                         LazyColumn(
                         ) {
                             viewModel.eventTickets.value?.tickets?.let {
