@@ -79,7 +79,7 @@ fun EventDetailsScreen(navController: NavHostController, viewModel: EventDetails
         viewModel.fetchEventFromServerState.value is ServerValidationState.Failure -> {
             LoadingEventDetailsFailedDialog(
                 (viewModel.fetchEventFromServerState.value as ServerValidationState.Failure).error,
-                viewModel
+                navController
             )
         }
     }
@@ -130,7 +130,7 @@ fun LoadingEventDetails(message: String, navController: NavHostController) {
 }
 
 @Composable
-fun LoadingEventDetailsFailedDialog(error: VolleyError?, viewModel: EventDetailsViewModel) {
+fun LoadingEventDetailsFailedDialog(error: VolleyError?, navController: NavHostController) {
     AlertDialog(
         icon = {
             Icon(Icons.Default.Close, contentDescription = "Failed to load event details")
@@ -155,10 +155,10 @@ fun LoadingEventDetailsFailedDialog(error: VolleyError?, viewModel: EventDetails
         confirmButton = {
             TextButton(
                 onClick = {
-                    viewModel.fetchEvent()
+                    navController.popBackStack()
                 }
             ) {
-                Text("Retry")
+                Text("Go Back")
             }
         }
     )

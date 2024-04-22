@@ -67,36 +67,9 @@ import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.getServerResponseErrorMessage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PurchasesScreen(
-    navController: NavController,
-    viewModel: PurchasesViewModel
-) {
-    LaunchedEffect(viewModel) {
-        viewModel.fetchPurchases()
-    }
-
-    when (viewModel.fetchPurchasesFromServerState.value) {
-        is ServerValidationState.Loading -> {
-            LoadingPurchases()
-        }
-
-        is ServerValidationState.Success -> {
-            Purchases(navController = navController, viewModel = viewModel)
-        }
-
-        is ServerValidationState.Failure -> {
-            LoadingPurchasesFailedDialog(
-                (viewModel.fetchPurchasesFromServerState.value as ServerValidationState.Failure).error,
-                viewModel
-            )
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun Purchases(
     navController: NavController,
     viewModel: PurchasesViewModel
 ) {
@@ -128,11 +101,38 @@ private fun Purchases(
                     }
                 },
             )
-            LazyColumn {
-                items(viewModel.purchases.value.size) { purchase ->
-                    PurchaseCard(purchase = viewModel.purchases.value[purchase], viewModel)
+            // PAGE CONTENT
+            LaunchedEffect(viewModel) {
+                viewModel.fetchPurchases()
+            }
+
+            when (viewModel.fetchPurchasesFromServerState.value) {
+                is ServerValidationState.Loading -> {
+                    LoadingPurchases()
+                }
+
+                is ServerValidationState.Success -> {
+                    Purchases(viewModel = viewModel)
+                }
+
+                is ServerValidationState.Failure -> {
+                    LoadingPurchasesFailed(
+                        (viewModel.fetchPurchasesFromServerState.value as ServerValidationState.Failure).error,
+                        viewModel
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun Purchases(
+    viewModel: PurchasesViewModel
+) {
+    LazyColumn {
+        items(viewModel.purchases.value.size) { purchase ->
+            PurchaseCard(purchase = viewModel.purchases.value[purchase], viewModel)
         }
     }
 }
@@ -441,37 +441,13 @@ fun LoadingPurchases() {
 }
 
 @Composable
-fun LoadingPurchasesFailedDialog(error: VolleyError?, viewModel: PurchasesViewModel) {
-    AlertDialog(
-        icon = {
-            Icon(Icons.Default.Close, contentDescription = "Failed to load purchases!")
-        },
-        title = {
-            Text(text = "Failed to load purchases!", textAlign = TextAlign.Center)
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "Something went wrong", textAlign = TextAlign.Center)
-                Text(
-                    text = getServerResponseErrorMessage(error).orEmpty(),
-                    textAlign = TextAlign.Center
-                )
-            }
-        },
-        onDismissRequest = {},
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    viewModel.fetchPurchases()
-                }
-            ) {
-                Text("Retry")
-            }
-        }
-    )
-
+fun LoadingPurchasesFailed(error: VolleyError?, viewModel: PurchasesViewModel) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Failed to load purchases")
+        Text(getServerResponseErrorMessage(error).orEmpty())
+    }
 }

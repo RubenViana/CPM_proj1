@@ -132,22 +132,14 @@ fun OrderCard(order: Order, navController: NavHostController) {
 
 @Composable
 fun LoadingOrders(message: String) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(50.dp),
-            color = Color.Blue
-        )
-        Spacer(modifier = Modifier.width(20.dp))
-        Text(
-            text = message,
-            style = TextStyle(
-                color = md_theme_light_primary,
-                fontSize = 22.sp
-            )
+            color = md_theme_light_primary
         )
     }
 }

@@ -124,7 +124,7 @@ fun EventTicketsScreen(navController: NavHostController, viewModel: EventTickets
 
     when {
         viewModel.qrCodeGenerationState.value is ServerValidationState.Failure -> {
-            QRCodeGenerationFailedDialog(viewModel.qrCodeGenerationState)
+            QRCodeGenerationFailedDialog(viewModel)
         }
     }
 
@@ -352,6 +352,7 @@ fun QRCodeGenerationConfirmationDialog(
             TextButton(
                 onClick = {
                     viewModel.openQRCodeGenerationConfirmationDialog.value = false
+                    viewModel.selectTicketsToQRCodeState.value = false
                     viewModel.validateTickets()
                 }
             ) {
@@ -363,10 +364,10 @@ fun QRCodeGenerationConfirmationDialog(
 
 @Composable
 fun QRCodeGenerationFailedDialog(
-    qrCodeGenerationState: MutableState<ServerValidationState?>
+    viewModel: EventTicketsViewModel
 ) {
     Dialog(
-        onDismissRequest = { qrCodeGenerationState.value = null },
+        onDismissRequest = { viewModel.qrCodeGenerationState.value = null; viewModel.selectedTickets.value = emptyList()},
         properties = DialogProperties(dismissOnClickOutside = true)
     ) {
         Card(

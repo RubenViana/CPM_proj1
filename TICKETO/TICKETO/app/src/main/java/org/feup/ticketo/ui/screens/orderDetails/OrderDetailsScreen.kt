@@ -55,16 +55,18 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.OrderProductWithProduct
 import org.feup.ticketo.data.storage.Voucher
+import org.feup.ticketo.ui.screens.eventTickets.EventTicketsViewModel
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderDetailsScreen(navController: NavController, viewModel: OrderDetailsViewModel) {
+fun OrderDetailsScreen(navController: NavHostController, viewModel: OrderDetailsViewModel) {
     LaunchedEffect(viewModel) {
         viewModel.fetchOrder()
     }
@@ -123,22 +125,15 @@ fun OrderDetailsScreen(navController: NavController, viewModel: OrderDetailsView
 
             when (viewModel.qrCodeGenerationState.value) {
                 is ServerValidationState.Loading -> {
-                    LoadingQRCodeDialog(
-                        (viewModel.qrCodeGenerationState.value as ServerValidationState.Failure).message
-                            ?: "Generating QR code..."
-                    )
+                    QRCodeGenerationLoadingDialog()
                 }
 
                 is ServerValidationState.Failure -> {
-                    QRCodeGenerationErrorDialog(
-                        viewModel.qrCodeGenerationState,
-                        (viewModel.qrCodeGenerationState.value as ServerValidationState.Failure).message
-                            ?: "Error generating QR code"
-                    )
+                    QRCodeGenerationFailedDialog(viewModel)
                 }
 
                 is ServerValidationState.Success -> {
-                    QRCodeGeneratedDialog(
+                    QRCodeGenerationSuccessfulDialog(
                         viewModel,
                         navController
                     )
@@ -210,61 +205,11 @@ fun OrderValidationConfirmationDialog(
 }
 
 @Composable
-fun QRCodeGeneratedDialog(viewModel: OrderDetailsViewModel, navController: NavController) {
-    Dialog(
-        onDismissRequest = {
-            viewModel.qrCodeGenerationState.value = null; navController.popBackStack()
-        },
-        properties = DialogProperties(dismissOnClickOutside = true)
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp)
-                .padding(10.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceAround,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = "Order Completed",
-                    tint = Color.Green,
-                    modifier = Modifier.size(50.dp)
-                )
-                Text(
-                    text = "Present this code at the Cafeteria Terminal",
-                    modifier = Modifier
-                        .wrapContentSize(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                )
-                viewModel.qrCode.value?.let { BitmapPainter(it.asImageBitmap()) }?.let {
-                    Image(
-                        painter = it,
-                        contentDescription = "Order Validation QR Code",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.height(250.dp)
-                    )
-                }
-
-
-            }
-        }
-    }
-}
-
-@Composable
-fun QRCodeGenerationErrorDialog(
-    qrCodeGenerationState: MutableState<ServerValidationState?>,
-    s: String
+fun QRCodeGenerationFailedDialog(
+    viewModel: OrderDetailsViewModel
 ) {
     Dialog(
-        onDismissRequest = { qrCodeGenerationState.value = null },
+        onDismissRequest = { viewModel.qrCodeGenerationState.value = null;},
         properties = DialogProperties(dismissOnClickOutside = true)
     ) {
         Card(
@@ -283,12 +228,12 @@ fun QRCodeGenerationErrorDialog(
             ) {
                 Icon(
                     Icons.Default.Error,
-                    contentDescription = "Error generating QR code",
+                    contentDescription = "QR Code Generation Failed",
                     tint = Color.Red,
                     modifier = Modifier.size(50.dp)
                 )
                 Text(
-                    text = s,
+                    text = "QR Code Generation Failed",
                     modifier = Modifier
                         .fillMaxSize()
                         .wrapContentSize(Alignment.Center),
@@ -300,7 +245,56 @@ fun QRCodeGenerationErrorDialog(
 }
 
 @Composable
-fun LoadingQRCodeDialog(s: String) {
+fun QRCodeGenerationSuccessfulDialog(
+    viewModel: OrderDetailsViewModel,
+    navController: NavHostController
+) {
+    Dialog(
+        onDismissRequest = { viewModel.qrCodeGenerationState.value = null; navController.popBackStack() },
+        properties = DialogProperties(dismissOnClickOutside = true)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "QR Code Generated Successfully",
+                    tint = Color.Green,
+                    modifier = Modifier.size(50.dp)
+                )
+                viewModel.qrCode.value?.let { BitmapPainter(it.asImageBitmap()) }?.let {
+                    Image(
+                        painter = it,
+                        contentDescription = "Order Validation QR Code",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.height(250.dp)
+                    )
+                }
+                Text(
+                    text = "Present this code at the Cafeteria Terminal",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun QRCodeGenerationLoadingDialog() {
     Dialog(onDismissRequest = { /*TODO*/ }) {
         Card(
             modifier = Modifier
@@ -321,13 +315,6 @@ fun LoadingQRCodeDialog(s: String) {
                         .size(50.dp)
                         .size(50.dp),
                     color = md_theme_light_primary,
-                )
-                Text(
-                    text = s,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(Alignment.Center),
-                    textAlign = TextAlign.Center,
                 )
             }
         }

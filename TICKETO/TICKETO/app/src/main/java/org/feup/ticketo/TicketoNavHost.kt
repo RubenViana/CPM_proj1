@@ -1,6 +1,11 @@
 package org.feup.ticketo
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Search
@@ -90,30 +95,30 @@ fun TicketoNavHost(
             val viewModel = remember { OrdersViewModel(context, ticketoStorage) }
             OrdersScreen(navController, viewModel, modifier)
         }
-        composable(route = NavRoutes.AddOrder.route) {
+        composable(route = NavRoutes.AddOrder.route,
+            enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+            popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }) {
             val viewModel = AddOrderViewModel(context, ticketoStorage)
             AddOrderScreen(navController, viewModel)
         }
         composable(route = NavRoutes.Settings.route,
             enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
-            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) },
-            popEnterTransition = {
-                return@composable slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Up
-                )
-            },
-            popExitTransition = {
-                return@composable slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Down
-                )
-            }
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+            popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) }
         ) {
             val viewModel = SettingsViewModel()
             SettingsScreen(navController)
         }
         composable(
             route = NavRoutes.EventTickets.route,
-            arguments = listOf(navArgument("eventId") { type = NavType.IntType })
+            arguments = listOf(navArgument("eventId") { type = NavType.IntType }),
+            enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+            popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
         ) {
             val viewModel =
                 remember {
@@ -127,7 +132,11 @@ fun TicketoNavHost(
         }
         composable(
             route = NavRoutes.EventDetails.route,
-            arguments = listOf(navArgument("eventId") { type = NavType.IntType })
+            arguments = listOf(navArgument("eventId") { type = NavType.IntType }),
+            enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+            popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
         ) {
             val viewModel = remember {
                 EventDetailsViewModel(
@@ -140,7 +149,11 @@ fun TicketoNavHost(
         }
         composable(
             route = NavRoutes.OrderDetails.route,
-            arguments = listOf(navArgument("orderId") { type = NavType.IntType })
+            arguments = listOf(navArgument("orderId") { type = NavType.IntType }),
+            enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+            popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
         ) {
             val viewModel = remember {
                 OrderDetailsViewModel(
@@ -151,11 +164,21 @@ fun TicketoNavHost(
             }
             OrderDetailsScreen(navController, viewModel)
         }
-        composable(route = NavRoutes.Purchases.route) {
+        composable(route = NavRoutes.Purchases.route,
+            enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+            popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
+        ) {
             val viewModel = remember { PurchasesViewModel(context, ticketoStorage) }
             PurchasesScreen(navController, viewModel)
         }
-        composable(route = NavRoutes.PastOrders.route) {
+        composable(route = NavRoutes.PastOrders.route,
+            enterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            exitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+            popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+            popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
+        ) {
             val viewModel = remember { PastOrdersViewModel(context, ticketoStorage) }
             PastOrdersScreen(navController, viewModel, context)
         }

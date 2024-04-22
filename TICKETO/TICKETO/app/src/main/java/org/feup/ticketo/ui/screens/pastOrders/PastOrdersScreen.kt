@@ -62,39 +62,12 @@ import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
 import org.feup.ticketo.utils.getServerResponseErrorMessage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PastOrdersScreen(
     navController: NavController,
     viewModel: PastOrdersViewModel,
     context: Context
-) {
-    LaunchedEffect(viewModel) {
-        viewModel.fetchOrders()
-    }
-
-    when (viewModel.fetchOrdersFromServerState.value) {
-        is ServerValidationState.Loading -> {
-            LoadingOrders()
-        }
-
-        is ServerValidationState.Success -> {
-            Orders(navController = navController, viewModel = viewModel)
-        }
-
-        is ServerValidationState.Failure -> {
-            LoadingOrdersFailedDialog(
-                (viewModel.fetchOrdersFromServerState.value as ServerValidationState.Failure).error,
-                viewModel
-            )
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun Orders(
-    navController: NavController,
-    viewModel: PastOrdersViewModel
 ) {
     Surface(
         modifier = Modifier
@@ -124,11 +97,39 @@ private fun Orders(
                     }
                 },
             )
-            LazyColumn {
-                items(viewModel.orders.value.size) { order ->
-                    OrderCard(viewModel.orders.value[order], viewModel)
+            // PAGE CONTENT
+            LaunchedEffect(viewModel) {
+                viewModel.fetchOrders()
+            }
+            when (viewModel.fetchOrdersFromServerState.value) {
+                is ServerValidationState.Loading -> {
+                    LoadingOrders()
+                }
+
+                is ServerValidationState.Success -> {
+                    Orders(viewModel = viewModel)
+                }
+
+                is ServerValidationState.Failure -> {
+                    LoadingOrdersFailed(
+                        (viewModel.fetchOrdersFromServerState.value as ServerValidationState.Failure).error,
+                        viewModel
+                    )
                 }
             }
+
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun Orders(
+    viewModel: PastOrdersViewModel
+) {
+    LazyColumn {
+        items(viewModel.orders.value.size) { order ->
+            OrderCard(viewModel.orders.value[order], viewModel)
         }
     }
 }
@@ -374,37 +375,13 @@ fun LoadingOrders() {
 }
 
 @Composable
-fun LoadingOrdersFailedDialog(error: VolleyError?, viewModel: PastOrdersViewModel) {
-    AlertDialog(
-        icon = {
-            Icon(Icons.Default.Close, contentDescription = "Failed to load orders!")
-        },
-        title = {
-            Text(text = "Failed to load orders!", textAlign = TextAlign.Center)
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "Something went wrong", textAlign = TextAlign.Center)
-                Text(
-                    text = getServerResponseErrorMessage(error).orEmpty(),
-                    textAlign = TextAlign.Center
-                )
-            }
-        },
-        onDismissRequest = {},
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    viewModel.fetchOrders()
-                }
-            ) {
-                Text("Retry")
-            }
-        }
-    )
-
+fun LoadingOrdersFailed(error: VolleyError?, viewModel: PastOrdersViewModel) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Failed to load past orders")
+        Text(getServerResponseErrorMessage(error).orEmpty())
+    }
 }
