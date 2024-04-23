@@ -2,7 +2,6 @@ package org.feup.ticketvalidatorterminal
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -38,12 +37,13 @@ import com.android.volley.toolbox.Volley
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import kotlinx.serialization.json.buildJsonObject
-import org.feup.ticketvalidatorterminal.data.TicketValidationMessage
 import org.feup.ticketvalidatorterminal.data.ServerValidationState
+import org.feup.ticketvalidatorterminal.data.TicketValidationMessage
 import org.feup.ticketvalidatorterminal.ui.theme.TicketValidatorTerminalTheme
-import org.feup.ticketvalidatorterminal.utils.*
-import org.json.JSONObject
+import org.feup.ticketvalidatorterminal.utils.byteArrayToObject
+import org.feup.ticketvalidatorterminal.utils.getServerResponseErrorMessage
+import org.feup.ticketvalidatorterminal.utils.objectToJson
+import org.feup.ticketvalidatorterminal.utils.serverUrl
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,7 +151,7 @@ fun validateTicketsInServer(
     serverValidationState: MutableState<ServerValidationState?>,
     openValidationDialog: MutableState<Boolean>
 ) {
-    val url = "http://10.0.2.2:5000/validate_tickets"
+    val url = serverUrl + "validate_tickets"
     val json = objectToJson(ticketsToValidate)
     val jsonObjectRequest = JsonObjectRequest(
         Request.Method.POST, url, json,
