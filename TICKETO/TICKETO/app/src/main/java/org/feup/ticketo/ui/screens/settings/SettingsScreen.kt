@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +42,10 @@ import org.feup.ticketo.ui.theme.md_theme_light_primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
+    LaunchedEffect(viewModel) {
+        viewModel.getUserInfoFromDatabase()
+    }
     Column(
         Modifier
             .fillMaxSize()
@@ -67,14 +72,21 @@ fun SettingsScreen(navController: NavController) {
                 }
             }
         )
-
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            viewModel.userInfo.value.username?.let { Text(it) }
+            viewModel.userInfo.value.tax_number?.let { Text(it.toString()) }
+            Text("Credit Card Info Here")
+        }
         // List of Settings Options
         ListItem(
             colors = ListItemDefaults.colors(
                 containerColor = md_theme_light_onPrimary
             ),
-            headlineContent = { Text("Profile") },
-            supportingContent = { Text("Edit profile information") },
+            headlineContent = { viewModel.userInfo.value.username?.let { Text(it) } },
+            supportingContent = { Text("username") },
             leadingContent = {
                 Icon(Icons.Default.AccountCircle, null)
             },
@@ -175,10 +187,4 @@ fun SettingsScreen(navController: NavController) {
 
     }
 
-}
-
-@Preview
-@Composable
-fun PreviewSettingsScreen() {
-    SettingsScreen(navController = rememberNavController())
 }

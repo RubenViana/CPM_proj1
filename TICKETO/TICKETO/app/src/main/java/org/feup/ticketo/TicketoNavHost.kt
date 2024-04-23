@@ -109,8 +109,8 @@ fun TicketoNavHost(
             popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
             popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) }
         ) {
-            val viewModel = SettingsViewModel()
-            SettingsScreen(navController)
+            val viewModel = SettingsViewModel(context, ticketoStorage)
+            SettingsScreen(navController, viewModel)
         }
         composable(
             route = NavRoutes.EventTickets.route,
