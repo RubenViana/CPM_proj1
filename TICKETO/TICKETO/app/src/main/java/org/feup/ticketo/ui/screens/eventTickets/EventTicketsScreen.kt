@@ -429,7 +429,7 @@ fun QRCodeGenerationSuccessfulDialog(
                     )
                 }
                 Text(
-                    text = "QR Code Generated Successfully!",
+                    text = "Present this code at the Ticket Terminal",
                     modifier = Modifier
                         .fillMaxSize()
                         .wrapContentSize(Alignment.Center),

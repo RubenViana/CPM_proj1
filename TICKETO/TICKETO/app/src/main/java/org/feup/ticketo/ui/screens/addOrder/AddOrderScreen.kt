@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -296,7 +297,7 @@ fun OrderConfirmationDialog(
 ) {
     AlertDialog(
         icon = {
-            Icon(Icons.Default.ConfirmationNumber, contentDescription = null)
+            Icon(Icons.Default.Fastfood, contentDescription = null)
         },
         title = {
             Text(text = "Place Order?", textAlign = TextAlign.Center)

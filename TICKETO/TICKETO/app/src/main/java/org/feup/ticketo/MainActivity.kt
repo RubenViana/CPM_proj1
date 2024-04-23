@@ -1,6 +1,8 @@
 package org.feup.ticketo
 
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -29,6 +31,10 @@ import org.feup.ticketo.ui.theme.TICKETOTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //Lock Screen Orientation
+        requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
+
         enableEdgeToEdge(
             // This app is only ever in dark mode, so hard code detectDarkMode to true.
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { true },

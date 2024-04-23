@@ -3,6 +3,7 @@ package org.feup.ticketo
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.BookOnline
 import androidx.compose.material3.SnackbarHostState
@@ -49,8 +50,8 @@ sealed class NavRoutes(val route: String, val icon: ImageVector?) {
     data object EventDetails : NavRoutes("event/{eventId}", null)
     data object Tickets : NavRoutes("tickets", Icons.Outlined.BookOnline)
     data object EventTickets : NavRoutes("tickets/{eventId}", null)
-    data object Orders : NavRoutes("orders", Icons.Default.AccessTime)
-    data object OrderDetails : NavRoutes("order/{orderId}", Icons.Default.AccessTime)
+    data object Orders : NavRoutes("orders", Icons.Default.Fastfood)
+    data object OrderDetails : NavRoutes("order/{orderId}", Icons.Default.Fastfood)
     data object AddOrder : NavRoutes("addOrder", null)
     data object Purchases : NavRoutes("purchases", null)
     data object PastOrders : NavRoutes("pastOrders", null)

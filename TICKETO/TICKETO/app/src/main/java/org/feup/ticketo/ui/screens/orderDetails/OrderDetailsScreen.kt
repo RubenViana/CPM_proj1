@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.LunchDining
+import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -168,7 +169,7 @@ fun OrderValidationConfirmationDialog(
 ) {
     AlertDialog(
         icon = {
-            Icon(Icons.Default.ConfirmationNumber, contentDescription = null)
+            Icon(Icons.Default.QrCode2, contentDescription = null)
         },
         title = {
             Text(text = "Validate order?", textAlign = TextAlign.Center)
