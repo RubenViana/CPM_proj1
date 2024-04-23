@@ -1,7 +1,6 @@
 package org.feup.ticketo.ui.screens.pastOrders
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,15 +9,11 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.ServerValidationState
-import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.data.storage.Order
 import org.feup.ticketo.data.storage.OrderProduct
 import org.feup.ticketo.data.storage.OrderProductWithProduct
 import org.feup.ticketo.data.storage.OrderWithProductsAndQuantityAndVouchers
 import org.feup.ticketo.data.storage.Product
-import org.feup.ticketo.data.storage.Purchase
-import org.feup.ticketo.data.storage.PurchaseWithTicketsAndEventsAndVouchers
-import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.Voucher
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
@@ -49,10 +44,6 @@ class PastOrdersViewModel(
                 ticketoStorage.getCustomer(getUserIdInSharedPreferences(context)).tax_number.toString()
         }
 
-    }
-
-
-    private fun overwriteLocalData() {
     }
 
     private fun fetchOrdersFromServer() {

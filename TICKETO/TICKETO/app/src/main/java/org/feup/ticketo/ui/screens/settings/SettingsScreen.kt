@@ -31,10 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import org.feup.ticketo.NavRoutes
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
@@ -76,16 +74,18 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            viewModel.userInfo.value.username?.let { Text(it) }
-            viewModel.userInfo.value.tax_number?.let { Text(it.toString()) }
-            Text("Credit Card Info Here")
+            viewModel.userInfo.value?.username?.let { Text(it) }
+            viewModel.userInfo.value?.tax_number?.let { Text(it.toString()) }
+            viewModel.cardInfo.value?.number?.let { Text(it) }
+            viewModel.cardInfo.value?.validity?.let { Text(it) }
+            viewModel.cardInfo.value?.type?.let { Text(it) }
         }
         // List of Settings Options
         ListItem(
             colors = ListItemDefaults.colors(
                 containerColor = md_theme_light_onPrimary
             ),
-            headlineContent = { viewModel.userInfo.value.username?.let { Text(it) } },
+            headlineContent = { viewModel.userInfo.value?.username?.let { Text(it) } },
             supportingContent = { Text("username") },
             leadingContent = {
                 Icon(Icons.Default.AccountCircle, null)

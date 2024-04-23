@@ -54,12 +54,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.storage.OrderProductWithProduct
 import org.feup.ticketo.data.storage.Voucher
-import org.feup.ticketo.ui.screens.eventTickets.EventTicketsViewModel
 import org.feup.ticketo.ui.theme.md_theme_light_background
 import org.feup.ticketo.ui.theme.md_theme_light_onPrimary
 import org.feup.ticketo.ui.theme.md_theme_light_primary
@@ -102,10 +100,7 @@ fun OrderDetailsScreen(navController: NavHostController, viewModel: OrderDetails
 
             when (viewModel.fetchOrderFromDatabaseState.value) {
                 is ServerValidationState.Loading -> {
-                    LoadingOrder(
-                        (viewModel.fetchOrderFromDatabaseState.value as ServerValidationState.Failure).message
-                            ?: "Loading order..."
-                    )
+                    LoadingOrder()
                 }
 
                 is ServerValidationState.Failure -> {
@@ -323,12 +318,12 @@ fun QRCodeGenerationLoadingDialog() {
 
 @Composable
 fun OrderDetails(viewModel: OrderDetailsViewModel) {
-    ProductsList(viewModel.order.value!!.orderProducts, viewModel)
+    ProductsList(viewModel.order.value!!.orderProducts)
     VouchersList(viewModel.order.value!!.vouchers)
 }
 
 @Composable
-fun ProductsList(products: List<OrderProductWithProduct>, viewModel: OrderDetailsViewModel) {
+fun ProductsList(products: List<OrderProductWithProduct>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -345,13 +340,13 @@ fun ProductsList(products: List<OrderProductWithProduct>, viewModel: OrderDetail
         modifier = Modifier.fillMaxWidth()
     ) {
         items(products.size) { i ->
-            ProductItem(products[i], viewModel)
+            ProductItem(products[i])
         }
     }
 }
 
 @Composable
-fun ProductItem(orderProduct: OrderProductWithProduct, viewModel: OrderDetailsViewModel) {
+fun ProductItem(orderProduct: OrderProductWithProduct) {
     var icon = Icons.Default.ChevronRight
     when {
         orderProduct.product.name.toString().contains("Coffee") -> icon = Icons.Default.Coffee
@@ -463,7 +458,7 @@ fun EmptyOrder() {
 }
 
 @Composable
-fun LoadingOrder(s: String) {
+fun LoadingOrder() {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,

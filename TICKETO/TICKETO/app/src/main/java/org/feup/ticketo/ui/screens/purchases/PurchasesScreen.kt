@@ -22,8 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,7 +32,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,7 +48,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -117,8 +113,7 @@ fun PurchasesScreen(
 
                 is ServerValidationState.Failure -> {
                     LoadingPurchasesFailed(
-                        (viewModel.fetchPurchasesFromServerState.value as ServerValidationState.Failure).error,
-                        viewModel
+                        (viewModel.fetchPurchasesFromServerState.value as ServerValidationState.Failure).error
                     )
                 }
             }
@@ -441,7 +436,7 @@ fun LoadingPurchases() {
 }
 
 @Composable
-fun LoadingPurchasesFailed(error: VolleyError?, viewModel: PurchasesViewModel) {
+fun LoadingPurchasesFailed(error: VolleyError?) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,

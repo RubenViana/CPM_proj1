@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material.icons.filled.PanoramaVertical
 import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -53,7 +51,6 @@ fun TicketsScreen(navController: NavHostController, viewModel: TicketsViewModel,
             is ServerValidationState.Loading -> {
                 LoadingTickets(
                     (viewModel.serverValidationState.value as ServerValidationState.Loading).message
-                        ?: "Loading tickets..."
                 )
             }
 

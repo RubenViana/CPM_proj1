@@ -1,11 +1,6 @@
 package org.feup.ticketo
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandIn
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Search
@@ -109,7 +104,7 @@ fun TicketoNavHost(
             popEnterTransition = { return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
             popExitTransition = { return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) }
         ) {
-            val viewModel = SettingsViewModel(context, ticketoStorage)
+            val viewModel = remember { SettingsViewModel(context, ticketoStorage) }
             SettingsScreen(navController, viewModel)
         }
         composable(

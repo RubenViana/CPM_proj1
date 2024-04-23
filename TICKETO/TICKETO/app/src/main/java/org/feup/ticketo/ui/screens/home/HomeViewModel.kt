@@ -13,8 +13,6 @@ import org.feup.ticketo.data.storage.Event
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.utils.formatDate
 import org.feup.ticketo.utils.serverUrl
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class HomeViewModel(private val context: Context, private val ticketoStorage: TicketoStorage) : ViewModel() {
     val serverValidationState = mutableStateOf<ServerValidationState?>(null)

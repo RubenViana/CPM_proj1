@@ -2,17 +2,14 @@ package org.feup.ticketo.ui.screens.eventTickets
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.feup.ticketo.data.serverMessages.ServerValidationState
 import org.feup.ticketo.data.serverMessages.ticketValidationMessage
 import org.feup.ticketo.data.storage.Customer
 import org.feup.ticketo.data.storage.EventTickets
-import org.feup.ticketo.data.storage.EventWithTicketsCount
 import org.feup.ticketo.data.storage.Ticket
 import org.feup.ticketo.data.storage.TicketoStorage
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
@@ -60,7 +57,7 @@ class EventTicketsViewModel(
     fun validateTickets() {
         qrCodeGenerationState.value = ServerValidationState.Loading("Generation QR Code...")
         // create ticket validation message
-        var tvm = ticketValidationMessage(
+        val tvm = ticketValidationMessage(
             Customer(getUserIdInSharedPreferences(context)),
             selectedTickets.value,
             null

@@ -29,10 +29,6 @@ interface TicketoDao {
     @Query("SELECT * FROM EVENT WHERE EVENT_ID = :eventId")
     suspend fun getEvent(eventId: Int): Event?
 
-    // Get all future events
-    @Query("SELECT * FROM EVENT WHERE DATE >= :date")
-    suspend fun getAllFutureEvents(date: String): List<Event>?
-
     // Get events for which a customer has purchased tickets along with the count of tickets bought for each event
     @Query(
         """
@@ -94,11 +90,6 @@ interface TicketoDao {
     @Query("DELETE FROM EVENT WHERE EVENT_ID IN (SELECT EVENT_ID FROM TICKET WHERE PURCHASE_ID IN (SELECT PURCHASE_ID FROM PURCHASE WHERE CUSTOMER_ID = :customerId))")
     suspend fun deleteEventsForClient(customerId: String)
 
-    // Get all purchases along with their associated tickets and events for a client
-    @Transaction
-    @Query("SELECT * FROM PURCHASE WHERE CUSTOMER_ID = :customerId")
-    suspend fun getPurchasesWithTicketsAndEventsAndVouchersForClient(customerId: String): List<PurchaseWithTicketsAndEventsAndVouchers>
-
     // Get all vouchers for a specific customer
     @Query("SELECT * FROM VOUCHER WHERE CUSTOMER_ID = :customerId AND ORDER_ID IS NULL")
     suspend fun getUnusedVouchersForCustomer(customerId: String): List<Voucher>
@@ -153,6 +144,9 @@ interface TicketoDao {
     @Query("DELETE FROM VOUCHER WHERE VOUCHER_ID = :voucherId")
     suspend fun deleteVoucherById(voucherId: String)
 
+    // Get card customer card info
+    @Query("SELECT * FROM CREDIT_CARD WHERE CUSTOMER_ID = :customerId")
+    suspend fun getCreditCardByCustomerId(customerId: String): CreditCard
 
 
 }

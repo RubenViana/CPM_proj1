@@ -19,7 +19,6 @@ import org.feup.ticketo.data.storage.Voucher
 import org.feup.ticketo.data.storage.getUserIdInSharedPreferences
 import org.feup.ticketo.utils.formatDate
 import org.feup.ticketo.utils.serverUrl
-import org.json.JSONObject
 
 class PurchasesViewModel(
     private val context: Context,
