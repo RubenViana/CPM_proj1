@@ -1,0 +1,429 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "ba6ff01f9a754fbda957022c06567a1a",
+    "entities": [
+      {
+        "tableName": "CUSTOMER",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`CUSTOMER_ID` TEXT NOT NULL, `USERNAME` TEXT, `PASSWORD` TEXT, `TAX_NUMBER` INTEGER, `PUBLIC_KEY` TEXT, `NAME` TEXT, PRIMARY KEY(`CUSTOMER_ID`))",
+        "fields": [
+          {
+            "fieldPath": "customer_id",
+            "columnName": "CUSTOMER_ID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "USERNAME",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "password",
+            "columnName": "PASSWORD",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tax_number",
+            "columnName": "TAX_NUMBER",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "public_key",
+            "columnName": "PUBLIC_KEY",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "NAME",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "CUSTOMER_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "CREDIT_CARD",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`CREDIT_CARD_ID` INTEGER NOT NULL, `CUSTOMER_ID` TEXT, `TYPE` TEXT, `NUMBER` TEXT, `VALIDITY` TEXT, PRIMARY KEY(`CREDIT_CARD_ID`))",
+        "fields": [
+          {
+            "fieldPath": "credit_card_id",
+            "columnName": "CREDIT_CARD_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "customer_id",
+            "columnName": "CUSTOMER_ID",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "TYPE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "number",
+            "columnName": "NUMBER",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "validity",
+            "columnName": "VALIDITY",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "CREDIT_CARD_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "EVENT",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`EVENT_ID` INTEGER NOT NULL, `NAME` TEXT, `DATE` TEXT, `PICTURE` BLOB, `PRICE` REAL, PRIMARY KEY(`EVENT_ID`))",
+        "fields": [
+          {
+            "fieldPath": "event_id",
+            "columnName": "EVENT_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "NAME",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "DATE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "picture",
+            "columnName": "PICTURE",
+            "affinity": "BLOB",
+            "notNull": false
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "PRICE",
+            "affinity": "REAL",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "EVENT_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ORDER",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ORDER_ID` INTEGER NOT NULL, `CUSTOMER_ID` TEXT, `DATE` TEXT, `PAID` INTEGER, `PICKED_UP` INTEGER, `TOTAL_PRICE` REAL, PRIMARY KEY(`ORDER_ID`))",
+        "fields": [
+          {
+            "fieldPath": "order_id",
+            "columnName": "ORDER_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "customer_id",
+            "columnName": "CUSTOMER_ID",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "DATE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "paid",
+            "columnName": "PAID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "picked_up",
+            "columnName": "PICKED_UP",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "total_price",
+            "columnName": "TOTAL_PRICE",
+            "affinity": "REAL",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "ORDER_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "PRODUCT",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`PRODUCT_ID` INTEGER NOT NULL, `AVAILABLE` INTEGER, `NAME` TEXT, `DESCRIPTION` TEXT, `PRICE` REAL, PRIMARY KEY(`PRODUCT_ID`))",
+        "fields": [
+          {
+            "fieldPath": "product_id",
+            "columnName": "PRODUCT_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "available",
+            "columnName": "AVAILABLE",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "NAME",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "DESCRIPTION",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "PRICE",
+            "affinity": "REAL",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "PRODUCT_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "ORDER_PRODUCT",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`PRODUCT_ID` INTEGER NOT NULL, `ORDER_ID` INTEGER NOT NULL, `QUANTITY` INTEGER, PRIMARY KEY(`PRODUCT_ID`, `ORDER_ID`))",
+        "fields": [
+          {
+            "fieldPath": "product_id",
+            "columnName": "PRODUCT_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order_id",
+            "columnName": "ORDER_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "QUANTITY",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "PRODUCT_ID",
+            "ORDER_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "PURCHASE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`PURCHASE_ID` INTEGER NOT NULL, `CUSTOMER_ID` TEXT, `DATE` TEXT, `TOTAL_PRICE` REAL, PRIMARY KEY(`PURCHASE_ID`))",
+        "fields": [
+          {
+            "fieldPath": "purchase_id",
+            "columnName": "PURCHASE_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "customer_id",
+            "columnName": "CUSTOMER_ID",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "DATE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "total_price",
+            "columnName": "TOTAL_PRICE",
+            "affinity": "REAL",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "PURCHASE_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "TICKET",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`TICKET_ID` TEXT NOT NULL, `PURCHASE_ID` INTEGER, `EVENT_ID` INTEGER, `PURCHASE_DATE` TEXT, `USED` INTEGER, `QRCODE` TEXT, `PLACE` TEXT, PRIMARY KEY(`TICKET_ID`))",
+        "fields": [
+          {
+            "fieldPath": "ticket_id",
+            "columnName": "TICKET_ID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "purchase_id",
+            "columnName": "PURCHASE_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "event_id",
+            "columnName": "EVENT_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "purchase_date",
+            "columnName": "PURCHASE_DATE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "used",
+            "columnName": "USED",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "qrcode",
+            "columnName": "QRCODE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "place",
+            "columnName": "PLACE",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "TICKET_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "VOUCHER",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`VOUCHER_ID` TEXT NOT NULL, `CUSTOMER_ID` TEXT, `PRODUCT_ID` INTEGER, `ORDER_ID` INTEGER, `TYPE` TEXT, `DESCRIPTION` TEXT, `REDEEMED` INTEGER, PRIMARY KEY(`VOUCHER_ID`))",
+        "fields": [
+          {
+            "fieldPath": "voucher_id",
+            "columnName": "VOUCHER_ID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "customer_id",
+            "columnName": "CUSTOMER_ID",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "product_id",
+            "columnName": "PRODUCT_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "order_id",
+            "columnName": "ORDER_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "TYPE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "DESCRIPTION",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "redeemed",
+            "columnName": "REDEEMED",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "VOUCHER_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ba6ff01f9a754fbda957022c06567a1a')"
+    ]
+  }
+}
