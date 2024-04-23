@@ -151,7 +151,7 @@ fun validateOrdersInServer(
     serverValidationState: MutableState<ServerValidationState?>,
     openValidationDialog: MutableState<Boolean>
 ) {
-    val url = "http://10.0.2.2:5000/validate_order"
+    val url = serverUrl + "validate_order"
     val json = objectToJson(ordersToValidate)
     val jsonObjectRequest = JsonObjectRequest(
         Request.Method.POST, url, json,
