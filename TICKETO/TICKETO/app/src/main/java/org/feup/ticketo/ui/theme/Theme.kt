@@ -1,19 +1,11 @@
 package org.feup.ticketo.ui.theme
 
 import android.app.Activity
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -94,15 +86,26 @@ fun TICKETOTheme(
         DarkColors
     }
 
-    val activity  = LocalView.current.context as Activity
-    activity.window.navigationBarColor = colors.onPrimary.toArgb()
-    activity.window.statusBarColor = colors.primary.toArgb()
-    WindowCompat.getInsetsController(activity.window, LocalView.current).isAppearanceLightStatusBars = useDarkTheme
-    WindowCompat.getInsetsController(activity.window, LocalView.current).isAppearanceLightNavigationBars = !useDarkTheme
+
 
     MaterialTheme(
         colorScheme = colors,
         content = content,
         typography = Typography
     )
+}
+
+// function to set the navigation bar color and status bar color
+@Composable
+fun SetSystemBarsColors(
+    statusBarColor: Int,
+    navigationBarColor: Int,
+    statusTheme: Boolean,
+    navigationTheme: Boolean
+) {
+    val activity  = LocalView.current.context as Activity
+    activity.window.navigationBarColor = navigationBarColor
+    activity.window.statusBarColor = statusBarColor
+    WindowCompat.getInsetsController(activity.window, LocalView.current).isAppearanceLightStatusBars = statusTheme
+    WindowCompat.getInsetsController(activity.window, LocalView.current).isAppearanceLightNavigationBars = navigationTheme
 }
