@@ -3,6 +3,7 @@ package org.feup.ticketo.data.serverMessages
 import kotlinx.serialization.Serializable
 import org.feup.ticketo.data.storage.Customer
 import org.feup.ticketo.data.storage.Ticket
+import org.feup.ticketo.utils.signMessageWithPrivateKey
 
 @Serializable
 data class TicketValidationMessage(
@@ -16,9 +17,10 @@ fun ticketValidationMessage(
     tickets: List<Ticket>,
     signature: String?
 ): TicketValidationMessage {
-    return TicketValidationMessage(
+    var tvm = TicketValidationMessage(
         customer.customer_id,
         tickets = tickets.map { mutableMapOf("ticket_id" to it.ticket_id.orEmpty()) },
-        signature
+        null
     )
+    return signMessageWithPrivateKey(tvm)
 }

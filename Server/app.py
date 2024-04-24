@@ -583,7 +583,7 @@ def validate_tickets():
      
         # Check if all tickets refer to the same event
         cursor.execute('SELECT EVENT_ID FROM TICKET WHERE TICKET_ID = ?', (tickets[0]['ticket_id'],))
-        event_id = cursor.fetchone().get('EVENT_ID')
+        event_id = cursor.fetchone()['EVENT_ID']
                 
         # Validate tickets
         for t in tickets:
@@ -599,8 +599,8 @@ def validate_tickets():
             if ticket['USED']:
                 return jsonify({'message': f"Ticket {t['ticket_id']} already used"}), 400
             # Check if ticket purchase belongs to customer
-            cursor.execute('SELECT CUSTOMER_ID FROM PURCHASE WHERE PURCHASE_ID = ?', (ticket['PURCHASE_ID']))
-            c_id = cursor.fetchone().get('CUSTOMER_ID')
+            cursor.execute('SELECT CUSTOMER_ID FROM PURCHASE WHERE PURCHASE_ID = ?', (ticket['PURCHASE_ID'],))
+            c_id = cursor.fetchone()['CUSTOMER_ID']
             if c_id != customer_id:
                 return jsonify({'message': f"Ticket {t['ticket_id']} does not belong to customer"}), 400
             t['valid'] = True
